@@ -1,0 +1,425 @@
+// 
+// Marinette's library. All of the shell internals are here
+
+
+
+
+// 
+// Defaulting to fallback and map appending the chosen theme if exists
+Theme = Themes["Violet"]
+if Themes.indexes.indexOf(Config.theme) != null then Theme = Theme + Themes[Config.theme]
+
+
+// 
+// Compiling the locale with a specific language code for it to be usable
+// Missing entries will still be usable, but with an error message indicating that instead
+Messages = localesCompile(Config.language, Locales)
+
+
+// 
+// Const is something persistent and used globally
+Const = {
+    "any": Messages.SessionTypeAny,
+    "host": Messages.SessionTypeHost,
+    "shell": Messages.SessionTypeShell,
+    "computer": Messages.SessionTypeComputer,
+    "file": Messages.SessionTypeFile,
+    "plugin": Messages.HelpCategoryPlugins,
+}
+
+
+// 
+// Var is something that is set at runtime and used globally
+// Don't touch unless you know what you are doing
+Var = {
+    "parameters": parseParameters(params),
+    "password": null,
+    "hostSession": null,
+}
+
+passwordToAesKey = function(password)
+    while password.len < 16
+        password = "0"+password
+    end while
+
+    while password.len > 16
+        password = password[1:]
+    end while
+
+    return password
+end function
+
+
+// 
+// Libraries are loaded incrementally at runtime
+Libs = {}
+
+
+// 
+// Internal objects that are used in commands
+Intrinsics = {
+    "shell": get_shell,
+    "computer": get_shell.host_computer,
+    "file": get_shell.host_computer.File("/"),
+    "publicAddress": null,
+    "localAddress": null,
+    "port": null,
+    "isConnectionRemote": false,
+}
+
+
+IntrinsicsHelpers = {}
+
+IntrinsicsHelpers.getSessionType = function(intrinsics)
+    object = Messages.SessionTypeHost
+    if intrinsics.isConnectionRemote then
+        if intrinsics.file then object = Messages.SessionTypeFile
+        if intrinsics.computer then object = Messages.SessionTypeComputer
+        if intrinsics.shell then
+            type = typeof(intrinsics.shell)
+            if type == "shell" then
+                object = Messages.SessionTypeShell
+            else if type == "ftpshell" then
+                object = Messages.SessionTypeFtpShell
+            else
+                object = Messages.SessionTypeUnknownShell
+            end if
+        end if
+    end if
+    return object
+end function
+
+//
+// Trying to fix Intrinsics.file if the associated file got deleted at runtime
+// Notifying the user if we're not successfull
+IntrinsicsHelpers.tryToFixFdIfCorrupted = function
+    if not isFdCorrupt(Intrinsics.file) then return
+    if Intrinsics.computer then Intrinsics.file = iterateToLatestAccessiblePath(Intrinsics.computer, Intrinsics.file)
+    if not isFdCorrupt(Intrinsics.file) then return Console.log(Messages.LogSuccessfullFdCorruptionFix)
+    Console.warning(Messages.WarningFailedFdCorruptionFix)
+end function
+
+
+Console = {}
+
+primary = function(str)
+    return "<color="+Theme.miscPrimary+">"+str+"</color>"
+end function
+
+secondary = function(str)
+    return "<color="+Theme.miscSecondary+">"+str+"</color>"
+end function
+
+error = function(str)
+    return "<color="+Theme.error+">"+str+"</color>"
+end function
+
+Console.asciiArt = function(art)
+    i = 0; while i < art.len; i = i + 1
+        if i-1 < round(art.len * 3 / 4 - 1) then
+            print("<color="+Theme.ascii+">"+art[i-1])
+        else
+            print("<color="+Theme.asciiShadow+">"+art[i-1])
+        end if
+    end while
+end function
+
+Console._printWithColorAndTime = function(color, message=" ", toReplaceFormat=null)
+    if toReplaceFormat then message = replaceF(message, toReplaceFormat)
+    currentTime = current_date.split(" - ")[1]
+    print("<color="+Theme.prefix+">-"+currentTime+"- <color="+color+">"+message)
+end function
+
+Console.log = function(message=" ", toReplaceFormat=null)
+    Console._printWithColorAndTime(Theme.log, message, toReplaceFormat)
+end function
+
+Console.warning = function(message=" ", toReplaceFormat=null)
+    Console._printWithColorAndTime(Theme.warning, message, toReplaceFormat)
+end function
+
+Console.error = function(message=" ", toReplaceFormat=null)
+    Console._printWithColorAndTime(Theme.error, message, toReplaceFormat)
+end function
+
+Console.input = function(message=" ", isPassword=false, anyKey=false, toReplaceFormat=null)
+    if toReplaceFormat then message = replaceF(message, toReplaceFormat)
+    input = user_input("<color="+Theme.inputMessage+">"+message+"<color="+Theme.input+">", isPassword, anyKey)
+    if isInputValid(input) then return input
+    return ""
+end function
+
+Console.boolInput = function(message=" ", default=true,  toReplaceFormat=null)
+    accept = ["y", ""]
+    refuse = ["escape", "n", "backspace"]
+
+    response = Console.input(message, false, true, toReplaceFormat).lower
+    for key in accept
+	if response == key then return true
+    end for
+    for key in refuse
+	if response == key then return false
+    end for
+    return default;
+end function
+
+Console.prompt = function
+    fd = Intrinsics.file
+    user = checkPermissions(fd)
+    object = IntrinsicsHelpers.getSessionType(Intrinsics)
+    locIp = Intrinsics.localAddress
+
+    if not locIp then locIp = Messages.NetLocalHost
+
+    msg = Theme.inputMessage
+    inp = Theme.input
+    lines = [
+        " <color="+msg+"> "+replaceF(Messages.ConsolePromptHeader, {"USER": user, "SESSION": object, "LAN": locIp, "PATH": fd.path}),
+        "<color="+msg+">% <color="+inp+">",
+    ]
+    return lines.join(char(10))
+end function
+
+Console.cmdloop = function
+    while true
+        input = Console.input(Console.prompt).trim
+
+        // 
+        // Various handlers that get executed each loop
+        IntrinsicsHelpers.tryToFixFdIfCorrupted
+        MainframeHelpers.warnUserIfCouldNotConnectToMainframe
+
+        if input.len == 0 then continue
+
+        parts = input.split(" ")
+
+        command = parts.pull
+        if Commands.indexes.indexOf(command) == null then
+            for kv in Aliases
+                if kv.value.indexOf(command) != null then
+                    command = kv.key
+                    break
+                end if
+            end for
+
+            if Commands.indexes.indexOf(command) == null then
+                Console.error(Messages.ErrorCommandNotFound)
+                continue
+            end if
+        end if
+
+        arguments = []
+        for part in parts
+            arguments.push(part.to_int)
+        end for
+        command = Commands[command]
+        command(arguments)
+    end while
+end function
+
+
+Conditions = {}
+
+Conditions.arguments = function(arguments, count)
+    if arguments.len == count then return
+    Console.error(Messages.ErrorIncorrectAmountOfArguments, {"AMOUNT": count})
+    Console.cmdloop
+end function
+
+Conditions.argumentsMoreThan = function(arguments, count)
+    if arguments.len > count then return
+    Console.error(Messages.ErrorAmountOfArgumentsTooFew, {"AMOUNT": count})
+    Console.cmdloop
+end function
+
+Conditions.argumentsFewerThan = function(arguments, count)
+    if arguments.len < count then return
+    Console.error(Messages.ErrorAmountOfArgumentsTooMuch, {"AMOUNT": count})
+    Console.cmdloop
+end function
+
+Conditions.host = function
+    if not Intrinsics.isConnectionRemote then return
+    Console.error(Messages.ErrorIncorrectSessionType, {"SESSION": Messages.SessionTypeHost})
+    Console.cmdloop
+end function
+
+Conditions.remote = function
+    if Intrinsics.isConnectionRemote then return
+    Console.error(Messages.ErrorSessionNotRemote, {"HOST": Messages.SessionTypeHost})
+    Console.cmdloop
+end function
+
+Conditions.shell = function(preciseTypes=null)
+    if Intrinsics.shell then
+        if not preciseTypes then return
+        if preciseTypes.indexOf(typeof(Intrinsics.shell)) != null then return
+    end if
+    if not preciseTypes then preciseTypes = ["shell", "ftpshell"]
+    Console.error(Messages.ErrorSessionNotShell, {"SHELLS": str(preciseTypes)})
+    Console.cmdloop
+end function
+
+Conditions.computer = function
+    if Intrinsics.computer then return
+    Console.error(Messages.ErrorIncorrectSessionType, {"SESSION": Messages.SessionTypeComputer})
+    Console.cmdloop
+end function
+
+Conditions.network = function
+    if get_shell.host_computer.is_network_active then return
+    Console.error(Messages.ErrorNoNetworkConnection)
+    Console.cmdloop
+end function
+
+Conditions.crypto = function
+    if Libs.indexes.indexOf("crypto") != null then return
+    Console.error(Messages.ErrorNoNeededLibrary, {"LIBRARY": "crypto"})
+    Console.cmdloop
+end function
+
+Conditions.apt = function
+    if Libs.indexes.indexOf("apt") != null then return
+    Console.error(Messages.ErrorNoNeededLibrary, {"LIBRARY": "apt"})
+    Console.cmdloop
+end function
+
+Conditions.metaxploit = function
+    if Libs.indexes.indexOf("metaxploit") != null then return
+    Console.error(Messages.ErrorNoNeededLibrary, {"LIBRARY": "metaxploit"})
+    Console.cmdloop
+end function
+
+Conditions.blockchain = function
+    if Libs.indexes.indexOf("blockchain") != null then return
+    Console.error(Messages.ErrorNoNeededLibrary, {"LIBRARY": "blockchain"})
+    Console.cmdloop
+end function
+
+
+Sessions = []
+
+SessionsHelpers = {}
+
+// 
+// Add session to the Sessions[]
+// Overwrites session if it already exists
+SessionsHelpers.add = function(intrinsics)
+    intrinsics = deepCopy(intrinsics)
+
+    // 
+    // No idea what this code does :P
+    if not intrinsics.isConnectionRemote then
+        if not Var.hostSession then
+            Var.hostSession = deepCopy(Intrinsics)
+            return
+        end if
+        
+        hostSession = deepCopy(Var.hostSession)
+        if SessionsHelpers.generateSessionName(hostSession).split(" ")[1:] == SessionsHelpers.generateSessionName(intrinsics).split(" ")[1:] then
+            Var.hostSession = deepCopy(intrinsics)
+            return
+        end if
+        
+        hostSession.isConnectionRemote = true
+        SessionsHelpers.add(hostSession)
+        Var.hostSession = deepCopy(intrinsics)
+        return
+    end if
+
+    index = null
+    lookup = -1
+    for oldSession in Sessions
+        lookup = lookup + 1
+        if SessionsHelpers.generateSessionName(oldSession) != SessionsHelpers.generateSessionName(intrinsics) then continue
+        index = lookup
+        break
+    end for
+    if index == null then
+        Sessions.push(intrinsics)
+    else
+        Sessions[index] = intrinsics
+    end if
+end function
+
+SessionsHelpers.delete = function(id)
+    sessions = [Var.hostSession] + Sessions
+    if id < 2 or id > sessions.len then return false
+    Sessions.remove(id-1 - 1)
+    return true
+end function
+
+SessionsHelpers.get = function(id)
+    sessions = [Var.hostSession] + deepCopy(Sessions)
+    if id < 1 or id > sessions.len then return
+    return deepCopy(sessions[id-1])
+end function
+
+SessionsHelpers.generateSessionName = function(intrinsics)
+    intrinsics = deepCopy(intrinsics)
+
+    object = IntrinsicsHelpers.getSessionType(intrinsics)
+    pubAddr = intrinsics.publicAddress
+    locAddr = intrinsics.localAddress
+    port = intrinsics.port
+    user = checkPermissions(intrinsics.file)
+
+    if not pubAddr then pubAddr = "-"
+    if not locAddr then locAddr = "-"
+    if port == null then port = "-"
+    if not user then user = "-"
+
+    return [object,pubAddr,locAddr,port,user].join(" ")
+end function
+
+
+Helps = {}
+Aliases = {}
+Commands = {}
+
+command = function(name, aliases, category, help, func)
+    Helps[name] = category+" - "+help
+    Aliases[name] = aliases
+    Commands[name] = @func
+end function
+
+
+Mainframe = {
+    "protocol": null,
+    "address": null,
+    "port": null,
+    "user": null,
+    "password": null,
+}
+
+
+MainframeHelpers = {}
+
+MainframeHelpers.isReachable = function
+    if not get_shell.host_computer.is_network_active then return false
+    router = getNetworkNode(Mainframe.address)
+    if not router or not router.ping_port(Mainframe.port) then return false
+    return true
+end function
+
+MainframeHelpers.connect = function
+    if not MainframeHelpers.isReachable then return
+
+    if Mainframe.protocol == "ssh" then
+        mainframeShell = Intrinsics.shell.connect_service(Mainframe.address, Mainframe.port, Mainframe.user, Mainframe.password, "ssh")
+    else if Mainframe.protocol == "overflow" then
+        if not Libs.metaxploit then return
+
+    end if
+
+    if typeof(mainframeShell) == "shell" then return mainframeShell
+end function
+
+MainframeHelpers.isAlive = function
+    return MainframeHelpers.connect != null
+end function
+
+MainframeHelpers.warnUserIfCouldNotConnectToMainframe = function
+    if not Config.mainframe or MainframeHelpers.isAlive then return
+    Console.warning("Could not connect to the mainframe! You've likely been compromised!")
+end function

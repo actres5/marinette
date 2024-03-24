@@ -1,0 +1,1443 @@
+// 
+// Portable routines are stored here
+
+
+
+
+////////////////////////////////////////////////////////////
+// List functions
+////////////////////////////////////////////////////////////
+
+// 
+// Copies a list/map until the elements in it are recursively exhausted
+// If a map has classID index, omits the recursive copying and just returns that map
+deepCopy = function(collection)
+    listCopy = function(list_)
+        copied = []
+        for i in list_
+            if @i isa map then
+                copied.push(mapCopy(@i))
+            else if @i isa list then
+                copied.push(listCopy(@i))
+            else
+                copied.push(@i)
+            end if
+        end for
+        return copied + []
+    end function
+
+    mapCopy = function(map_)
+        if map_.indexes.indexOf("classID") != null then return map_
+        copied = {}
+        for kv in map_
+            if @kv["value"] isa map then
+                copied[@kv["key"]] = mapCopy(@kv["value"])
+            else if @kv["value"] isa list then
+                copied[@kv["key"]] = listCopy(@kv["value"])
+            else
+                copied[@kv["key"]] = @kv["value"]
+            end if
+        end for
+        return copied + {}
+    end function
+
+    if @collection isa list then return listCopy(collection)
+    if @collection isa map then return mapCopy(collection)
+    return @collection
+end function
+
+// 
+// Checks if the list is sorted
+isSorted = function(arr, predicate)
+    if not @predicate then
+        predicate = function(iItem, jItem)
+            return iItem < jItem
+        end function
+    end if
+
+    i = 0; while i < arr.len - 1; i = i + 1
+        if not predicate(arr[i-1], arr[i-1 + 1]) then return false
+    end while
+    return true
+end function
+
+// 
+// Removes duplicates in list
+removeDuplicates = function(arr)
+    nullIdentificator = "@NULL_IDENTIFICATOR"
+    set = {}
+    for i in arr
+        if i == null then
+            set.push(nullIdentificator)
+        else
+            set.push(i)
+        end if
+    end for
+    set = set.indexes
+    nullIdI = set.indexOf(nullIdentificator)
+    while nullIdI != null
+        set[nullIdI] = null
+        nullIdI = set.indexOf(nullIdentificator)
+    end while
+    set.sort
+    return set
+end function
+
+// 
+// Applies function to every item in a list and returns that list
+fmap = function(func, arr)
+    applied = []
+    for i in arr
+        applied.push(func(i))
+    end for
+    return applied
+end function
+
+cycleSort = function(arr, predicate, start, end_)
+    if arr.len == 0 then return
+	if start == null then start = 0
+    if end_ == null then end_ = arr.len - 1
+
+	cycleStart = 0; while cycleStart <= end_; cycleStart = cycleStart + 1
+		item = arr[cycleStart-1]
+
+		pos = cycleStart-1
+		i = cycleStart-1 + 1; while i <= end_; i = i + 1
+			if predicate(item, arr[i-1]) then pos = pos + 1
+		end while
+		if pos == cycleStart-1 then continue
+		while item == arr[pos]
+			pos = pos + 1
+		end while
+
+		temp = arr[pos]
+		arr[pos] = item
+		item = temp
+
+		while pos != cycleStart-1
+			pos = cycleStart-1
+			i = cycleStart-1 + 1; while i <= end_; i = i + 1
+				if predicate(item, arr[i-1]) then pos = pos + 1
+			end while
+			while item == arr[pos]
+				pos = pos + 1
+			end while
+
+			temp = arr[pos]
+			arr[pos] = item
+			item = temp
+		end while
+	end while
+end function
+
+insertionSort = function(arr, predicate, start, end_)
+    if arr.len == 0 then return
+	if start == null then start = 0
+    if end_ == null then end_ = arr.len - 1
+
+	i = start + 1
+	while i <= end_
+		j = i
+		while j > 0 and predicate(arr[j-1], arr[j])
+			temp = arr[j]
+			arr[j] = arr[j-1]
+			arr[j-1] = temp
+			j = j - 1
+		end while
+		i = i + 1
+	end while
+end function
+
+quickSort = function(arr, predicate, low, high)
+    if arr.len == 0 then return
+    if low == null then low = 0
+    if high == null then high = arr.len - 1
+
+    partition = function(arr, predicate, low, high)
+        pivot = arr[high]
+        i = low - 1
+    
+        j = low; while j < high; j = j + 1
+            if predicate(pivot, arr[j-1]) then
+                i = i + 1
+                temp = arr[i]
+                arr[i] = arr[j-1]
+                arr[j-1] = temp
+            end if
+        end while
+        
+        temp = arr[i + 1]
+        arr[i + 1] = arr[high]
+        arr[high] = temp
+    
+        return i + 1
+    end function
+
+    if low < high then
+        pi = partition(arr, @predicate, low, high)
+
+        quickSort(arr, @predicate, low, pi - 1)
+        quickSort(arr, @predicate, pi + 1, high)
+    end if
+end function
+
+selectionSort = function(arr, predicate, start, end_)
+    if arr.len == 0 then return
+	if start == null then start = 0
+    if end_ == null then end_ = arr.len - 1
+
+	i = 0; while i < end_; i = i + 1
+		jMin = i-1
+		j = i-1 + 1; while j <= end_; j = j + 1
+			if predicate(arr[j-1], arr[jMin]) then
+				jMin = j-1
+				continue
+			end if
+		end while
+
+		if jMin != i-1 then
+			temp = arr[i-1]
+			arr[i-1] = arr[jMin]
+			arr[jMin] = temp
+		end if
+	end while
+end function
+
+mergeSort = function(arr, predicate, start, end_)
+    if arr.len == 0 then return
+    if start == null then start = 0
+    if end_ == null then end_ = arr.len - 1
+
+    merge = function(arr, predicate, start, mid, end_)
+        left = arr[start:mid+1]
+        right = arr[mid+1:end_+1]
+        
+        i = 0
+        j = 0
+        k = start
+        
+        while i < len(left) and j < len(right)
+            if not predicate(left[i], right[j]) then
+                arr[k] = left[i]
+                i = i + 1
+            else
+                arr[k] = right[j]
+                j = j + 1
+            end if
+            k = k + 1
+        end while
+        
+        while i < len(left)
+            arr[k] = left[i]
+            i = i + 1
+            k = k + 1
+        end while
+        
+        while j < len(right)
+            arr[k] = right[j]
+            j = j + 1
+            k = k + 1
+        end while
+    end function
+
+    if start >= end_ then return arr
+
+    mid = (start + end_) / 2
+    
+    mergeSort(arr, @predicate, start, mid)
+    mergeSort(arr, @predicate, mid+1, end_)
+    
+    merge(arr, @predicate, start, mid, end_)
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Networking
+////////////////////////////////////////////////////////////
+
+// 
+// Returns router or switch of the address
+// Address can be anything(even the website address)
+getNetworkNode = function(address)
+    if not address then
+        router = get_router
+        if not router then router = get_switch
+        return router
+    end if
+
+    for addr in [address, "www."+address]
+        if not is_valid_ip(addr) then addr = nslookup(addr)
+        if addr != "Not found" then address = addr
+    end for
+    if not is_valid_ip(address) then return
+    
+    if is_lan_ip(address) then
+        router = get_switch(address)
+        if not router then router = get_router(address)
+    else
+        router = get_router
+        if router.public_ip == address then return router
+        router = get_router(address)
+    end if
+    return router
+end function
+
+getPublicPortsWithLocalStates = function(address)
+    router = getNetworkNode(address)
+    if not router then return []
+
+    ports = []
+    for localAddress in router.devices_lan_ip
+        devicePorts = router.device_ports(localAddress)
+        if devicePorts == null or devicePorts isa string then continue
+        for localPort in devicePorts
+            isPublicPort = false
+            for publicPort in router.used_ports
+                if publicPort.get_lan_ip != localPort.get_lan_ip then continue
+                if publicPort.port_number != localPort.port_number then continue
+                isPublicPort = true
+                break
+            end for
+            if isPublicPort then ports.push(localPort)
+        end for
+    end for
+    return ports
+end function
+
+getLocalPorts = function(address)
+    router = getNetworkNode(address)
+    if not router then return []
+
+    ports = []
+    for localAddress in router.devices_lan_ip
+        devicePorts = router.device_ports(localAddress)
+        if devicePorts == null or devicePorts isa string then continue
+        for localPort in devicePorts
+            isPublicPort = false
+            for publicPort in router.used_ports
+                if publicPort.get_lan_ip != localPort.get_lan_ip then continue
+                if publicPort.port_number != localPort.port_number then continue
+                isPublicPort = true
+                break
+            end for
+            if not isPublicPort then ports.push(localPort)
+        end for
+    end for
+    return ports
+end function
+
+// 
+// Returns computers w/o ports
+getPortlessNodes = function(address)
+    router = getNetworkNode(address)
+    if not router then return []
+
+    nodes = []
+    for localAddress in router.devices_lan_ip
+        localPorts = router.device_ports(localAddress)
+        if localPorts == null or localPorts isa string or localPorts.len == 0 then nodes.push(localAddress)
+    end for
+    return nodes
+end function
+
+// 
+// Returns port behind router/switch with exact localAddress and portNumber
+getExactPort = function(nodeAddress, localAddress, portNumber)
+    router = getNetworkNode(nodeAddress)
+    if not router then return
+
+    ports = router.used_ports
+    if isNodeLocallyAccessible(router) then ports = getPublicPortsWithLocalStates(nodeAddress) + getLocalPorts(nodeAddress)
+
+    for port in ports
+        if port.get_lan_ip == localAddress and port.port_number == portNumber then return port
+    end for
+end function
+
+// 
+// Returns true if the router/switch is in the same network as the host
+isNodeLocallyAccessible = function(node)
+    hostNode = getNetworkNode
+    return hostNode and node.public_ip == hostNode.public_ip
+end function
+
+
+// 
+// Generates random IP
+randomNetworkAddress = function
+    ip = "0.0.0.0"
+    if not get_shell.host_computer.is_network_active then return ip
+    while not get_router(ip) or is_lan_ip(ip) 
+        ip = [
+            randomNumber(0, 255),
+            randomNumber(0, 255),
+            randomNumber(0, 255),
+            randomNumber(0, 255),
+        ].join(".")
+    end while
+    return ip
+end function
+
+
+//
+// nslookup, but reversed
+getDomainName = function(address)
+    router = getNetworkNode(address)
+    if not router then return
+    address = router.public_ip
+
+    info = whois(address)
+    if info.indexOf("Domain name: ") == null then return
+    parts = info.split(char(10))
+    domain = parts[0].split(": ")
+    return domain[1]
+end function
+
+getAdministrativeContact = function(address)
+    router = getNetworkNode(address)
+    if not router then return
+    address = router.public_ip
+
+    info = whois(address)
+    if info.indexOf("Administrative contact: ") == null then return
+    parts = info.split(char(10))
+    admin = parts[1].split(": ")
+    return admin[1]
+end function
+
+getDomainEmailAddress = function(address)
+    router = getNetworkNode(address)
+    if not router then return
+    address = router.public_ip
+
+    info = whois(address)
+    if info.indexOf("Email address: ") == null then return
+    parts = info.split(char(10))
+    email = parts[2].split(": ")
+    return email[1]
+end function
+
+getDomainPhoneNumber = function(address)
+    router = getNetworkNode(address)
+    if not router then return
+    address = router.public_ip
+
+    info = whois(address)
+    if info.indexOf("Phone: ") == null then return
+    parts = info.split(char(10))
+    phone = parts[3].split(": ")
+    return phone[1]
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Encryption & Hashing
+////////////////////////////////////////////////////////////
+
+// 
+// Source: https://github.com/Finko42/GreyHack
+// Hashes the input with sha256
+sha256 = function(input)
+	
+	Blocks = [[0]]
+	i=0
+	e=0
+	while i < input.len
+		e=4
+		while e > 0 and input.hasIndex(i)
+			e=e-1
+			Blocks[-1][-1] = Blocks[-1][-1] + code(input[i])*256^e
+			i=i+1
+		end while
+		if e == 0 then
+			if Blocks[-1].len == 16 then Blocks = Blocks + [[0]] else Blocks[-1] = Blocks[-1] + [0]
+		end if
+	end while
+	
+	if e > 0 then
+		Blocks[-1][-1] = Blocks[-1][-1] + (2147483648/256^(4-e))
+	else
+		Blocks[-1][-1] = 2147483648
+	end if
+	
+	if Blocks[-1].len == 16 then Blocks = Blocks + [[0]]
+	while Blocks[-1].len != 15
+		Blocks[-1] = Blocks[-1] + [0]
+	end while
+	
+	Blocks[-1] = Blocks[-1] + [input.len*8]
+	
+	add = function(a, b)
+		return (a + b) % 4294967296
+	end function
+	
+	XOR = function(a, b)
+		return bitwise("^", floor(a/65536), floor(b/65536))*65536+bitwise("^", a%65536, b%65536)
+	end function
+	
+	AND = function(a, b)
+		return bitwise("&", floor(a/65536), floor(b/65536))*65536+bitwise("&", a%65536, b%65536)
+	end function
+	
+	OR = function(a, b)
+		return bitwise("|", floor(a/65536), floor(b/65536))*65536+bitwise("|", a%65536, b%65536)
+	end function
+	
+	NOT = function(n)
+		return 4294967295-n
+	end function
+	
+	Ch = function(x, y, z)
+		return OR(AND(x, y), AND(NOT(x), z))
+	end function
+	
+	Maj = function(x, y, z)
+		return OR(OR(AND(x, y), AND(x, z)), AND(y, z))
+	end function
+	
+	shr = function(n, shifts)
+		return floor(n/2^shifts)
+	end function
+	
+	rotr = function(n, rots)
+		rots = 2^rots
+		return (n % rots) * (4294967296/rots) + floor(n/rots)
+	end function
+	
+	sigma0 = function(n)
+		return XOR(XOR(rotr(n, 7), rotr(n, 18)), shr(n, 3))
+	end function
+	
+	sigma1 = function(n)
+		return XOR(XOR(rotr(n, 17), rotr(n, 19)), shr(n, 10))
+	end function
+	
+	SIGMA0 = function(n)
+		return XOR(XOR(rotr(n, 2), rotr(n, 13)), rotr(n, 22))
+	end function
+	
+	SIGMA1 = function(n)
+		return XOR(XOR(rotr(n, 6), rotr(n, 11)), rotr(n, 25))
+	end function
+	
+	K = []
+	K = K + [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221]
+	K = K + [3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580]
+	K = K + [3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986]
+	K = K + [2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895]
+	K = K + [666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037]
+	K = K + [2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344]
+	K = K + [430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779]
+	K = K + [1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298]
+	
+	H = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]
+	
+	for Block in Blocks
+		W = Block[0:]
+		
+		for i in range(16, 63)
+			W = W + [add(add(add(sigma1(W[i-2]), W[i-7]), sigma0(W[i-15])), W[i-16])]
+		end for
+		
+		a = H[0]
+		b = H[1]
+		c = H[2]
+		d = H[3]
+		e = H[4]
+		f = H[5]
+		g = H[6]
+		h = H[7]
+		
+		for i in range(0, 63)
+			T1 = add(add(add(add(SIGMA1(e), Ch(e, f, g)), h), K[i]), W[i])
+			T2 = add(SIGMA0(a), Maj(a, b, c))
+			h = g
+			g = f
+			f = e
+			e = add(d, T1)
+			d = c
+			c = b
+			b = a
+			a = add(T1, T2)
+		end for
+		H[0] = add(a, H[0])
+		H[1] = add(b, H[1])
+		H[2] = add(c, H[2])
+		H[3] = add(d, H[3])
+		H[4] = add(e, H[4])
+		H[5] = add(f, H[5])
+		H[6] = add(g, H[6])
+		H[7] = add(h, H[7])
+	end for
+	
+	hexTable = "0123456789abcdef"
+	hash = ""
+	for i in H.indexes
+		for j in range(7)
+			hash = hash + hexTable[floor(H[i]/16^j) % 16]
+		end for
+	end for
+	return hash
+end function
+
+// 
+// Source: https://github.com/Finko42/GreyHack
+// Key is a string of 16 characters
+// Plaintext can be any length < 1,000,000
+// Two choices: "encrypt" or "decrypt"
+aes128 = function(choice, key, text)
+
+    if typeof(key) != "string" then return null
+    if key.len != 16 then return null
+    if typeof(text) != "string" then return null
+    if typeof(choice) != "string" then return null
+
+    byte_key = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    for i in key.indexes
+            byte_key[i] = key[i].code
+    end for
+    key = byte_key[0:]
+
+    // Define lookup tables
+    Sbox = []
+    Sbox=Sbox+[99,124,119,123,242,107,111,197,48,1,103,43,254,215,171,118,202,130,201,125,250,89,71,240,173,212,162,175,156,164,114,192,183,253,147,38]
+    Sbox=Sbox+[54,63,247,204,52,165,229,241,113,216,49,21,4,199,35,195,24,150,5,154,7,18,128,226,235,39,178,117,9,131,44,26,27,110,90,160,82,59,214,179]
+    Sbox=Sbox+[41,227,47,132,83,209,0,237,32,252,177,91,106,203,190,57,74,76,88,207,208,239,170,251,67,77,51,133,69,249,2,127,80,60,159,168,81,163,64]
+    Sbox=Sbox+[143,146,157,56,245,188,182,218,33,16,255,243,210,205,12,19,236,95,151,68,23,196,167,126,61,100,93,25,115,96,129,79,220,34,42,144,136,70]
+    Sbox=Sbox+[238,184,20,222,94,11,219,224,50,58,10,73,6,36,92,194,211,172,98,145,149,228,121,231,200,55,109,141,213,78,169,108,86,244,234,101,122,174]
+    Sbox=Sbox+[8,186,120,37,46,28,166,180,198,232,221,116,31,75,189,139,138,112,62,181,102,72,3,246,14,97,53,87,185,134,193,29,158,225,248,152,17,105]
+    Sbox=Sbox+[217,142,148,155,30,135,233,206,85,40,223,140,161,137,13,191,230,66,104,65,153,45,15,176,84,187,22]
+
+    Rcon = [1, 2, 4, 8, 16, 32, 64, 128, 27, 54]
+
+    Mult2 = []
+    Mult2=Mult2+[0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90]
+    Mult2=Mult2+[92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,142,144,146,148,150,152,154,156,158]
+    Mult2=Mult2+[160,162,164,166,168,170,172,174,176,178,180,182,184,186,188,190,192,194,196,198,200,202,204,206,208,210,212,214,216,218,220,222,224]
+    Mult2=Mult2+[226,228,230,232,234,236,238,240,242,244,246,248,250,252,254,27,25,31,29,19,17,23,21,11,9,15,13,3,1,7,5,59,57,63,61,51,49,55,53,43,41]
+    Mult2=Mult2+[47,45,35,33,39,37,91,89,95,93,83,81,87,85,75,73,79,77,67,65,71,69,123,121,127,125,115,113,119,117,107,105,111,109,99,97,103,101,155]
+    Mult2=Mult2+[153,159,157,147,145,151,149,139,137,143,141,131,129,135,133,187,185,191,189,179,177,183,181,171,169,175,173,163,161,167,165,219,217]
+    Mult2=Mult2+[223,221,211,209,215,213,203,201,207,205,195,193,199,197,251,249,255,253,243,241,247,245,235,233,239,237,227,225,231,229]
+
+
+    SubBytes = function(column)
+            column = column[0:]
+            for i in column.indexes
+                    column[i] = Sbox[column[i]]
+            end for
+            return column
+    end function
+
+    WordXor = function(word1, word2)
+            result = [0, 0, 0, 0]
+            for i in result.indexes
+                    result[i] = bitwise("^", word1[i], word2[i])
+            end for
+            return result
+    end function
+
+    AddRoundKey = function(state, key, roundNum)
+            roundKey = key[roundNum*4:roundNum*4+4]
+            return [WordXor(state[0], roundKey[0]), WordXor(state[1], roundKey[1]), WordXor(state[2], roundKey[2]), WordXor(state[3], roundKey[3])]
+    end function
+
+    ExpandKey = function(key)
+            W = [key[0:4], key[4:8], key[8:12], key[12:16]]
+
+            for i in range(4, 40, 4)
+                    W = W + [[], [], [], []]
+                    W[i] = W[i-1][1:] + [W[i-1][0]] // RotWord
+                    W[i] = SubBytes(W[i])
+                    W[i] = WordXor(W[i-4], W[i])
+                    W[i][0] = bitwise("^", Rcon[i/4-1], W[i][0])
+                    for j in range(i+1, i+3)
+                            W[j] = WordXor(W[j-4], W[j-1])
+                    end for
+            end for
+            return W
+    end function
+
+    aesEncrypt = function(key, block) // Expects already formatted block
+            Mult2 = @Mult2
+            key = key[0:]
+            State = block[0:]
+
+            // Declaring functions
+            ShiftRows = function(state)
+                    state = state[0:]
+                    tmp = state[0][1]
+                    state[0][1] = state[1][1]
+                    state[1][1] = state[2][1]
+                    state[2][1] = state[3][1]
+                    state[3][1] = tmp
+
+                    for i in range(1)
+                            tmp = state[0][2]
+                            state[0][2] = state[1][2]
+                            state[1][2] = state[2][2]
+                            state[2][2] = state[3][2]
+                            state[3][2] = tmp
+                    end for
+
+                    tmp = state[3][3]
+                    state[3][3] = state[2][3]
+                    state[2][3] = state[1][3]
+                    state[1][3] = state[0][3]
+                    state[0][3] = tmp
+                    return state
+            end function
+
+            matrix = [[2, 3, 1, 1], [1, 2, 3, 1], [1, 1, 2, 3], [3, 1, 1, 2]]
+
+            MixColumns = function(state)
+                    state = state[0:]
+                    for column in state.indexes
+                            endcolumn = [0, 0, 0, 0]
+                            for i in matrix.indexes
+                                    tmp = state[column][0:]
+                                    for j in matrix[i].indexes
+                                            if matrix[i][j] == 1 then continue
+                                            tmp[j] = Mult2[state[column][j]]
+                                            if matrix[i][j] != 3 then continue
+                                            tmp[j] = bitwise("^", tmp[j], state[column][j])
+                                    end for
+                                    endcolumn[i] = bitwise("^", bitwise("^", bitwise("^", tmp[0], tmp[1]), tmp[2]), tmp[3])
+                            end for
+                            state[column] = endcolumn[0:]
+                    end for
+                    return state
+            end function
+
+            // The algorithm
+            State = AddRoundKey(State, key, 0)
+
+            for round in range(1, 9)
+                    State = [SubBytes(State[0]), SubBytes(State[1]), SubBytes(State[2]), SubBytes(State[3])]
+                    State = ShiftRows(State)
+                    State = MixColumns(State)
+                    State = AddRoundKey(State, key, round)
+            end for
+
+            State = [SubBytes(State[0]), SubBytes(State[1]), SubBytes(State[2]), SubBytes(State[3])]
+            State = ShiftRows(State)
+            State = AddRoundKey(State, key, 10)
+
+            return State
+    end function
+
+
+    aesDecrypt = function(key, block) // Expects already formatted block
+            Mult2 = @Mult2
+            Sbox = @Sbox
+            key = key[0:]
+            State = block[0:]
+
+            // Declare functions
+            InvShiftRows = function(state)
+                    state = state[0:]
+                    tmp = state[3][1]
+                    state[3][1] = state[2][1]
+                    state[2][1] = state[1][1]
+                    state[1][1] = state[0][1]
+                    state[0][1] = tmp
+
+                    for i in range(1)
+                            tmp = state[3][2]
+                            state[3][2] = state[2][2]
+                            state[2][2] = state[1][2]
+                            state[1][2] = state[0][2]
+                            state[0][2] = tmp
+                    end for
+
+                    tmp = state[0][3]
+                    state[0][3] = state[1][3]
+                    state[1][3] = state[2][3]
+                    state[2][3] = state[3][3]
+                    state[3][3] = tmp
+                    return state
+            end function
+
+            InvSubBytes = function(column)
+                    column = column[0:]
+                    for i in column.indexes
+                            column[i] = Sbox.indexOf(column[i])
+                    end for
+                    return column
+            end function
+
+            matrix = [[14, 11, 13, 9], [9, 14, 11, 13], [13, 9, 14, 11], [11, 13, 9, 14]]
+
+            InvMixColumns = function(state)
+                    state = state[0:]
+                    for column in state.indexes
+                            endcolumn = [0, 0, 0, 0]
+                            for i in matrix.indexes
+                                    tmp = state[column][0:]
+                                    for j in matrix[i].indexes
+                                            if matrix[i][j] == 9 then
+                                                    tmp[j] = bitwise("^", Mult2[Mult2[Mult2[state[column][j]]]], state[column][j])
+                                            else if matrix[i][j] == 11 then
+                                                    tmp[j] = bitwise("^", Mult2[bitwise("^", Mult2[Mult2[state[column][j]]], state[column][j])], state[column][j])
+                                            else if matrix[i][j] == 13 then
+                                                    tmp[j] = bitwise("^", Mult2[Mult2[bitwise("^", Mult2[state[column][j]], state[column][j])]], state[column][j])
+                                            else
+                                                    tmp[j] = Mult2[bitwise("^", Mult2[bitwise("^", Mult2[state[column][j]], state[column][j])], state[column][j])]
+                                            end if
+                                    end for
+                                    endcolumn[i] = bitwise("^", bitwise("^", bitwise("^", tmp[0], tmp[1]), tmp[2]), tmp[3])
+                            end for
+                            state[column] = endcolumn[0:]
+                    end for
+                    return state
+            end function
+
+            // The actual algorithm
+            State = AddRoundKey(State, key, 10)
+
+            for round in range(9, 1)
+                    State = InvShiftRows(State)
+                    State = [InvSubBytes(State[0]), InvSubBytes(State[1]), InvSubBytes(State[2]), InvSubBytes(State[3])]
+                    State = AddRoundKey(State, key, round)
+                    State = InvMixColumns(State)
+            end for
+
+            State = InvShiftRows(State)
+            State = [InvSubBytes(State[0]), InvSubBytes(State[1]), InvSubBytes(State[2]), InvSubBytes(State[3])]
+            State = AddRoundKey(State, key, 0)
+
+            return State
+    end function
+
+
+    // Generate IV
+    IV = []
+    for byte in key
+            IV = IV + [floor(rnd(byte)*256)] // Warning: rnd is not cryptographically secure
+    end for
+
+    key = ExpandKey(key)
+
+    b64Table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+    if choice == "encrypt" then
+            Blocks = [[]]
+            b=0
+            for char in text
+                    Blocks[b] = Blocks[b] + [code(char)]
+                    if Blocks[b].len == 16 then
+                            Blocks = Blocks + [[]]
+                            b=b+1
+                    end if
+            end for
+
+            // Pad with CMS (Crytographic Message Syntax)
+            padNum = 16 - Blocks[-1].len
+            for i in range(padNum-1)
+                    Blocks[-1] = Blocks[-1] + [padNum]
+            end for
+
+            // XOR first block with IV
+            for i in IV.indexes
+                    Blocks[0][i] = bitwise("^", Blocks[0][i], IV[i])
+            end for
+
+            // Format blocks
+            for i in Blocks.indexes
+                    Blocks[i] = [Blocks[i][0:4], Blocks[i][4:8], Blocks[i][8:12], Blocks[i][12:16]]
+            end for
+
+            // Encode blocks
+            Blocks[0] = aesEncrypt(key, Blocks[0])
+            if Blocks.len > 1 then
+                    for i in range(1, Blocks.len-1)
+                            for column in Blocks[i].indexes
+                                    for byte in Blocks[i][column].indexes
+                                            Blocks[i][column][byte] = bitwise("^", Blocks[i][column][byte], Blocks[i-1][column][byte])
+                                    end for
+                            end for
+                            Blocks[i] = aesEncrypt(key, Blocks[i])
+                    end for
+            end if
+
+            // Convert blocks to array of bytes
+            arr = []
+            for Block in Blocks
+                    for column in Block
+                            for byte in column
+                                    arr = arr + [byte]
+                            end for
+                    end for
+            end for
+
+            // Convert array into base 64
+            output = ""
+            for i in range(0, arr.len-1, 3)
+                    buffer = arr[i]*65536
+                    if arr.hasIndex(i+1) then
+                            buffer = buffer+arr[i+1]*256
+                            if arr.hasIndex(i+2) then buffer = buffer+arr[i+2]
+                    end if
+
+                    if arr.hasIndex(i+2) then
+                            for j in range(3)
+                                    output = output + b64Table[floor(buffer/64^j)%64]
+                            end for
+                    else
+                            if arr.hasIndex(i+1) then
+                                    for j in range(3,1)
+                                            output = output + b64Table[floor(buffer/64^j)%64]
+                                    end for
+                            else
+                                    for j in range(3,2)
+                                            output = output + b64Table[floor(buffer/64^j)%64]
+                                    end for
+                            end if
+                    end if
+            end for
+            return output
+    end if
+
+    if choice == "decrypt" then
+            if text.len % 4 == 1 then return null
+
+            // Convert base 64 into sextet array
+            s_arr = text.values
+            for i in s_arr.indexes
+                    tmp = b64Table.indexOf(s_arr[i])
+                    if tmp == null then return null
+                    s_arr[i] = tmp
+            end for
+
+            // Convert sextets to bytes
+            b_arr = []
+            for i in range(0, s_arr.len-1, 4)
+                    buffer = s_arr[i]*262144
+                    if s_arr.hasIndex(i+1) then
+                            buffer = buffer+s_arr[i+1]*4096
+                            if s_arr.hasIndex(i+2) then
+                                    buffer = buffer+s_arr[i+2]*64
+                                    if s_arr.hasIndex(i+3) then buffer = buffer+s_arr[i+3]
+                            end if
+                    end if
+
+                    if s_arr.hasIndex(i+3) then
+                            for j in range(2)
+                                    b_arr = b_arr + [floor(buffer/256^j)%256]
+                            end for
+                    else
+                            if s_arr.hasIndex(i+2) then
+                                    for j in range(2,1)
+                                            b_arr = b_arr + [floor(buffer/256^j)%256]
+                                    end for
+                            else
+                                    b_arr = b_arr + [floor(buffer/65526)%256]
+                            end if
+                    end if
+            end for
+
+            // Convert byte array to blocks
+            Blocks = [[]]
+            b=0
+            while b_arr.len > 0
+                    if Blocks[b].len == 16 then
+                            Blocks = Blocks + [[]]
+                            b=b+1
+                    end if
+                    Blocks[b] = Blocks[b] + [b_arr.pull]
+            end while
+            if Blocks[-1].len != 16 then return null
+
+            // Format blocks
+            for i in Blocks.indexes
+                    Blocks[i] = [Blocks[i][0:4], Blocks[i][4:8], Blocks[i][8:12], Blocks[i][12:16]]
+            end for
+
+            // Decode blocks
+            NewBlocks = Blocks[0:]
+            for i in Blocks.indexes
+                    NewBlocks[i] = aesDecrypt(key, Blocks[i])
+            end for
+
+            // XOR blocks
+            for column in Blocks[0].indexes
+                    for byte in Blocks[i][column].indexes
+                            NewBlocks[0][column][byte] = bitwise("^", NewBlocks[0][column][byte], IV[column*4+byte])
+                    end for
+            end for
+            if Blocks.len > 1 then
+                    for i in range(1, Blocks.len-1)
+                            for column in Blocks[i].indexes
+                                    for byte in Blocks[i][column].indexes
+                                            NewBlocks[i][column][byte] = bitwise("^", NewBlocks[i][column][byte], Blocks[i-1][column][byte])
+                                    end for
+                            end for
+                    end for
+            end if
+
+            Blocks = NewBlocks[0:]
+
+            // Convert blocks to array of bytes
+            arr = []
+            for Block in Blocks
+                    for column in Block
+                            for byte in column
+                                    arr = arr + [byte]
+                            end for
+                    end for
+            end for
+
+            // Remove padding
+            if arr[-1] > 16 or arr[-1] == 0 then return null
+            for i in range(arr[-1]-1)
+                    arr.pop
+            end for
+
+            // Convert array to text
+            output = ""
+            for byte in arr
+                    output = output + char(byte)
+            end for
+            return output
+    end if
+
+    return null
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Security functions
+////////////////////////////////////////////////////////////
+
+// 
+// Checks if any of the prohibited characters are in the string
+isInputValid = function(input, prohibited=null)
+    if not prohibited then prohibited = ["<", ">", "\", """", char(10)]
+    for char in prohibited
+        if input.indexOf(char) != null then return false
+    end for
+    return true
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+
+localesCompile = function(languageCode, localeEntries)
+    compiled = deepCopy(localeEntries)
+    for kv in compiled
+        entryName = kv["key"]
+        entry = compiled[entryName]
+        if entry.indexes.indexOf(languageCode) == null then
+            compiled[entryName] = "**"+entryName+" FOR "+languageCode+" IS MISSING**"
+        else
+            compiled[entryName] = entry[languageCode]
+        end if
+    end for
+    return compiled
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// String functions
+////////////////////////////////////////////////////////////
+
+replaceF = function(strF, words)
+    for kv in words
+        wordF = "{"+str(kv["key"])+"}"
+        toReplace = str(kv["value"])
+        strF = strF.replace(wordF, toReplace)
+    end for
+    return strF
+end function
+
+// 
+// format_columns(), but with the first line being colored with headerColor,
+// and all the others with columnsColor
+formatColumnsColored = function(columns, headerColor, columnsColor)
+    columns = format_columns(columns)
+    lines = columns.split(char(10))
+    lines[0] = "<color="+headerColor+">"+lines[0]
+    i = 1; while i < lines.len; i = i + 1
+        lines[i-1] = "<color="+columnsColor+">"+lines[i-1]
+    end while
+    if lines.hasIndex(0) then
+        lines.insert(1, "<color="+headerColor+">"+("="*((lines[0].len) - ("<color>="+headerColor+">").len)))
+    end if
+    return lines.join(char(10))
+end function
+
+// // 
+// // Escapes print formatting
+escape = function(str)
+    sequences = {
+        "<noparse>": "<nоparse>",
+        "</noparse>": "</nоparse>",
+        "\\n": "\</noparse>n<noparse>",
+    }
+    for kv in sequences
+        str = str.replace(kv["key"], kv["value"])
+    end for
+    return "<noparse>"+str+"</noparse>"
+end function
+
+randomString = function(length)
+    ascii = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".values
+    generated = ""
+    i = 0; while i < length; i = i + 1
+        ascii.shuffle
+        generated = generated + ascii[0]
+    end while
+    return generated
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Number functions
+////////////////////////////////////////////////////////////
+
+randomNumber = function(min, max)
+    return floor(rnd * (max - min + 1) + min)
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Email functions
+////////////////////////////////////////////////////////////
+
+getMailId = function(mail)
+    parts = mail.split(char(10))
+    return parts[2].replace("MailID:", "").trim
+end function
+
+getMailAuthor = function(mail)
+    parts = mail.split(char(10))
+    return parts[3].replace("From:", "").trim
+end function
+
+getMailSubject = function(mail)
+    parts = mail.split(char(10))
+    return parts[4].replace("Subject:", "").trim
+end function
+
+getMailMessage = function(metamail, mailId)
+    content = metamail.read(mailId)
+    if content == "Mail not found" then return
+    lines = content.split(char(10))
+    return lines[3:(lines.len-2)].join(char(10))
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Host
+////////////////////////////////////////////////////////////
+
+// 
+// Loads all the libraries it can find on host
+// Returns the following:
+// libs = {
+//     "libName1": libObject,
+//     "libName2": libObject,
+//     ...
+// }
+loadLibraries = function(metaxploit=null)
+    libs = {}
+    versions = {}
+
+    fd = get_shell.host_computer.File("/")
+    files = [] + fd.get_folders + fd.get_files
+    while files.len > 0
+        fd = files.pull
+        if fd.is_folder then
+            files = fd.get_folders + fd.get_files + files
+            continue
+        end if
+
+        library = include_lib(fd.path)
+        if not library then continue
+
+        libName = typeof(library).lower
+        if libName == "service" then continue
+
+        for removal in ["lib", "client"]
+            libName = libName.replace(removal, "")
+        end for
+        if not metaxploit and libName == "metaxploit" then return loadLibraries(library)
+
+        if metaxploit then
+            metalib = metaxploit.load(fd.path)
+            if versions.indexes.indexOf(libName) == null then
+                versions[libName] = metalib.version
+                comparing = [metalib.version, metalib.version]
+            else
+                comparing = [versions[libName], metalib.version]
+            end if
+            comparing.sort
+            comparing.reverse
+            libs[libName] = library
+            versions[libName] = comparing[0]
+        else
+            libs[libName] = library
+        end if
+    end while
+
+    return libs
+end function
+
+parseParameters = function(params)
+    noflag = "noflag"
+    parsed = {
+        noflag: [],
+    }
+
+    currentFlag = noflag
+    for param in params
+        if param.hasIndex(0) and param.hasIndex(1) and param[0:2] == "--" and isInputValid(param) then
+            currentFlag = param
+            parsed[currentFlag] = []
+        else if isInputValid(param) then
+            parsed[currentFlag].push(param)
+        end if
+    end for
+
+    return parsed
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Shell
+////////////////////////////////////////////////////////////
+
+// 
+// Finds the executed program by the identificator thrown with get_custom_object
+// lightMode enables searching the binaries only by program name
+findMyself = function(shell, identificator, args, lightMode=false)
+    computer = shell.host_computer
+    file = computer.File("/")
+
+    fd = file
+    files = [] + fd.get_folders + fd.get_files
+    fdMyself = computer.File(program_path)
+    if fdMyself then files = [fdMyself] + files
+
+    while files.len > 0
+        fd = files.pull
+        if fd.is_folder then
+            files = fd.get_folders + fd.get_files + files
+            continue
+        end if
+
+        if fd.is_binary then
+            shared = get_custom_object
+            if not fd.has_permission("x") then continue
+            if lightMode then
+                programName = launch_path.split("/")[-1]
+                if fd.name != programName then continue
+            end if
+            shell.launch(fd.path, args)
+            if shared.indexes.indexOf("identificator") != null then
+                if shared.identificator == identificator then return fd
+            end if
+        end if
+    end while
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Computer
+////////////////////////////////////////////////////////////
+
+// 
+// Iterates file object to the latest non-corrupt one
+iterateToLatestAccessiblePath = function(computer, fd)
+    path = fd.path
+    while true
+        fd = computer.File(path)
+        if fd then break
+        path = parent_path(path) 
+    end while
+    return fd
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// File descriptor
+////////////////////////////////////////////////////////////
+
+// 
+// Iterates file object to some existant path
+// Does not support any kind of super cow powers (even "..")
+iterateToPath = function(fd, path)
+    if path == "" then return
+    
+    parts = path.split("/")
+
+    if path[0] == "/" then
+        while fd.parent
+            fd = fd.parent
+        end while
+        if path == "/" then return fd
+        parts.pull
+    end if
+
+    for part in parts
+        if part == "" then
+            if not fd.is_folder then return
+            parts.remove(parts.indexOf(""))
+            if parts.indexOf("") == null then return fd
+            return
+        end if
+
+        if not fd.is_folder then return
+        found = false
+        for file in [] + fd.get_folders + fd.get_files
+            if file.name == part then
+                fd = file
+                found = true
+                break
+            end if
+        end for
+        if not found then return
+    end for
+
+    return fd
+end function
+
+// 
+// Returns true if the file got deleted at runtime but is still in memory
+isFdCorrupt = function(fd)
+    return fd.path != "/" and not fd.parent
+end function
+
+// 
+// Checks what access we have got on file object
+// Returns "undetermined" if the access if not root and there is no /home
+checkPermissions = function(fd)
+    while fd.parent
+        fd = fd.parent
+    end while
+
+    hasRootPermissions = true
+    for permission in "rwx"
+        if not fd.has_permission(permission) then 
+            hasRootPermissions = false
+            break
+        end if
+    end for
+    if hasRootPermissions then return "root"
+
+    for folder in fd.get_folders
+        if folder.name == "home" then
+            fd = folder
+            break
+        end if
+    end for
+    if fd.path != "/home" then return "undetermined"
+
+    for folder in fd.get_folders
+        if folder.name == "guest" then continue
+        hasUserPermissions = true
+        for permission in "rwx"
+            if not folder.has_permission(permission) then 
+                hasUserPermissions = false
+                break
+            end if
+        end for
+        if hasUserPermissions then return folder.name
+    end for
+
+    return "guest"
+end function
+
+// 
+// Iterates file object until we find the folder with the needed permissions
+findPermissivePath = function(fd, perms)
+    while fd.parent
+        fd = fd.parent
+    end while
+
+    files = [] + fd.get_folders
+    while files.len > 0
+        fd = files.pull
+        if fd.is_folder then files = fd.get_folders + files
+
+        hasPermission = true
+        for perm in perms
+            if not fd.has_permission(perm) then
+                hasPermission = false
+                break
+            end if
+        end for
+        if hasPermission then return fd
+    end while
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Metaxploit
+////////////////////////////////////////////////////////////
+
+//
+// Source: https://www.greyrepo.xyz/posts/scan-class
+// Scans library and returs a list of vulnerabilities
+// Returns the following:
+// vulnerability = {
+//     "value": string,
+//     "requirements": [string],
+// }
+// vulnerabilities = [vulnerability]
+scanMemoryAddress = function(metaxploit, metalib, address)
+    scanResult = metaxploit.scan_address(metalib, address)
+    if not scanResult then return
+
+	vulnerabilities = []
+	while true
+		start = scanResult.indexOf("<b>")
+		if start == null then break
+		
+		end_ = scanResult.indexOf("</b>")
+		value = slice(scanResult, start+3, end_)
+		
+		scanResult = scanResult[end_+5:]
+		scanResult = scanResult[scanResult.indexOf(".")+1:]
+		
+		scanResultLines = scanResult.split(char(10))[1:]
+		if scanResultLines[0].indexOf("*") != null then
+			requirements = scanResultLines[:scanResultLines.indexOf("")]
+		else	
+			requirements = []
+		end if
+		
+		if requirements.len >= 1 then
+			scanResult = scanResult[scanResult.indexOf(requirements[-1])+requirements[-1].len+1:]
+		end if
+        
+		vulnerabilities.push({"value": value, "requirements": requirements})
+	end while
+	
+	return vulnerabilities
+end function
