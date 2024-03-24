@@ -186,6 +186,7 @@ Console.cmdloop = function
 
         // 
         // Various handlers that get executed each loop
+        RuntimeHelpers.reloadIfNetworkAppeared
         IntrinsicsHelpers.tryToFixFdIfCorrupted
         MainframeHelpers.warnUserIfCouldNotConnectToMainframe
 
@@ -420,6 +421,17 @@ MainframeHelpers.isAlive = function
 end function
 
 MainframeHelpers.warnUserIfCouldNotConnectToMainframe = function
-    if not Config.mainframe or MainframeHelpers.isAlive then return
-    Console.warning("Could not connect to the mainframe! You've likely been compromised!")
+    if not get_shell.host_computer.is_network_active or not Config.mainframe or MainframeHelpers.isAlive then return
+    Console.warning(Messages.WarningDeadMainframe)
+end function
+
+MainframeHelpers.applyPatch = function(patchPath)
+    shared = get_custom_object
+    shared.Marinette = globals
+    mainframeShell = MainframeHelpers.connect
+    if not mainframeShell then return false
+    result = mainframeShell.launch(patchPath)
+    shared.remove("Marinette")
+    if not result or result isa string then return false
+    return true
 end function

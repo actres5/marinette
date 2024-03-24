@@ -28,6 +28,7 @@ end function
 // or checks the password from parameters
 RuntimeHelpers.runPasswordProtectionDialogIfNeeded = function
     if Var.parameters.indexes.indexOf("--password") == null or not Var.parameters["--password"] then
+        Console.log(Messages.LogPleaseEnterPassword)
         userPassword = Console.input("# ", true)
         if not userPassword then exit(Console.error(Messages.ErrorNoPassword))
     else
@@ -60,9 +61,17 @@ RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
     Console.log(Messages.LogRuntimeLoading)
 
 
-    computer = get_shell.host_computer
-    shared = get_custom_object
+    pwd = Intrinsics.file.path
+
+    Intrinsics.shell = get_shell
+    Intrinsics.computer = Intrinsics.shell.host_computer
+    Intrinsics.file = Intrinsics.computer.File("/")
+
+    fd = iterateToPath(Intrinsics.file, pwd)
+    if fd then Intrinsics.file = fd
+
     
+    computer = get_shell.host_computer
     Intrinsics.publicAddress = null
     Intrinsics.localAddress = null
     if computer.is_network_active then
@@ -78,6 +87,8 @@ RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
         Libs[kv["key"]] = kv["value"]
     end for
 
+
+    shared = get_custom_object
 
     if shared.indexes.indexOf("Var") != null then 
         globals.Var = deepCopy(shared.Var)
@@ -158,7 +169,7 @@ RuntimeHelpers.startMarinette = function(shell, marinettePath)
 end function
 
 RuntimeHelpers.assignMainframeIfConfigured = function
-    if not Config.mainframe then return
+    if not Config.mainframe or not get_shell.host_computer.is_network_active then return
     data = aes128("decrypt", passwordToAesKey(Var.password), Config.mainframe)
     parts = data.split("@")
     Mainframe.protocol = parts[0]
@@ -166,4 +177,19 @@ RuntimeHelpers.assignMainframeIfConfigured = function
     Mainframe.port = parts[2].to_int
     Mainframe.user = parts[3]
     Mainframe.password = parts[4]
+
+    total = Config.patches.len
+    applied = 0
+    for patch in Config.patches
+        if MainframeHelpers.applyPatch(patch) then applied = applied + 1
+    end for
+    Console.log(Messages.LogAppliedPatches, {"APPLIED": applied, "TOTAL": total})
+end function
+
+RuntimeHelpers.reloadIfNetworkAppeared = function
+    if (Intrinsics.publicAddress and Intrinsics.localAddress) or not get_shell.host_computer.is_network_active then return
+    if Intrinsics.isConnectionRemote then return
+    Console.log(Messages.LogReloadingNetworkAppeared)
+    RuntimeHelpers.makeNeccessaryRuntimeAssigns
+    RuntimeHelpers.checkIfEverythingIsAssigned
 end function

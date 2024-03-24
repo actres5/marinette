@@ -984,9 +984,8 @@ command "wificrack", [], Const.host, Messages.HelpEntryNetcrack, function(argume
 end function
 
 
-command "meow", ["mpm"], Const.host, Messages.HelpEntryMeow, function(arguments)
+command "meow", ["mpm"], Const.any, Messages.HelpEntryMeow, function(arguments)
     Conditions.argumentsMoreThan(arguments, 1)
-    Conditions.host
     Conditions.network
     Conditions.apt
     
@@ -1032,7 +1031,7 @@ command "meow", ["mpm"], Const.host, Messages.HelpEntryMeow, function(arguments)
     else if "download".indexOf(command) == 0 then
         apt.update
         for package in fmap(@str, arguments)
-            result = apt.install(package, fd.path)
+            result = apt.install(package)
             if result and result isa string then
                 Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "install", "ERROR": result}))
             else

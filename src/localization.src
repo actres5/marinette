@@ -204,6 +204,10 @@ Locales.SpecialThanksAndCredits = {}
 Locales.YouAreAllAwesome = {}
 Locales.HelpEntryReload = {}
 Locales.HelpCategoryPlugins = {}
+Locales.LogPleaseEnterPassword = {}
+Locales.WarningDeadMainframe = {}
+Locales.LogAppliedPatches = {}
+Locales.LogReloadingNetworkAppeared = {}
 
 
 
@@ -406,7 +410,11 @@ Locales.ErrorGenerateAtCompileTime[_language] = "Generate all of the above at co
 Locales.SpecialThanksAndCredits[_language] = "Special thanks and credits goes to:"
 Locales.YouAreAllAwesome[_language] = "You are all awesome! Thank you a lot, Marinette wouldn't be what it is if it weren't for you people!"
 Locales.HelpEntryReload[_language] = "Load and check various systems"
-Locales.HelpCategoryPlugins[_language] = "Plugins"
+Locales.HelpCategoryPlugins[_language] = "Patches"
+Locales.LogPleaseEnterPassword[_language] = "Please enter a password to continue"
+Locales.WarningDeadMainframe[_language] = "Could not connect to the mainframe! You've likely been compromised!"
+Locales.LogAppliedPatches[_language] = "Applied {APPLIED}/{TOTAL} mainframe patches"
+Locales.LogReloadingNetworkAppeared[_language] = "Detected network change. Reloading..."
 
 
 
@@ -798,6 +806,11 @@ Locales.ErrorGenerateAtCompileTime[_language] = "Сгенерируйте всё
 Locales.SpecialThanksAndCredits[_language] = "Особые благодарности выражены:"
 Locales.YouAreAllAwesome[_language] = "Вы все замечательные! Большое вам спасибо, Маринет не была бы тем чем она является если бы не вы!"
 Locales.HelpEntryReload[_language] = "Запустить и проверить различные системы"
+Locales.HelpCategoryPlugins[_language] = "Патчи"
+Locales.LogPleaseEnterPassword[_language] = "Пожалуйста, введите пароль чтобы продолжить"
+Locales.WarningDeadMainframe[_language] = "Не удалось подключиться к мейнфрейму! Возможно вас скомпрометировали!"
+Locales.LogAppliedPatches[_language] = "Применено {APPLIED}/{TOTAL} патчей мейнфрейма"
+Locales.LogReloadingNetworkAppeared[_language] = "Обнаружено изменение сети. Перезагружаюсь..."
 
 
 
@@ -998,4 +1011,4 @@ Locales.ErrorIsIncorrectlySet[_language] = "<i>{VALUE}</i> має не вірн�
 Locales.ErrorGenerateAtCompileTime[_language] = "Зазначте все вище сказане під час компиляції! Вимикаюся"
 Locales.SpecialThanksAndCredits[_language] = "Подяки і авторство: "
 Locales.YouAreAllAwesome[_language] = "Ви всі прекрасні! Щиро дякую, Marinette не була би тим чим вона є, якщо вона не була б для вас!"
-Locales.HelpCategoryPlugins[_language] = "Розширення"
+Locales.HelpCategoryPlugins[_language] = "Патчі"
