@@ -1,8 +1,3 @@
-// 
-// Source: https://github.com/Finko42/GreyHack
-// Key is a string of 16 characters
-// Plaintext can be any length < 1,000,000
-// Two choices: "encrypt" or "decrypt"
 aes128 = function(choice, key, text)
 
     if typeof(key) != "string" then return null
@@ -12,7 +7,7 @@ aes128 = function(choice, key, text)
 
     byte_key = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     for i in key.indexes
-            byte_key[i] = key[i].code
+	    byte_key[i] = key[i].code
     end for
     key = byte_key[0:]
 
@@ -39,198 +34,198 @@ aes128 = function(choice, key, text)
 
 
     SubBytes = function(column)
-            column = column[0:]
-            for i in column.indexes
-                    column[i] = Sbox[column[i]]
-            end for
-            return column
+	    column = column[0:]
+	    for i in column.indexes
+		    column[i] = Sbox[column[i]]
+	    end for
+	    return column
     end function
 
     WordXor = function(word1, word2)
-            result = [0, 0, 0, 0]
-            for i in result.indexes
-                    result[i] = bitwise("^", word1[i], word2[i])
-            end for
-            return result
+	    result = [0, 0, 0, 0]
+	    for i in result.indexes
+		    result[i] = bitwise("^", word1[i], word2[i])
+	    end for
+	    return result
     end function
 
     AddRoundKey = function(state, key, roundNum)
-            roundKey = key[roundNum*4:roundNum*4+4]
-            return [WordXor(state[0], roundKey[0]), WordXor(state[1], roundKey[1]), WordXor(state[2], roundKey[2]), WordXor(state[3], roundKey[3])]
+	    roundKey = key[roundNum*4:roundNum*4+4]
+	    return [WordXor(state[0], roundKey[0]), WordXor(state[1], roundKey[1]), WordXor(state[2], roundKey[2]), WordXor(state[3], roundKey[3])]
     end function
 
     ExpandKey = function(key)
-            W = [key[0:4], key[4:8], key[8:12], key[12:16]]
+	    W = [key[0:4], key[4:8], key[8:12], key[12:16]]
 
-            for i in range(4, 40, 4)
-                    W = W + [[], [], [], []]
-                    W[i] = W[i-1][1:] + [W[i-1][0]] // RotWord
-                    W[i] = SubBytes(W[i])
-                    W[i] = WordXor(W[i-4], W[i])
-                    W[i][0] = bitwise("^", Rcon[i/4-1], W[i][0])
-                    for j in range(i+1, i+3)
-                            W[j] = WordXor(W[j-4], W[j-1])
-                    end for
-            end for
-            return W
+	    for i in range(4, 40, 4)
+		    W = W + [[], [], [], []]
+		    W[i] = W[i-1][1:] + [W[i-1][0]] // RotWord
+		    W[i] = SubBytes(W[i])
+		    W[i] = WordXor(W[i-4], W[i])
+		    W[i][0] = bitwise("^", Rcon[i/4-1], W[i][0])
+		    for j in range(i+1, i+3)
+			    W[j] = WordXor(W[j-4], W[j-1])
+		    end for
+	    end for
+	    return W
     end function
 
     aesEncrypt = function(key, block) // Expects already formatted block
-            Mult2 = @Mult2
-            key = key[0:]
-            State = block[0:]
+	    Mult2 = @Mult2
+	    key = key[0:]
+	    State = block[0:]
 
-            // Declaring functions
-            ShiftRows = function(state)
-                    state = state[0:]
-                    tmp = state[0][1]
-                    state[0][1] = state[1][1]
-                    state[1][1] = state[2][1]
-                    state[2][1] = state[3][1]
-                    state[3][1] = tmp
+	    // Declaring functions
+	    ShiftRows = function(state)
+		    state = state[0:]
+		    tmp = state[0][1]
+		    state[0][1] = state[1][1]
+		    state[1][1] = state[2][1]
+		    state[2][1] = state[3][1]
+		    state[3][1] = tmp
 
-                    for i in range(1)
-                            tmp = state[0][2]
-                            state[0][2] = state[1][2]
-                            state[1][2] = state[2][2]
-                            state[2][2] = state[3][2]
-                            state[3][2] = tmp
-                    end for
+		    for i in range(1)
+			    tmp = state[0][2]
+			    state[0][2] = state[1][2]
+			    state[1][2] = state[2][2]
+			    state[2][2] = state[3][2]
+			    state[3][2] = tmp
+		    end for
 
-                    tmp = state[3][3]
-                    state[3][3] = state[2][3]
-                    state[2][3] = state[1][3]
-                    state[1][3] = state[0][3]
-                    state[0][3] = tmp
-                    return state
-            end function
+		    tmp = state[3][3]
+		    state[3][3] = state[2][3]
+		    state[2][3] = state[1][3]
+		    state[1][3] = state[0][3]
+		    state[0][3] = tmp
+		    return state
+	    end function
 
-            matrix = [[2, 3, 1, 1], [1, 2, 3, 1], [1, 1, 2, 3], [3, 1, 1, 2]]
+	    matrix = [[2, 3, 1, 1], [1, 2, 3, 1], [1, 1, 2, 3], [3, 1, 1, 2]]
 
-            MixColumns = function(state)
-                    state = state[0:]
-                    for column in state.indexes
-                            endcolumn = [0, 0, 0, 0]
-                            for i in matrix.indexes
-                                    tmp = state[column][0:]
-                                    for j in matrix[i].indexes
-                                            if matrix[i][j] == 1 then continue
-                                            tmp[j] = Mult2[state[column][j]]
-                                            if matrix[i][j] != 3 then continue
-                                            tmp[j] = bitwise("^", tmp[j], state[column][j])
-                                    end for
-                                    endcolumn[i] = bitwise("^", bitwise("^", bitwise("^", tmp[0], tmp[1]), tmp[2]), tmp[3])
-                            end for
-                            state[column] = endcolumn[0:]
-                    end for
-                    return state
-            end function
+	    MixColumns = function(state)
+		    state = state[0:]
+		    for column in state.indexes
+			    endcolumn = [0, 0, 0, 0]
+			    for i in matrix.indexes
+				    tmp = state[column][0:]
+				    for j in matrix[i].indexes
+					    if matrix[i][j] == 1 then continue
+					    tmp[j] = Mult2[state[column][j]]
+					    if matrix[i][j] != 3 then continue
+					    tmp[j] = bitwise("^", tmp[j], state[column][j])
+				    end for
+				    endcolumn[i] = bitwise("^", bitwise("^", bitwise("^", tmp[0], tmp[1]), tmp[2]), tmp[3])
+			    end for
+			    state[column] = endcolumn[0:]
+		    end for
+		    return state
+	    end function
 
-            // The algorithm
-            State = AddRoundKey(State, key, 0)
+	    // The algorithm
+	    State = AddRoundKey(State, key, 0)
 
-            for round in range(1, 9)
-                    State = [SubBytes(State[0]), SubBytes(State[1]), SubBytes(State[2]), SubBytes(State[3])]
-                    State = ShiftRows(State)
-                    State = MixColumns(State)
-                    State = AddRoundKey(State, key, round)
-            end for
+	    for round in range(1, 9)
+		    State = [SubBytes(State[0]), SubBytes(State[1]), SubBytes(State[2]), SubBytes(State[3])]
+		    State = ShiftRows(State)
+		    State = MixColumns(State)
+		    State = AddRoundKey(State, key, round)
+	    end for
 
-            State = [SubBytes(State[0]), SubBytes(State[1]), SubBytes(State[2]), SubBytes(State[3])]
-            State = ShiftRows(State)
-            State = AddRoundKey(State, key, 10)
+	    State = [SubBytes(State[0]), SubBytes(State[1]), SubBytes(State[2]), SubBytes(State[3])]
+	    State = ShiftRows(State)
+	    State = AddRoundKey(State, key, 10)
 
-            return State
+	    return State
     end function
 
 
     aesDecrypt = function(key, block) // Expects already formatted block
-            Mult2 = @Mult2
-            Sbox = @Sbox
-            key = key[0:]
-            State = block[0:]
+	    Mult2 = @Mult2
+	    Sbox = @Sbox
+	    key = key[0:]
+	    State = block[0:]
 
-            // Declare functions
-            InvShiftRows = function(state)
-                    state = state[0:]
-                    tmp = state[3][1]
-                    state[3][1] = state[2][1]
-                    state[2][1] = state[1][1]
-                    state[1][1] = state[0][1]
-                    state[0][1] = tmp
+	    // Declare functions
+	    InvShiftRows = function(state)
+		    state = state[0:]
+		    tmp = state[3][1]
+		    state[3][1] = state[2][1]
+		    state[2][1] = state[1][1]
+		    state[1][1] = state[0][1]
+		    state[0][1] = tmp
 
-                    for i in range(1)
-                            tmp = state[3][2]
-                            state[3][2] = state[2][2]
-                            state[2][2] = state[1][2]
-                            state[1][2] = state[0][2]
-                            state[0][2] = tmp
-                    end for
+		    for i in range(1)
+			    tmp = state[3][2]
+			    state[3][2] = state[2][2]
+			    state[2][2] = state[1][2]
+			    state[1][2] = state[0][2]
+			    state[0][2] = tmp
+		    end for
 
-                    tmp = state[0][3]
-                    state[0][3] = state[1][3]
-                    state[1][3] = state[2][3]
-                    state[2][3] = state[3][3]
-                    state[3][3] = tmp
-                    return state
-            end function
+		    tmp = state[0][3]
+		    state[0][3] = state[1][3]
+		    state[1][3] = state[2][3]
+		    state[2][3] = state[3][3]
+		    state[3][3] = tmp
+		    return state
+	    end function
 
-            InvSubBytes = function(column)
-                    column = column[0:]
-                    for i in column.indexes
-                            column[i] = Sbox.indexOf(column[i])
-                    end for
-                    return column
-            end function
+	    InvSubBytes = function(column)
+		    column = column[0:]
+		    for i in column.indexes
+			    column[i] = Sbox.indexOf(column[i])
+		    end for
+		    return column
+	    end function
 
-            matrix = [[14, 11, 13, 9], [9, 14, 11, 13], [13, 9, 14, 11], [11, 13, 9, 14]]
+	    matrix = [[14, 11, 13, 9], [9, 14, 11, 13], [13, 9, 14, 11], [11, 13, 9, 14]]
 
-            InvMixColumns = function(state)
-                    state = state[0:]
-                    for column in state.indexes
-                            endcolumn = [0, 0, 0, 0]
-                            for i in matrix.indexes
-                                    tmp = state[column][0:]
-                                    for j in matrix[i].indexes
-                                            if matrix[i][j] == 9 then
-                                                    tmp[j] = bitwise("^", Mult2[Mult2[Mult2[state[column][j]]]], state[column][j])
-                                            else if matrix[i][j] == 11 then
-                                                    tmp[j] = bitwise("^", Mult2[bitwise("^", Mult2[Mult2[state[column][j]]], state[column][j])], state[column][j])
-                                            else if matrix[i][j] == 13 then
-                                                    tmp[j] = bitwise("^", Mult2[Mult2[bitwise("^", Mult2[state[column][j]], state[column][j])]], state[column][j])
-                                            else
-                                                    tmp[j] = Mult2[bitwise("^", Mult2[bitwise("^", Mult2[state[column][j]], state[column][j])], state[column][j])]
-                                            end if
-                                    end for
-                                    endcolumn[i] = bitwise("^", bitwise("^", bitwise("^", tmp[0], tmp[1]), tmp[2]), tmp[3])
-                            end for
-                            state[column] = endcolumn[0:]
-                    end for
-                    return state
-            end function
+	    InvMixColumns = function(state)
+		    state = state[0:]
+		    for column in state.indexes
+			    endcolumn = [0, 0, 0, 0]
+			    for i in matrix.indexes
+				    tmp = state[column][0:]
+				    for j in matrix[i].indexes
+					    if matrix[i][j] == 9 then
+						    tmp[j] = bitwise("^", Mult2[Mult2[Mult2[state[column][j]]]], state[column][j])
+					    else if matrix[i][j] == 11 then
+						    tmp[j] = bitwise("^", Mult2[bitwise("^", Mult2[Mult2[state[column][j]]], state[column][j])], state[column][j])
+					    else if matrix[i][j] == 13 then
+						    tmp[j] = bitwise("^", Mult2[Mult2[bitwise("^", Mult2[state[column][j]], state[column][j])]], state[column][j])
+					    else
+						    tmp[j] = Mult2[bitwise("^", Mult2[bitwise("^", Mult2[state[column][j]], state[column][j])], state[column][j])]
+					    end if
+				    end for
+				    endcolumn[i] = bitwise("^", bitwise("^", bitwise("^", tmp[0], tmp[1]), tmp[2]), tmp[3])
+			    end for
+			    state[column] = endcolumn[0:]
+		    end for
+		    return state
+	    end function
 
-            // The actual algorithm
-            State = AddRoundKey(State, key, 10)
+	    // The actual algorithm
+	    State = AddRoundKey(State, key, 10)
 
-            for round in range(9, 1)
-                    State = InvShiftRows(State)
-                    State = [InvSubBytes(State[0]), InvSubBytes(State[1]), InvSubBytes(State[2]), InvSubBytes(State[3])]
-                    State = AddRoundKey(State, key, round)
-                    State = InvMixColumns(State)
-            end for
+	    for round in range(9, 1)
+		    State = InvShiftRows(State)
+		    State = [InvSubBytes(State[0]), InvSubBytes(State[1]), InvSubBytes(State[2]), InvSubBytes(State[3])]
+		    State = AddRoundKey(State, key, round)
+		    State = InvMixColumns(State)
+	    end for
 
-            State = InvShiftRows(State)
-            State = [InvSubBytes(State[0]), InvSubBytes(State[1]), InvSubBytes(State[2]), InvSubBytes(State[3])]
-            State = AddRoundKey(State, key, 0)
+	    State = InvShiftRows(State)
+	    State = [InvSubBytes(State[0]), InvSubBytes(State[1]), InvSubBytes(State[2]), InvSubBytes(State[3])]
+	    State = AddRoundKey(State, key, 0)
 
-            return State
+	    return State
     end function
 
 
     // Generate IV
     IV = []
     for byte in key
-            IV = IV + [floor(rnd(byte)*256)] // Warning: rnd is not cryptographically secure
+	    IV = IV + [floor(rnd(byte)*256)] // Warning: rnd is not cryptographically secure
     end for
 
     key = ExpandKey(key)
@@ -238,197 +233,242 @@ aes128 = function(choice, key, text)
     b64Table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
     if choice == "encrypt" then
-            Blocks = [[]]
-            b=0
-            for char in text
-                    Blocks[b] = Blocks[b] + [code(char)]
-                    if Blocks[b].len == 16 then
-                            Blocks = Blocks + [[]]
-                            b=b+1
-                    end if
-            end for
+	    Blocks = [[]]
+	    b=0
+	    for char in text
+		    Blocks[b] = Blocks[b] + [code(char)]
+		    if Blocks[b].len == 16 then
+			    Blocks = Blocks + [[]]
+			    b=b+1
+		    end if
+	    end for
 
-            // Pad with CMS (Crytographic Message Syntax)
-            padNum = 16 - Blocks[-1].len
-            for i in range(padNum-1)
-                    Blocks[-1] = Blocks[-1] + [padNum]
-            end for
+	    // Pad with CMS (Crytographic Message Syntax)
+	    padNum = 16 - Blocks[-1].len
+	    for i in range(padNum-1)
+		    Blocks[-1] = Blocks[-1] + [padNum]
+	    end for
 
-            // XOR first block with IV
-            for i in IV.indexes
-                    Blocks[0][i] = bitwise("^", Blocks[0][i], IV[i])
-            end for
+	    // XOR first block with IV
+	    for i in IV.indexes
+		    Blocks[0][i] = bitwise("^", Blocks[0][i], IV[i])
+	    end for
 
-            // Format blocks
-            for i in Blocks.indexes
-                    Blocks[i] = [Blocks[i][0:4], Blocks[i][4:8], Blocks[i][8:12], Blocks[i][12:16]]
-            end for
+	    // Format blocks
+	    for i in Blocks.indexes
+		    Blocks[i] = [Blocks[i][0:4], Blocks[i][4:8], Blocks[i][8:12], Blocks[i][12:16]]
+	    end for
 
-            // Encode blocks
-            Blocks[0] = aesEncrypt(key, Blocks[0])
-            if Blocks.len > 1 then
-                    for i in range(1, Blocks.len-1)
-                            for column in Blocks[i].indexes
-                                    for byte in Blocks[i][column].indexes
-                                            Blocks[i][column][byte] = bitwise("^", Blocks[i][column][byte], Blocks[i-1][column][byte])
-                                    end for
-                            end for
-                            Blocks[i] = aesEncrypt(key, Blocks[i])
-                    end for
-            end if
+	    // Encode blocks
+	    Blocks[0] = aesEncrypt(key, Blocks[0])
+	    if Blocks.len > 1 then
+		    for i in range(1, Blocks.len-1)
+			    for column in Blocks[i].indexes
+				    for byte in Blocks[i][column].indexes
+					    Blocks[i][column][byte] = bitwise("^", Blocks[i][column][byte], Blocks[i-1][column][byte])
+				    end for
+			    end for
+			    Blocks[i] = aesEncrypt(key, Blocks[i])
+		    end for
+	    end if
 
-            // Convert blocks to array of bytes
-            arr = []
-            for Block in Blocks
-                    for column in Block
-                            for byte in column
-                                    arr = arr + [byte]
-                            end for
-                    end for
-            end for
+	    // Convert blocks to array of bytes
+	    arr = []
+	    for Block in Blocks
+		    for column in Block
+			    for byte in column
+				    arr = arr + [byte]
+			    end for
+		    end for
+	    end for
 
-            // Convert array into base 64
-            output = ""
-            for i in range(0, arr.len-1, 3)
-                    buffer = arr[i]*65536
-                    if arr.hasIndex(i+1) then
-                            buffer = buffer+arr[i+1]*256
-                            if arr.hasIndex(i+2) then buffer = buffer+arr[i+2]
-                    end if
+	    // Convert array into base 64
+	    output = ""
+	    for i in range(0, arr.len-1, 3)
+		    buffer = arr[i]*65536
+		    if arr.hasIndex(i+1) then
+			    buffer = buffer+arr[i+1]*256
+			    if arr.hasIndex(i+2) then buffer = buffer+arr[i+2]
+		    end if
 
-                    if arr.hasIndex(i+2) then
-                            for j in range(3)
-                                    output = output + b64Table[floor(buffer/64^j)%64]
-                            end for
-                    else
-                            if arr.hasIndex(i+1) then
-                                    for j in range(3,1)
-                                            output = output + b64Table[floor(buffer/64^j)%64]
-                                    end for
-                            else
-                                    for j in range(3,2)
-                                            output = output + b64Table[floor(buffer/64^j)%64]
-                                    end for
-                            end if
-                    end if
-            end for
-            return output
+		    if arr.hasIndex(i+2) then
+			    for j in range(3)
+				    output = output + b64Table[floor(buffer/64^j)%64]
+			    end for
+		    else
+			    if arr.hasIndex(i+1) then
+				    for j in range(3,1)
+					    output = output + b64Table[floor(buffer/64^j)%64]
+				    end for
+			    else
+				    for j in range(3,2)
+					    output = output + b64Table[floor(buffer/64^j)%64]
+				    end for
+			    end if
+		    end if
+	    end for
+	    return output
     end if
 
     if choice == "decrypt" then
-            if text.len % 4 == 1 then return null
+	    if text.len % 4 == 1 then return null
 
-            // Convert base 64 into sextet array
-            s_arr = text.values
-            for i in s_arr.indexes
-                    tmp = b64Table.indexOf(s_arr[i])
-                    if tmp == null then return null
-                    s_arr[i] = tmp
-            end for
+	    // Convert base 64 into sextet array
+	    s_arr = text.values
+	    for i in s_arr.indexes
+		    tmp = b64Table.indexOf(s_arr[i])
+		    if tmp == null then return null
+		    s_arr[i] = tmp
+	    end for
 
-            // Convert sextets to bytes
-            b_arr = []
-            for i in range(0, s_arr.len-1, 4)
-                    buffer = s_arr[i]*262144
-                    if s_arr.hasIndex(i+1) then
-                            buffer = buffer+s_arr[i+1]*4096
-                            if s_arr.hasIndex(i+2) then
-                                    buffer = buffer+s_arr[i+2]*64
-                                    if s_arr.hasIndex(i+3) then buffer = buffer+s_arr[i+3]
-                            end if
-                    end if
+	    // Convert sextets to bytes
+	    b_arr = []
+	    for i in range(0, s_arr.len-1, 4)
+		    buffer = s_arr[i]*262144
+		    if s_arr.hasIndex(i+1) then
+			    buffer = buffer+s_arr[i+1]*4096
+			    if s_arr.hasIndex(i+2) then
+				    buffer = buffer+s_arr[i+2]*64
+				    if s_arr.hasIndex(i+3) then buffer = buffer+s_arr[i+3]
+			    end if
+		    end if
 
-                    if s_arr.hasIndex(i+3) then
-                            for j in range(2)
-                                    b_arr = b_arr + [floor(buffer/256^j)%256]
-                            end for
-                    else
-                            if s_arr.hasIndex(i+2) then
-                                    for j in range(2,1)
-                                            b_arr = b_arr + [floor(buffer/256^j)%256]
-                                    end for
-                            else
-                                    b_arr = b_arr + [floor(buffer/65526)%256]
-                            end if
-                    end if
-            end for
+		    if s_arr.hasIndex(i+3) then
+			    for j in range(2)
+				    b_arr = b_arr + [floor(buffer/256^j)%256]
+			    end for
+		    else
+			    if s_arr.hasIndex(i+2) then
+				    for j in range(2,1)
+					    b_arr = b_arr + [floor(buffer/256^j)%256]
+				    end for
+			    else
+				    b_arr = b_arr + [floor(buffer/65526)%256]
+			    end if
+		    end if
+	    end for
 
-            // Convert byte array to blocks
-            Blocks = [[]]
-            b=0
-            while b_arr.len > 0
-                    if Blocks[b].len == 16 then
-                            Blocks = Blocks + [[]]
-                            b=b+1
-                    end if
-                    Blocks[b] = Blocks[b] + [b_arr.pull]
-            end while
-            if Blocks[-1].len != 16 then return null
+	    // Convert byte array to blocks
+	    Blocks = [[]]
+	    b=0
+	    while b_arr.len > 0
+		    if Blocks[b].len == 16 then
+			    Blocks = Blocks + [[]]
+			    b=b+1
+		    end if
+		    Blocks[b] = Blocks[b] + [b_arr.pull]
+	    end while
+	    if Blocks[-1].len != 16 then return null
 
-            // Format blocks
-            for i in Blocks.indexes
-                    Blocks[i] = [Blocks[i][0:4], Blocks[i][4:8], Blocks[i][8:12], Blocks[i][12:16]]
-            end for
+	    // Format blocks
+	    for i in Blocks.indexes
+		    Blocks[i] = [Blocks[i][0:4], Blocks[i][4:8], Blocks[i][8:12], Blocks[i][12:16]]
+	    end for
 
-            // Decode blocks
-            NewBlocks = Blocks[0:]
-            for i in Blocks.indexes
-                    NewBlocks[i] = aesDecrypt(key, Blocks[i])
-            end for
+	    // Decode blocks
+	    NewBlocks = Blocks[0:]
+	    for i in Blocks.indexes
+		    NewBlocks[i] = aesDecrypt(key, Blocks[i])
+	    end for
 
-            // XOR blocks
-            for column in Blocks[0].indexes
-                    for byte in Blocks[i][column].indexes
-                            NewBlocks[0][column][byte] = bitwise("^", NewBlocks[0][column][byte], IV[column*4+byte])
-                    end for
-            end for
-            if Blocks.len > 1 then
-                    for i in range(1, Blocks.len-1)
-                            for column in Blocks[i].indexes
-                                    for byte in Blocks[i][column].indexes
-                                            NewBlocks[i][column][byte] = bitwise("^", NewBlocks[i][column][byte], Blocks[i-1][column][byte])
-                                    end for
-                            end for
-                    end for
-            end if
+	    // XOR blocks
+	    for column in Blocks[0].indexes
+		    for byte in Blocks[i][column].indexes
+			    NewBlocks[0][column][byte] = bitwise("^", NewBlocks[0][column][byte], IV[column*4+byte])
+		    end for
+	    end for
+	    if Blocks.len > 1 then
+		    for i in range(1, Blocks.len-1)
+			    for column in Blocks[i].indexes
+				    for byte in Blocks[i][column].indexes
+					    NewBlocks[i][column][byte] = bitwise("^", NewBlocks[i][column][byte], Blocks[i-1][column][byte])
+				    end for
+			    end for
+		    end for
+	    end if
 
-            Blocks = NewBlocks[0:]
+	    Blocks = NewBlocks[0:]
 
-            // Convert blocks to array of bytes
-            arr = []
-            for Block in Blocks
-                    for column in Block
-                            for byte in column
-                                    arr = arr + [byte]
-                            end for
-                    end for
-            end for
+	    // Convert blocks to array of bytes
+	    arr = []
+	    for Block in Blocks
+		    for column in Block
+			    for byte in column
+				    arr = arr + [byte]
+			    end for
+		    end for
+	    end for
 
-            // Remove padding
-            if arr[-1] > 16 or arr[-1] == 0 then return null
-            for i in range(arr[-1]-1)
-                    arr.pop
-            end for
+	    // Remove padding
+	    if arr[-1] > 16 or arr[-1] == 0 then return null
+	    for i in range(arr[-1]-1)
+		    arr.pop
+	    end for
 
-            // Convert array to text
-            output = ""
-            for byte in arr
-                    output = output + char(byte)
-            end for
-            return output
+	    // Convert array to text
+	    output = ""
+	    for byte in arr
+		    output = output + char(byte)
+	    end for
+	    return output
     end if
 
     return null
 end function
 
 
+loadLibraries = function(metaxploit=null)
+    libs = {}
+    versions = {}
+
+    fd = get_shell.host_computer.File("/")
+    files = [] + fd.get_folders + fd.get_files
+    while files.len > 0
+        fd = files.pull
+        if fd.is_folder then
+            files = fd.get_folders + fd.get_files + files
+            continue
+        end if
+
+        library = include_lib(fd.path)
+        if not library then continue
+
+        libName = typeof(library).lower
+        if libName == "service" then continue
+
+        for removal in ["lib", "client"]
+            libName = libName.replace(removal, "")
+        end for
+        if not metaxploit and libName == "metaxploit" then return loadLibraries(library)
+
+        if metaxploit then
+            metalib = metaxploit.load(fd.path)
+            if versions.indexes.indexOf(libName) == null then
+                versions[libName] = metalib.version
+                comparing = [metalib.version, metalib.version]
+            else
+                comparing = [versions[libName], metalib.version]
+            end if
+            comparing.sort
+            comparing.reverse
+            libs[libName] = library
+            versions[libName] = comparing[0]
+        else
+            libs[libName] = library
+        end if
+    end while
+
+    return libs
+end function
+
+
 ensureCorrectKey = function(key)
     while key.len < 16
-        key = "0"+key
+		key = "0"+key
     end while
 
     while key.len > 16
-        key = key[1:]
+		key = key[1:]
     end while
 
     return key
@@ -437,23 +477,44 @@ end function
 
 validateCredentials = function(creds)
 	parts = creds.split("@")
-	
+
 	proto = parts[0]
 	addr = parts[1]
 	port = parts[2].to_int
-	user = parts[3]
-	pass = parts[4]
 
-	if ["ssh", "overflow"].indexOf(proto) == null then exit "Incorrect proto!"
+	if ["ssh", "of"].indexOf(proto) == null then exit "Incorrect proto!"
 	if not is_valid_ip(addr) then exit "Incorrect addr!"
 	if not port isa number then exit "Incorrect port!"
 
 	if get_shell.host_computer.is_network_active then
 		router = get_router(addr)
-		if not router then exit("Incorrect addr!")
-		if not router.ping_port(port) then exit "Incorrect addr~port!"
+		if not router then exit "Incorrect addr!"
+		port_ = router.ping_port(port)
+		if not port_ or not router.port_info(port_) then exit "Incorrect port!"
 	else
-		print "Warning: Can't validate addr@port: No internet access!"
+		print "No internet access. Some checks are skipped"
+	end if
+
+	if proto == "ssh" then
+		user = parts[3]
+		pass = parts[4]
+		router = get_router(addr)
+		if router.port_info(router.ping_port(port)).indexOf("ssh") == null then exit "Incorrect port!"
+		if get_shell.host_computer.is_network_active then
+			mainframeShell = get_shell.connect_service(addr, port, user, pass, "ssh")
+			if not mainframeShell then exit "Incorrect credentials!"
+		end if
+	else if proto == "of" then
+		mem = parts[3]
+		vuln = parts[4]
+		libs = loadLibraries
+		if libs.indexes.indexOf("metaxploit") != null then
+			netSession = metaxploit.net_use(addr, port)
+			if not netSession then exit "Incorrect addr/port!"
+			metalib = netSession.dump_lib
+			mainframeShell = metalib.overflow(mem, vuln)
+			if typeof(mainframeShell) != "shell" then exit "Incorrect credentials!"
+		end if
 	end if
 
 	return creds
@@ -463,10 +524,11 @@ end function
 
 
 if params.len != 2 or (params.len == 2 and params[1].split("@").len != 5) then
-    print "Incorrect arguments: Specify the following arguments:"
-    print "* A non-hashed password you specified in Config.password"
-    print "* An ssh credentials in the following format: proto@addr@port@user@pass"
-    print "     where proto is ssh or overflow"
+    print "Incorrect arguments. Specify as follows:"
+    print "1. Password a hash of which you set in Config.password"
+	print "2. Credentials which are specially* formatted"
+    print "   * For SSH: 		ssh@addr@port@user@pass"
+    print "   * For OverFlow: 	of@addr@port@mem@vuln"
     exit ""
 end if
 

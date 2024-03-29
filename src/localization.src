@@ -208,6 +208,17 @@ Locales.LogPleaseEnterPassword = {}
 Locales.WarningDeadMainframe = {}
 Locales.LogAppliedPatches = {}
 Locales.LogReloadingNetworkAppeared = {}
+Locales.LogSucessfullyConnectedToMainframe = {}
+Locales.SysInfMainframe = {}
+Locales.SysInfMainframeProtocol = {}
+Locales.SysInfMainframeAddress = {}
+Locales.SysInfMainframePort = {}
+Locales.SysInfMainframeCredentials = {}
+Locales.SysInfMainframeConnection = {}
+Locales.SysInfMainframePatches = {}
+Locales.SysInfAvailable = {}
+Locales.HelpEntryPktmon = {}
+Locales.LogStartingSniffing = {}
 
 
 
@@ -412,9 +423,20 @@ Locales.YouAreAllAwesome[_language] = "You are all awesome! Thank you a lot, Mar
 Locales.HelpEntryReload[_language] = "Load and check various systems"
 Locales.HelpCategoryPlugins[_language] = "Patches"
 Locales.LogPleaseEnterPassword[_language] = "Please enter a password to continue"
-Locales.WarningDeadMainframe[_language] = "Could not connect to the mainframe! You've likely been compromised!"
+Locales.WarningDeadMainframe[_language] = "Could not connect to the mainframe!"
 Locales.LogAppliedPatches[_language] = "Applied {APPLIED}/{TOTAL} mainframe patches"
 Locales.LogReloadingNetworkAppeared[_language] = "Detected network change. Reloading..."
+Locales.LogSucessfullyConnectedToMainframe[_language] = "Successfully connected to the mainframe"
+Locales.SysInfMainframe[_language] = "Mainframe"
+Locales.SysInfMainframeProtocol[_language] = "Protocol"
+Locales.SysInfMainframeAddress[_language] = "Address"
+Locales.SysInfMainframePort[_language] = "Port"
+Locales.SysInfMainframeCredentials[_language] = "Credentials"
+Locales.SysInfMainframeConnection[_language] = "Connection"
+Locales.SysInfMainframePatches[_language] = "Patches loaded"
+Locales.SysInfAvailable[_language] = "Available"
+Locales.HelpEntryPktmon[_language] = "[amount] - Network traffic analyzer"
+Locales.LogStartingSniffing[_language] = "Waiting for connections to happen..."
 
 
 
@@ -808,9 +830,20 @@ Locales.YouAreAllAwesome[_language] = "Вы все замечательные! �
 Locales.HelpEntryReload[_language] = "Запустить и проверить различные системы"
 Locales.HelpCategoryPlugins[_language] = "Патчи"
 Locales.LogPleaseEnterPassword[_language] = "Пожалуйста, введите пароль чтобы продолжить"
-Locales.WarningDeadMainframe[_language] = "Не удалось подключиться к мейнфрейму! Возможно вас скомпрометировали!"
+Locales.WarningDeadMainframe[_language] = "Не удалось подключиться к мейнфрейму!"
 Locales.LogAppliedPatches[_language] = "Применено {APPLIED}/{TOTAL} патчей мейнфрейма"
 Locales.LogReloadingNetworkAppeared[_language] = "Обнаружено изменение сети. Перезагружаюсь..."
+Locales.LogSucessfullyConnectedToMainframe[_language] = "Соединение с мейнфреймом установлено"
+Locales.SysInfMainframe[_language] = "Мейнфрейм"
+Locales.SysInfMainframeProtocol[_language] = "Протокол"
+Locales.SysInfMainframeAddress[_language] = "Адрес"
+Locales.SysInfMainframePort[_language] = "Порт"
+Locales.SysInfMainframeCredentials[_language] = "Данные для входа"
+Locales.SysInfMainframeConnection[_language] = "Соединение"
+Locales.SysInfMainframePatches[_language] = "Патчей загружено"
+Locales.SysInfAvailable[_language] = "Доступно"
+Locales.HelpEntryPktmon[_language] = "[колво] - Анализатор сетевого трафика"
+Locales.LogStartingSniffing[_language] = "Ожидаю подключений..."
 
 
 

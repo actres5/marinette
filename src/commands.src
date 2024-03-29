@@ -222,6 +222,7 @@ command "hashes", [], Const.any, Messages.HelpEntryHashcrack, function(arguments
         
         // 
         // This is a desync fix
+        yield
         wait(0.01)
 
         result = crypto.decipher(toCrack)
@@ -271,6 +272,129 @@ command "whois", ["wi"], Const.any, Messages.HelpEntryWhois, function(arguments)
         end for
         whoisOne(last)
     end if
+end function
+
+
+command "meow", ["mpm"], Const.any, Messages.HelpEntryMeow, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 1)
+    Conditions.network
+    Conditions.apt
+    
+    fd = Intrinsics.file
+    apt = Libs.apt
+    command = str(arguments.pull)
+
+    if "add".indexOf(command) == 0 then
+        for repo in fmap(@str, arguments)
+            parts = repo.split(":")
+            if parts.len > 2 then return Console.error(Messages.ErrorIncorrectRepositoryAddress)
+            
+            address = parts[0]
+            port = 1542
+            if parts.len == 2 then port = parts[1].to_int
+            
+            router = getNetworkNode(address)
+            if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
+            address = router.public_ip
+
+            if not port isa number then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
+
+            result = apt.add_repo(address, port)
+            if result and result isa string then
+                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "add_repo", "ERROR": result}))
+            else
+                Console.log(replaceF(Messages.LogSuccessfullRepositoryAddition, {"ADDRESS": address, "PORT": port}))
+            end if
+        end for
+    else if "delete".indexOf(command) == 0 then
+        for address in fmap(@str, arguments)
+            router = getNetworkNode(address)
+            if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
+            address = router.public_ip
+
+            result = apt.del_repo(address)
+            if result and result isa string then 
+                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "del_repo", "ERROR": result}))
+            else
+                Console.log(replaceF(Messages.LogSuccessfullRepositoryDeletion, {"ADDRESS": address}))
+            end if
+        end for
+    else if "download".indexOf(command) == 0 then
+        apt.update
+        for package in fmap(@str, arguments)
+            result = apt.install(package)
+            if result and result isa string then
+                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "install", "ERROR": result}))
+            else
+                Console.log(replaceF(Messages.LogSuccessfullPackageInstallation, {"PACKAGE": package}))
+            end if
+        end for
+    else if "look".indexOf(command) == 0 then
+        apt.update
+        for address in fmap(@str, arguments)
+            router = getNetworkNode(address)
+            if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
+            address = router.public_ip
+
+            result = apt.show(address)
+            if result.indexOf(" repository not found") then 
+                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "show", "ERROR": result}))
+            else
+                Console.log(replaceF(Messages.LogContentsOfRepository, {"ADDRESS": address}))
+                lines = result.split(char(10))
+                lines.pop
+                for line in lines
+                    print("<color="+Theme.miscPrimary+">"+line)
+                end for
+            end if
+        end for
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+end function
+
+
+command "pktmon", [], Const.any, Messages.HelpEntryPktmon, function(arguments)
+    Conditions.argumentsFewerThan(arguments, 2)
+    Conditions.network
+    Conditions.metaxploit
+
+    packets = 1
+    metaxploit = Libs.metaxploit
+
+    if arguments.len == 1 then packets = arguments[0]
+    if not packets isa number then return Console.error(Messages.ErrorUnknownArguments)
+
+    Console.log(Messages.LogStartingSniffing)
+    i = 0; while i < packets; i = i + 1
+        // 
+        // This is a desync fix
+        yield
+        wait(0.01)
+        
+        result = metaxploit.sniffer(true)
+        if not result then return Console.error(Messages.ErrorUnknown)
+
+        lines = result.trim.split(char(10))
+        lines = lines[2:]
+
+        source = lines.pull.replace("<b>Source:</b> ", "")
+        destination = lines.pull.replace("<b>Destination:</b> ", "")
+        port = lines.pull.replace("<b>Protocol:</b> ", "")
+        user = escape(lines.pull.replace("<b>USER:</b> ", ""))
+        password = lines.join("\n")
+
+        if password.indexOf("<b>PASSWORD[encrypted]:</b> ") == 0 then
+            prefix = "O"
+            password = password["<b>PASSWORD[encrypted]:</b> ".len:]
+        else
+            prefix = "X"
+            password = password["<b>PASSWORD:</b> ".len:]
+        end if
+
+        password = escape(password)
+        Console.log(prefix+": "+destination+":"+port+" <- "+source+" - "+user+"@"+password)
+    end while
 end function
 
 
@@ -335,6 +459,29 @@ command "systeminfo", ["si"], Const.host, Messages.HelpEntrySysinf, function(arg
     print("<color="+Theme.miscPrimary+">Apt <color="+Theme.miscSecondary+">- "+apt)
     print("<color="+Theme.miscPrimary+">Metaxploit <color="+Theme.miscSecondary+">- "+metaxploit)
     print("<color="+Theme.miscPrimary+">Blockchain <color="+Theme.miscSecondary+">- "+blockchain)
+    print(" ")
+
+    print(primary("<b><--"+Messages.SysInfMainframe+"-->"))
+    protocol = error(Messages.SysInfUnavailable)
+    address = error(Messages.SysInfUnavailable)
+    port = error(Messages.SysInfUnavailable)
+    credentials = error(Messages.SysInfUnavailable)
+    connection = error(Messages.SysInfUnavailable)
+    patches = error(Messages.SysInfUnavailable)
+    if Config.mainframe then
+        if Mainframe.protocol then protocol = Mainframe.protocol
+        if Mainframe.address then address = Mainframe.address
+        if Mainframe.port != null then port = Mainframe.port
+        if Mainframe.credentials then credentials = Mainframe.credentials
+        if Mainframe.shell then connection = Messages.SysInfAvailable
+        if Config.patches.len > 0 then patches = Mainframe.patches.len+"/"+Config.patches.len
+    end if
+    print(primary(Messages.SysInfMainframeProtocol)+secondary(" - "+protocol))
+    print(primary(Messages.SysInfMainframeAddress)+secondary(" - "+address))
+    print(primary(Messages.SysInfMainframePort)+secondary(" - "+port))
+    print(primary(Messages.SysInfMainframeCredentials)+secondary(" - "+credentials))
+    print(primary(Messages.SysInfMainframeConnection)+secondary(" - "+connection))
+    print(primary(Messages.SysInfMainframePatches)+secondary(" - "+patches))
     print(" ")
 
     print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfMiscellaneous+"-->")
@@ -474,9 +621,6 @@ command "ariadne", ["aria"], Const.host, Messages.HelpEntryAriadne, function(arg
             if arguments.len > 0 then ofArgs = ofArgs + fmap(@str, arguments)
             ofArgs = removeDuplicates(ofArgs)
             for ofArg in ofArgs
-                // 
-                // This is a desync fix
-                wait(0.01)
                 if ofArg == null then
                     result = exploit.metalib.overflow(exploit.address, vulner.value)
                 else
@@ -702,9 +846,6 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
             if arguments.len > 0 then ofArgs = ofArgs + arguments
             ofArgs = removeDuplicates(ofArgs)
             for ofArg in ofArgs
-                // 
-                // This is a desync fix
-                wait(0.01)
                 if ofArg == null then
                     result = exploit.metalib.overflow(exploit.address, vulner.value)
                 else
@@ -980,85 +1121,6 @@ command "wificrack", [], Const.host, Messages.HelpEntryNetcrack, function(argume
         return Console.error(Messages.ErrorFailedPasswordCrack)
     else
         return Console.log(replaceF(Messages.LogSuccessfullPasswordCrack, {"ESSID": essid, "ID": id, "PASSWORD": password}))
-    end if
-end function
-
-
-command "meow", ["mpm"], Const.any, Messages.HelpEntryMeow, function(arguments)
-    Conditions.argumentsMoreThan(arguments, 1)
-    Conditions.network
-    Conditions.apt
-    
-    fd = Intrinsics.file
-    apt = Libs.apt
-    command = str(arguments.pull)
-
-    if "add".indexOf(command) == 0 then
-        for repo in fmap(@str, arguments)
-            parts = repo.split(":")
-            if parts.len > 2 then return Console.error(Messages.ErrorIncorrectRepositoryAddress)
-            
-            address = parts[0]
-            port = 1542
-            if parts.len == 2 then port = parts[1].to_int
-            
-            router = getNetworkNode(address)
-            if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
-            address = router.public_ip
-
-            if not port isa number then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
-
-            result = apt.add_repo(address, port)
-            if result and result isa string then
-                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "add_repo", "ERROR": result}))
-            else
-                Console.log(replaceF(Messages.LogSuccessfullRepositoryAddition, {"ADDRESS": address, "PORT": port}))
-            end if
-        end for
-    else if "delete".indexOf(command) == 0 then
-        for address in fmap(@str, arguments)
-            router = getNetworkNode(address)
-            if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
-            address = router.public_ip
-
-            result = apt.del_repo(address)
-            if result and result isa string then 
-                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "del_repo", "ERROR": result}))
-            else
-                Console.log(replaceF(Messages.LogSuccessfullRepositoryDeletion, {"ADDRESS": address}))
-            end if
-        end for
-    else if "download".indexOf(command) == 0 then
-        apt.update
-        for package in fmap(@str, arguments)
-            result = apt.install(package)
-            if result and result isa string then
-                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "install", "ERROR": result}))
-            else
-                Console.log(replaceF(Messages.LogSuccessfullPackageInstallation, {"PACKAGE": package}))
-            end if
-        end for
-    else if "look".indexOf(command) == 0 then
-        apt.update
-        for address in fmap(@str, arguments)
-            router = getNetworkNode(address)
-            if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
-            address = router.public_ip
-
-            result = apt.show(address)
-            if result.indexOf(" repository not found") then 
-                Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "show", "ERROR": result}))
-            else
-                Console.log(replaceF(Messages.LogContentsOfRepository, {"ADDRESS": address}))
-                lines = result.split(char(10))
-                lines.pop
-                for line in lines
-                    print("<color="+Theme.miscPrimary+">"+line)
-                end for
-            end if
-        end for
-    else
-        return Console.error(Messages.ErrorUnknownArguments)
     end if
 end function
 

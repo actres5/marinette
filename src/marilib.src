@@ -188,7 +188,6 @@ Console.cmdloop = function
         // Various handlers that get executed each loop
         RuntimeHelpers.reloadIfNetworkAppeared
         IntrinsicsHelpers.tryToFixFdIfCorrupted
-        MainframeHelpers.warnUserIfCouldNotConnectToMainframe
 
         if input.len == 0 then continue
 
@@ -389,8 +388,9 @@ Mainframe = {
     "protocol": null,
     "address": null,
     "port": null,
-    "user": null,
-    "password": null,
+    "credentials": null,
+    "shell": null,
+    "patches": [],
 }
 
 
@@ -407,31 +407,27 @@ MainframeHelpers.connect = function
     if not MainframeHelpers.isReachable then return
 
     if Mainframe.protocol == "ssh" then
-        mainframeShell = Intrinsics.shell.connect_service(Mainframe.address, Mainframe.port, Mainframe.user, Mainframe.password, "ssh")
-    else if Mainframe.protocol == "overflow" then
-        if not Libs.metaxploit then return
-
+        mainframeShell = get_shell.connect_service(Mainframe.address, Mainframe.port, Mainframe.credentials[0], Mainframe.credentials[1], "ssh")
+    else if Mainframe.protocol == "of" then
+        if Libs.indexes.indexOf("metaxploit") == null then return
+        metaxploit = Libs.metaxploit
+        netSession = metaxploit.net_use(Mainframe.address, Mainframe.port)
+        if not netSession then return
+        metalib = netSession.dump_lib
+        if not metalib then return
+        mainframeShell = metalib.overflow(Mainframe.credentials[0], Mainframe.credentials[1])
     end if
 
     if typeof(mainframeShell) == "shell" then return mainframeShell
 end function
 
-MainframeHelpers.isAlive = function
-    return MainframeHelpers.connect != null
-end function
-
-MainframeHelpers.warnUserIfCouldNotConnectToMainframe = function
-    if not get_shell.host_computer.is_network_active or not Config.mainframe or MainframeHelpers.isAlive then return
-    Console.warning(Messages.WarningDeadMainframe)
-end function
-
 MainframeHelpers.applyPatch = function(patchPath)
+    if not Mainframe.shell then return false
     shared = get_custom_object
-    shared.Marinette = globals
-    mainframeShell = MainframeHelpers.connect
-    if not mainframeShell then return false
-    result = mainframeShell.launch(patchPath)
+    shared["Marinette"] = globals
+    result = Mainframe.shell.launch(patchPath)
     shared.remove("Marinette")
     if not result or result isa string then return false
+    Mainframe.patches.push(patchPath)
     return true
 end function

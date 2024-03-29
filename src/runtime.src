@@ -114,6 +114,12 @@ RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
         shared.remove("Sessions")
     end if
 
+    if shared.indexes.indexOf("Mainframe") != null then
+        globals.Mainframe = deepCopy(shared.Mainframe)
+        Mainframe.patches = []
+        shared.remove("Mainframe")
+    end if
+
 
     SessionsHelpers.add(Intrinsics)
     RuntimeHelpers.assignMainframeIfConfigured
@@ -154,6 +160,7 @@ RuntimeHelpers.prepareStateForSharing = function
     shared.Intrinsics = deepCopy(Intrinsics)
     shared.Libs = deepCopy(Libs)
     shared.Sessions = deepCopy(Sessions)
+    shared.Mainframe = deepCopy(Mainframe)
 end function
 
 RuntimeHelpers.startMarinette = function(shell, marinettePath)
@@ -169,25 +176,45 @@ RuntimeHelpers.startMarinette = function(shell, marinettePath)
 end function
 
 RuntimeHelpers.assignMainframeIfConfigured = function
-    if not Config.mainframe or not get_shell.host_computer.is_network_active then return
-    data = aes128("decrypt", passwordToAesKey(Var.password), Config.mainframe)
-    parts = data.split("@")
-    Mainframe.protocol = parts[0]
-    Mainframe.address = parts[1]
-    Mainframe.port = parts[2].to_int
-    Mainframe.user = parts[3]
-    Mainframe.password = parts[4]
+    if not Config.mainframe then return
+    if not get_shell.host_computer.is_network_active then return Console.warning(Messages.WarningDeadMainframe)
+
+    if not Mainframe.shell then
+        data = aes128("decrypt", passwordToAesKey(Var.password), Config.mainframe)
+        parts = data.split("@")
+        if parts.len != 5 then return
+        proto = parts[0]
+        if ["ssh", "of"].indexOf(proto) == null then return
+        addr = parts[1]
+        if not is_valid_ip(addr) then return
+        port = parts[2].to_int
+        if not port isa number then return
+        Mainframe.protocol = proto
+        Mainframe.address = addr
+        Mainframe.port = port
+        Mainframe.credentials = [parts[3], parts[4]]
+        Mainframe.shell = MainframeHelpers.connect
+    end if
+
+    if not Mainframe.shell then return Console.warning(Messages.WarningDeadMainframe)
 
     total = Config.patches.len
-    applied = 0
+    if total == 0 then return Console.log(Messages.LogSucessfullyConnectedToMainframe)
     for patch in Config.patches
-        if MainframeHelpers.applyPatch(patch) then applied = applied + 1
+        MainframeHelpers.applyPatch(patch)
     end for
+    applied = Mainframe.patches.len
+    percent = applied / total * 100
+    if percent < 50 or applied == 0 then
+        applied = error(applied)
+    else if percent < 100 then
+        applied = warning(applied)
+    end if
     Console.log(Messages.LogAppliedPatches, {"APPLIED": applied, "TOTAL": total})
 end function
 
 RuntimeHelpers.reloadIfNetworkAppeared = function
-    if (Intrinsics.publicAddress and Intrinsics.localAddress) or not get_shell.host_computer.is_network_active then return
+    if (Intrinsics.publicAddress and Intrinsics.localAddress) and get_shell.host_computer.is_network_active then return
     if Intrinsics.isConnectionRemote then return
     Console.log(Messages.LogReloadingNetworkAppeared)
     RuntimeHelpers.makeNeccessaryRuntimeAssigns

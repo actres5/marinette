@@ -1411,6 +1411,10 @@ end function
 // }
 // vulnerabilities = [vulnerability]
 scanMemoryAddress = function(metaxploit, metalib, address)
+    // 
+    // This is a desync fix
+    yield
+    wait(0.01)
     scanResult = metaxploit.scan_address(metalib, address)
     if not scanResult then return
 
