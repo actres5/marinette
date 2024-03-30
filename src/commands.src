@@ -185,10 +185,9 @@ command "theme", [], Const.any, Messages.HelpEntryTheme, function(arguments)
         " |  \/  |__ _ _ _(_)_ _  ___| |_| |_ ___ ",
         " | |\/| / _` | '_| | ' \/ -_)  _|  _/ -_)",
         " |_|  |_\__,_|_| |_|_||_\___|\__|\__\___|",
+        " ",
     ]
     Console.asciiArt(asciiArt)
-
-    print(" ")
 
     Console.log(randomString(40))
     Console.warning(randomString(40))
