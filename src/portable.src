@@ -1394,6 +1394,31 @@ findPermissivePath = function(fd, perms)
     end while
 end function
 
+corruptLogs = function(computer=null, fd)
+    files = [] + fd.get_folders + fd.get_files
+    while files.len > 0
+        fd = files.pull
+        if fd.is_folder then
+            files = fd.get_folders + fd.get_files + files
+            continue
+        end if
+
+        if fd.is_binary then continue
+        if fd.copy("/var/", "system.log") != true then continue
+        fd = iterateToPath(fd, "/var/system.log")
+        if fd then fd.set_content("")
+        return true
+    end while
+
+    if not computer then return false
+    if computer.touch("/var", "temp") != true then return false
+    fd = iterateToPath(fd, "/var/temp")
+    if not fd then return false
+    if fd.move("/var", "system.log") == true then return true
+    fd.delete
+    return false
+end function
+
 
 
 

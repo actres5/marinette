@@ -219,6 +219,11 @@ Locales.SysInfMainframePatches = {}
 Locales.SysInfAvailable = {}
 Locales.HelpEntryPktmon = {}
 Locales.LogStartingSniffing = {}
+Locales.HelpEntryMove = {}
+Locales.LogMovedFileSuccessfully = {}
+Locales.HelpEntryCorrupt = {}
+Locales.ErrorFailedLogCorruption = {}
+Locales.LogSuccessfullLogCorruption = {}
 
 
 
@@ -411,7 +416,7 @@ Locales.HelpEntryWalk[_language] = "back (step) | into (ap/path) - Navigate in f
 Locales.HelpEntryLook[_language] = "[aps/paths] - Get files listed in a directory"
 Locales.HelpEntryRead[_language] = "(aps/paths) - Get the content of a text file"
 Locales.HelpEntryDelete[_language] = "(aps/paths) - Delete files"
-Locales.HelpEntryCopy[_language] = "(ap/path) (dest) - Copy files"
+Locales.HelpEntryCopy[_language] = "(ap/path) (dest) - Copy file"
 Locales.HelpEntryTree[_language] = "Get file system tree"
 Locales.HelpEntryRun[_language] = "(ap/path) [args] - Run external binary"
 Locales.HelpEntryTheme[_language] = "Applied theme"
@@ -437,6 +442,11 @@ Locales.SysInfMainframePatches[_language] = "Patches loaded"
 Locales.SysInfAvailable[_language] = "Available"
 Locales.HelpEntryPktmon[_language] = "[amount] - Network traffic analyzer"
 Locales.LogStartingSniffing[_language] = "Waiting for connections to happen..."
+Locales.HelpEntryMove[_language] = "(ap/path) (dest) - Move file"
+Locales.LogMovedFileSuccessfully[_language] = "Moved file successfully"
+Locales.HelpEntryCorrupt[_language] = "Corrupt system's logs"
+Locales.ErrorFailedLogCorruption[_language] = "Could not corrupt system's logs!"
+Locales.LogSuccessfullLogCorruption[_language] = "System's logs are corrupted successfully"
 
 
 
@@ -844,6 +854,11 @@ Locales.SysInfMainframePatches[_language] = "Патчей загружено"
 Locales.SysInfAvailable[_language] = "Доступно"
 Locales.HelpEntryPktmon[_language] = "[колво] - Анализатор сетевого трафика"
 Locales.LogStartingSniffing[_language] = "Ожидаю подключений..."
+Locales.HelpEntryMove[_language] = "(ап/путь) (назн) - Передвинуть файл"
+Locales.LogMovedFileSuccessfully[_language] = "Файл успешно передвинут"
+Locales.HelpEntryCorrupt[_language] = "Повредить системный журнал"
+Locales.ErrorFailedLogCorruption[_language] = "Не удалось повредить системный журнал!"
+Locales.LogSuccessfullLogCorruption[_language] = "Системный журнал успешно повреждён"
 
 
 

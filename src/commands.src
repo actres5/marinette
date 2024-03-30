@@ -1764,3 +1764,47 @@ command "tree", [], Const.file, Messages.HelpEntryTree, function(arguments)
     fd = iterateToPath(Intrinsics.file, "/")
     recursefd(fd)
 end function
+
+
+command "move", [], Const.file, Messages.HelpEntryMove, function(arguments)
+    Conditions.arguments(arguments, 2)
+    
+    fd = Intrinsics.file
+    path = str(arguments[0])
+    dest = str(arguments[1])
+
+    fdSource = iterateToPath(fd, path)
+    if not fdSource then return Console.error(Messages.ErrorSourcePathDoesNotExist)
+    fileName = fdSource.name
+
+    fdDest = iterateToPath(fd, dest)
+    if fdDest and not fdDest.is_folder then
+        fileName = fdDest.name
+        fdDest = fdDest.parent
+    end if
+    if not fdDest then
+        parts = dest.split("/")
+        fileName = parts.pop
+        fdDest = iterateToPath(fd, parts.join("/"))
+        if not fdDest and parts.len == 0 then fdDest = fd
+        if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
+    end if
+
+    result = fdSource.move(fdDest.path, fileName)
+    if result isa string then
+        Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "move", "ERROR": result}))
+    else if not result then
+        Console.error(Messages.ErrorUnknown)
+    else
+        Console.log(Messages.LogMovedFileSuccessfully)
+    end if
+end function
+
+
+command "corrupt", [], Const.file, Messages.HelpEntryCorrupt, function(arguments)
+    Conditions.arguments(arguments, 0)
+
+    result = corruptLogs(Intrinsics.computer, Intrinsics.file)
+    if not result then return Console.error(Messages.ErrorFailedLogCorruption)
+    Console.log(Messages.LogSuccessfullLogCorruption)
+end function
