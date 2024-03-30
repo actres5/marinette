@@ -1,12 +1,8 @@
 # Marinette
 
-Cute, simple and open source shell
-
-Screenshots TODO
+> Cute, simple and open source shell
 
 Important note: this is **NOT A REAL HACKING TOOLKIT**! This has been made, works and will work only in the game called Grey Hack!
-
-This repository is the only place where you can get Marinette without any risks. DON'T trust in-game websites!!!
 
 
 
@@ -56,6 +52,7 @@ Please read! If you're a newbie then PLEASE DON'T USE MARINETTE OR ANY OTHER PRE
     2.  From the root of the project, run **scripts/config_identificator.py**. Set the value in **Config.identificator**
     3.  (Optionally) From the root of the project, run **scripts/config_available_languages.py**. Set the desired language in **Config.language**
     4.  (Optionally) From the root of the project, run **scripts/config_available_themes.py**. Set the desired theme in **Config.theme**
+    5.  (Optionally) In game, compile and run **scriptsgh/config_mainframe.src**. Set mainframe configuration in **Config.mainframe** and paths to the desired patches in **Config.patches**
 5.  Compile **marinette.src**. Launch Marinette with `--password {YOUR_PASSWORD}` parameters. Congratulations!
 
 
