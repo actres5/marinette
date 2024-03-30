@@ -214,7 +214,7 @@ RuntimeHelpers.assignMainframeIfConfigured = function
 end function
 
 RuntimeHelpers.reloadIfNetworkAppeared = function
-    if (Intrinsics.publicAddress and Intrinsics.localAddress) and get_shell.host_computer.is_network_active then return
+    if (Intrinsics.publicAddress and Intrinsics.localAddress) or not get_shell.host_computer.is_network_active then return
     if Intrinsics.isConnectionRemote then return
     Console.log(Messages.LogReloadingNetworkAppeared)
     RuntimeHelpers.makeNeccessaryRuntimeAssigns
