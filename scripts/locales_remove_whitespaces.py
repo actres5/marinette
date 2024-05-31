@@ -2,6 +2,7 @@
 
 
 from pathlib import Path
+from _hacks import *
 
 
 srcs = list(Path("locales").iterdir())

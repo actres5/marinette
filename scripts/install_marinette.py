@@ -2,6 +2,7 @@
 
 
 from pathlib import PurePath, Path
+from _hacks import *
 
 
 def gh_init():
@@ -44,7 +45,7 @@ def create_project_structure_recursively(project_fd, installer_fd, game_path):
     dirs = list(project_fd.iterdir())
     dirs.sort()
     for path in dirs:
-        if path.is_dir() and path.name in blacklist:
+        if (path.is_dir() and path.name in blacklist_folders) or (not path.is_dir() and path.name in blacklist_files):
             continue
         new_path = str(PurePath(game_path) / path.name)
         if path.is_dir():
@@ -75,9 +76,10 @@ import src_make_localization
 import src_make_themeing
 
 
-blacklist = ["etc", "locales", "scripts", "themes", "vols"]
+blacklist_folders = ["etc", "locales", "scripts", "themes", "vols", ".venv", ".gitattributes"]
+blacklist_files = [".gitattributes", ".gitignore"]
 filename = Path(__file__).name.replace(".py", ".src")
-with open(f"scripts/{filename}", "w") as installer:
+with open(f"scriptsgh/{filename}", "w") as installer:
     installer.write(gh_init())
     installer.write(create_folder("/home"))
     installer.write(create_folder("/home/guest/Sources"))

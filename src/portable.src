@@ -258,8 +258,8 @@ end function
 ////////////////////////////////////////////////////////////
 
 // 
-// Returns router or switch of the address
-// Address can be anything(even the website address)
+// Returns router or switch the address points to
+// Address can be either global or local IP or website URL
 getNetworkNode = function(address)
     if not address then
         router = get_router
@@ -329,7 +329,7 @@ getLocalPorts = function(address)
 end function
 
 // 
-// Returns computers w/o ports
+// Returns computers without ports
 getPortlessNodes = function(address)
     router = getNetworkNode(address)
     if not router then return []
@@ -381,54 +381,95 @@ randomNetworkAddress = function
 end function
 
 
+_getWhoisInfoParsedFromLine = function(address, lineNumber)
+    router = getNetworkNode(address)
+    if not router then return
+    address = router.public_ip
+    info = whois(address)
+    if info.indexOf("Domain name: ") == null then return
+    if info.indexOf("Administrative contact: ") == null then return
+    if info.indexOf("Email address: ") == null then return
+    if info.indexOf("Phone: ") == null then return
+    parts = info.split(char(10))
+    info = parts[lineNumber].split(": ")
+    return info[1]
+end function
+
 //
 // nslookup, but reversed
 getDomainName = function(address)
-    router = getNetworkNode(address)
-    if not router then return
-    address = router.public_ip
-
-    info = whois(address)
-    if info.indexOf("Domain name: ") == null then return
-    parts = info.split(char(10))
-    domain = parts[0].split(": ")
-    return domain[1]
+    return _getWhoisInfoParsedFromLine(address, 0)
 end function
 
 getAdministrativeContact = function(address)
-    router = getNetworkNode(address)
-    if not router then return
-    address = router.public_ip
-
-    info = whois(address)
-    if info.indexOf("Administrative contact: ") == null then return
-    parts = info.split(char(10))
-    admin = parts[1].split(": ")
-    return admin[1]
+    return _getWhoisInfoParsedFromLine(address, 1)
 end function
 
 getDomainEmailAddress = function(address)
-    router = getNetworkNode(address)
-    if not router then return
-    address = router.public_ip
-
-    info = whois(address)
-    if info.indexOf("Email address: ") == null then return
-    parts = info.split(char(10))
-    email = parts[2].split(": ")
-    return email[1]
+    return _getWhoisInfoParsedFromLine(address, 2)
 end function
 
 getDomainPhoneNumber = function(address)
-    router = getNetworkNode(address)
-    if not router then return
-    address = router.public_ip
+    return _getWhoisInfoParsedFromLine(address, 3)
+end function
 
-    info = whois(address)
-    if info.indexOf("Phone: ") == null then return
-    parts = info.split(char(10))
-    phone = parts[3].split(": ")
-    return phone[1]
+
+isExistingWirelessInterface = function(computer, iface)
+    ifaces = computer.network_devices.split(char(10))
+    i = 0; while i < ifaces.len; i = i + 1
+        parts = ifaces[i-1].split(" ")
+        ifaces[i-1] = parts[0]
+    end while
+    // 
+    // Removing eth because it's not wireless
+    eth = ifaces.indexOf("eth")
+    if eth != null then ifaces.remove(eth)
+    return ifaces.indexOf(iface) != null
+end function
+
+getNetworksSortedByPower = function(computer, iface)
+    networks = Intrinsics.computer.wifi_networks(iface)
+    if not networks then return
+    powerPredicate = function(iItem, jItem)
+        iPwr = iItem.split(" ")[1].replace("%", "").to_int
+        jPwr = jItem.split(" ")[1].replace("%", "").to_int
+        return iPwr > jPwr
+    end function
+    mergeSort(networks, @powerPredicate)
+    return networks
+end function
+
+getMacsUnderNetworkName = function(computer, iface, name)
+    networks = computer.wifi_networks(iface)
+    if not networks then return
+    macs = []
+    for network in networks
+        parts = network.split(" ")
+        bssid = parts[0]
+        essid = parts[2]
+        if essid == name then macs.push(bssid)
+    end for
+    return macs
+end function
+
+_getNetworkInfoParsedFromColumn = function(sortedNetworks, id, columnNumber)
+    parts = sortedNetworks[id - 1].split(" ")
+    return parts[columnNumber]
+end function
+
+connectWirelessNetworkById = function(computer, iface, sortedNetworks, id, password)
+    if not id isa number or id > sortedNetworks.len then return false
+    bssid = getNetworkBssidById(sortedNetworks, id)
+    essid = getNetworkEssidById(sortedNetworks, id)
+    return computer.connect_wifi(iface, bssid, essid, password) == true
+end function
+
+getNetworkEssidById = function(sortedNetworks, id)
+    return _getNetworkInfoParsedFromColumn(sortedNetworks, id, 2)
+end function
+
+getNetworkBssidById = function(sortedNetworks, id)
+    return _getNetworkInfoParsedFromColumn(sortedNetworks, id, 0)
 end function
 
 
@@ -1062,8 +1103,8 @@ replaceF = function(strF, words)
 end function
 
 // 
-// format_columns(), but with the first line being colored with headerColor,
-// and all the others with columnsColor
+// format_columns(), but with the ruler, the first line being colored 
+// with headerColor and all other lines with columnsColor
 formatColumnsColored = function(columns, headerColor, columnsColor)
     columns = format_columns(columns)
     lines = columns.split(char(10))
@@ -1077,8 +1118,8 @@ formatColumnsColored = function(columns, headerColor, columnsColor)
     return lines.join(char(10))
 end function
 
-// // 
-// // Escapes print formatting
+// 
+// Escapes print formatting
 escape = function(str)
     sequences = {
         "<noparse>": "<nоparse>",
@@ -1119,27 +1160,29 @@ end function
 // Email functions
 ////////////////////////////////////////////////////////////
 
-getMailId = function(mail)
-    parts = mail.split(char(10))
-    return parts[2].replace("MailID:", "").trim
-end function
+// Unsure if they even work so not yet :P
 
-getMailAuthor = function(mail)
-    parts = mail.split(char(10))
-    return parts[3].replace("From:", "").trim
-end function
+// getMailId = function(mail)
+//     parts = mail.split(char(10))
+//     return parts[2].replace("MailID:", "").trim
+// end function
 
-getMailSubject = function(mail)
-    parts = mail.split(char(10))
-    return parts[4].replace("Subject:", "").trim
-end function
+// getMailAuthor = function(mail)
+//     parts = mail.split(char(10))
+//     return parts[3].replace("From:", "").trim
+// end function
 
-getMailMessage = function(metamail, mailId)
-    content = metamail.read(mailId)
-    if content == "Mail not found" then return
-    lines = content.split(char(10))
-    return lines[3:(lines.len-2)].join(char(10))
-end function
+// getMailSubject = function(mail)
+//     parts = mail.split(char(10))
+//     return parts[4].replace("Subject:", "").trim
+// end function
+
+// getMailMessage = function(metamail, mailId)
+//     content = metamail.read(mailId)
+//     if content == "Mail not found" then return
+//     lines = content.split(char(10))
+//     return lines[3:(lines.len-2)].join(char(10))
+// end function
 
 
 
@@ -1440,6 +1483,7 @@ scanMemoryAddress = function(metaxploit, metalib, address)
     // This is a desync fix
     yield
     wait(0.01)
+    
     scanResult = metaxploit.scan_address(metalib, address)
     if not scanResult then return
 

@@ -2,6 +2,7 @@
 
 
 from pathlib import Path
+from _hacks import *
 
 
 locales = list(map(lambda l: l.absolute(), Path("locales").iterdir()))

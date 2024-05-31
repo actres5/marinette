@@ -2,6 +2,7 @@
 
 
 from pathlib import Path
+from _hacks import *
 
 
 filename = Path(__file__).name

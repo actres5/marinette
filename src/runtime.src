@@ -220,3 +220,10 @@ RuntimeHelpers.reloadIfNetworkAppeared = function
     RuntimeHelpers.makeNeccessaryRuntimeAssigns
     RuntimeHelpers.checkIfEverythingIsAssigned
 end function
+
+RuntimeHelpers.updateSessionsAddresses = function
+    sessions = [Intrinsics, Var.hostSession] + Sessions
+    for intrinsics in sessions
+        IntrinsicsHelpers.updateAddresses(intrinsics)
+    end for
+end function

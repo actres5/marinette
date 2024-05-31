@@ -140,7 +140,7 @@ command "sessions", [], Const.any, Messages.HelpEntrySm, function(arguments)
     if "add".indexOf(command) == 0  and arguments.len != 0 then return Conditions.arguments(arguments, 1)
     if "delete".indexOf(command) == 0 and arguments.len == 0 then return Conditions.argumentsMoreThan(arguments, 1)
     if "use".indexOf(command) == 0 and arguments.len != 1 then return Conditions.arguments(arguments, 2)
-    if "look".indexOf(command) == 0 and arguments.len != 0 then return Conditions.argumentsMoreThan(arguments, 1)
+    if "look".indexOf(command) == 0 and arguments.len != 0 then return Conditions.arguments(arguments, 1)
 
     if "add".indexOf(command) == 0 then
         SessionsHelpers.add(Intrinsics)
@@ -1065,27 +1065,11 @@ command "wificrack", [], Const.host, Messages.HelpEntryNetcrack, function(argume
     iface = str(arguments[0])
     id = arguments[1]
 
-    lines = Intrinsics.computer.network_devices.split(char(10))
-    i = 0; while i < lines.len; i = i + 1
-        parts = lines[i-1].split(" ")
-        lines[i-1] = parts[0]
-    end while
-    ifaces = lines
-    eth = ifaces.indexOf("eth")
-    if eth != null then ifaces.remove(eth)
-    if ifaces.indexOf(iface) == null then return Console.error(Messages.ErrorIncorrectNetworkInterface)
+    if not isExistingWirelessInterface(Intrinsics.computer, iface) then return Console.error(Messages.ErrorIncorrectNetworkInterface)
 
-    networks = Intrinsics.computer.wifi_networks(iface)
+    networks = getNetworksSortedByPower(Intrinsics.computer, iface)
     if not networks then return Console.error(Messages.ErrorCouldNotGetNetworksList)
     if not id isa number or id > networks.len then return Console.error(Messages.ErrorIncorrectNetworkId)
-    
-    Console.log(Messages.LookingForTheNetwork)
-    powerPredicate = function(iItem, jItem)
-        iPwr = iItem.split(" ")[1].replace("%", "").to_int
-        jPwr = jItem.split(" ")[1].replace("%", "").to_int
-        return iPwr > jPwr
-    end function
-    mergeSort(networks, @powerPredicate)
 
     network = networks[id-1].split(" ")
     bssid = network[0]
@@ -1393,25 +1377,10 @@ command "networks", [], Const.computer, Messages.HelpEntryNetlook, function(argu
 
     iface = str(arguments[0])
 
-    lines = Intrinsics.computer.network_devices.split(char(10))
-    i = 0; while i < lines.len; i = i + 1
-        parts = lines[i-1].split(" ")
-        lines[i-1] = parts[0]
-    end while
-    ifaces = lines
-    eth = ifaces.indexOf("eth")
-    if eth != null then ifaces.remove(eth)
-    if ifaces.indexOf(iface) == null then return Console.error(Messages.ErrorIncorrectNetworkInterface)
+    if not isExistingWirelessInterface(Intrinsics.computer, iface) then return Console.error(Messages.ErrorIncorrectNetworkInterface)
 
-    networks = Intrinsics.computer.wifi_networks(iface)
+    networks = getNetworksSortedByPower(Intrinsics.computer, iface)
     if not networks then return Console.error(Messages.ErrorCouldNotGetNetworksList)
-    
-    powerPredicate = function(iItem, jItem)
-        iPwr = iItem.split(" ")[1].replace("%", "").to_int
-        jPwr = jItem.split(" ")[1].replace("%", "").to_int
-        return iPwr > jPwr
-    end function
-    mergeSort(networks, @powerPredicate)
 
     Console.log(Messages.LogSurroundingNetworks)
     output = Messages.NetlookHeader
@@ -1432,28 +1401,12 @@ command "connect", [], Const.computer, Messages.HelpEntryNetcon, function(argume
     id = arguments[1]
     password = str(arguments[2])
 
-    lines = Intrinsics.computer.network_devices.split(char(10))
-    i = 0; while i < lines.len; i = i + 1
-        parts = lines[i-1].split(" ")
-        lines[i-1] = parts[0]
-    end while
-    ifaces = lines
-    eth = ifaces.indexOf("eth")
-    if eth != null then ifaces.remove(eth)
-    if ifaces.indexOf(iface) == null then return Console.error(Messages.ErrorIncorrectNetworkInterface)
+    if not isExistingWirelessInterface(Intrinsics.computer, iface) then return Console.error(Messages.ErrorIncorrectNetworkInterface)
 
-    networks = Intrinsics.computer.wifi_networks(iface)
+    networks = getNetworksSortedByPower(Intrinsics.computer, iface)
     if not networks then return Console.error(Messages.ErrorCouldNotGetNetworksList)
     if not id isa number or id > networks.len then return Console.error(Messages.ErrorIncorrectNetworkId)
     id = id - 1
-    
-    Console.log(Messages.LookingForTheNetwork)
-    powerPredicate = function(iItem, jItem)
-        iPwr = iItem.split(" ")[1].replace("%", "").to_int
-        jPwr = jItem.split(" ")[1].replace("%", "").to_int
-        return iPwr > jPwr
-    end function
-    mergeSort(networks, @powerPredicate)
 
     network = networks[id].split(" ")
     bssid = network[0]
@@ -1554,6 +1507,63 @@ command "newdir", ["nd"], Const.computer, Messages.HelpEntryDirectory, function(
     for path in fmap(@str, arguments)
         directoryOne(path)
     end for
+end function
+
+
+command "netrandom", [], Const.computer, Messages.HelpEntryNetrandom, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 2)
+    Conditions.computer
+
+    iface = str(arguments.pull)
+    credentials = removeDuplicates(fmap(@str, arguments))
+
+    if not isExistingWirelessInterface(Intrinsics.computer, iface) then return Console.error(Messages.ErrorIncorrectNetworkInterface)
+    networks = getNetworksSortedByPower(Intrinsics.computer, iface)
+    if not networks then return Console.error(Messages.ErrorCouldNotGetNetworksList)
+    
+    incorrectCredentials = []
+    for credential in credentials
+        parts = credential.split(":")
+        if parts.len != 2 then 
+            incorrectCredentials.push(credential)
+            continue
+        end if
+
+        id = parts[0].to_int
+        password = parts[1]
+        if not id isa number or id > networks.len then
+            incorrectCredentials.push(credential)
+            continue
+        end if
+        
+        isConnected = connectWirelessNetworkById(Intrinsics.computer, iface, networks, id, password)
+        if not isConnected then
+            incorrectCredentials.push(credential)
+            continue
+        end if
+    end for
+
+    if incorrectCredentials then
+        Console.error(Messages.ErrorFollowingCredentialsAreIncorrect, {"CREDENTIALS": incorrectCredentials.join(", ")})
+        for credential in incorrectCredentials
+            credentials.remove(credentials.indexOf(credential))
+        end for
+    end if
+
+    if credentials.len == 0 then return
+
+    while true
+        credentials.shuffle
+        credential = credentials[0]
+        
+        parts = credential.split(":")
+        id = parts[0].to_int
+        password = parts[1]
+
+        result = connectWirelessNetworkById(Intrinsics.computer, iface, networks, id, password)
+        Console.log(Messages.LogConnectedToEssidSuccessfully, {"ESSID": getNetworkEssidById(networks, id)})
+        wait(0.01)
+    end while
 end function
 
 

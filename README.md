@@ -45,14 +45,14 @@ Please read! If you're a newbie then PLEASE DON'T USE MARINETTE OR ANY OTHER PRE
 ## How to install?
 
 1.  Clone the repository
-2.  From the root of the project, run **scripts/install_marinette.py**. It'll create **install_marinette.src**. Copy it to the Code Editor, compile it and run the binary
+2.  From the root of the project, run **scripts/install_marinette.py**. It'll create **scriptsgh/install_marinette.src**. Copy it to the in-game Code Editor, compile it and run the binary
 3.  Copy everything from [src](src) to **/home/guest/Sources/Marinette/src**
 4.  Change configuration in **marinette.src**
     1.  From the root of the project, run **scripts/config_password.py** with the desired password. Set the value in **Config.password**
     2.  From the root of the project, run **scripts/config_identificator.py**. Set the value in **Config.identificator**
     3.  (Optionally) From the root of the project, run **scripts/config_available_languages.py**. Set the desired language in **Config.language**
     4.  (Optionally) From the root of the project, run **scripts/config_available_themes.py**. Set the desired theme in **Config.theme**
-    5.  (Optionally) In game, compile and run **scriptsgh/config_mainframe.src**. Set mainframe configuration in **Config.mainframe** and paths to the desired patches in **Config.patches**
+    5.  (Optionally) In game, compile and run **scriptsgh/config_mainframe.src**. Set mainframe configuration in **Config.mainframe** and paths to the desired patches from **Config.patches**
 5.  Compile **marinette.src**. Launch Marinette with `--password {YOUR_PASSWORD}` parameters. Congratulations!
 
 

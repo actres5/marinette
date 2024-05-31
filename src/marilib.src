@@ -99,6 +99,13 @@ IntrinsicsHelpers.tryToFixFdIfCorrupted = function
     Console.warning(Messages.WarningFailedFdCorruptionFix)
 end function
 
+// Update displayed addresses
+IntrinsicsHelpers.updateAddresses = function(intrinsics)
+    if not intrinsics.computer or intrinsics.port != null then return
+    intrinsics.publicAddress = intrinsics.computer.public_ip
+    intrinsics.localAddress = intrinsics.computer.local_ip
+end function
+
 
 Console = {}
 
@@ -187,6 +194,7 @@ Console.cmdloop = function
         // 
         // Various handlers that get executed each loop
         RuntimeHelpers.reloadIfNetworkAppeared
+        RuntimeHelpers.updateSessionsAddresses
         IntrinsicsHelpers.tryToFixFdIfCorrupted
 
         if input.len == 0 then continue

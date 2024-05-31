@@ -217,3 +217,5 @@ Locales.LogMovedFileSuccessfully[_language] = "Файл успешно пере�
 Locales.HelpEntryCorrupt[_language] = "Повредить системный журнал"
 Locales.ErrorFailedLogCorruption[_language] = "Не удалось повредить системный журнал!"
 Locales.LogSuccessfullLogCorruption[_language] = "Системный журнал успешно повреждён"
+Locales.HelpEntryNetrandom[_language] = "(ифейс) (данные) - Переключатель сетей"
+Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Следующие данные для присоединения неверны: {CREDENTIALS}"

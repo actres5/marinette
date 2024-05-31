@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 
+from _hacks import *
+
+
 locales = dict()
 with open("src/localization.src") as fd:
     current_language = "Undetermined"

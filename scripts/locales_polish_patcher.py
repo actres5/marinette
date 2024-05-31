@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 
+from _hacks import *
+
+
 with open("locales/polish.src", "r") as fd:
     content = fd.read()
 
