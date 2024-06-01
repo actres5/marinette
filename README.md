@@ -72,7 +72,7 @@ Fork, put your theme inside of [themes](themes), run [install_marinette.py](scri
 
 ### Translations
 
-Want to translate a lot locale entries for Marinette to be able to speak in your language for absolutely no reason and without getting paid? Nice! Fork the repository. You're looking for [locales](locales). Copy the English locale from here to any text editor, change the **_language** variable from English to the language of your choice and start translating! The rules are the following:
+Want to translate the hell of a lot of locale entries for Marinette to be able to speak in your language for absolutely no reason and without getting paid? Nice! Fork the repository. You're looking for [locales](locales). Copy the English locale from here to any text editor, change the **_language** variable from English to the language of your choice and start translating! The rules are the following:
 
 -   You're prohibited to translate anything in curly brackets caps. For example, you can't translate `{SESSION}`, `{HOST}`, `{SHELLS}`, etc
 -   If you feel your language doesn't have an English terminology counterpart, just transliterate it. Examples of such terminology: "LocalHost", "Service", "Hash", "Crack", etc
@@ -84,7 +84,7 @@ Once you're done, put your locale file into [locales](locales), run [install_mar
 
 ### Bug report
 
-Open up an issue and wait for my response
+Open up an issue, describe any details that may help me fix the bug and wait for my response
 
 
 ### Code contribution
@@ -158,7 +158,7 @@ I've figured no one cares about license of your application in Grey Hack, so I'v
 
 Another interesting projects that you should know about
 
-If you want me to add your project, then open an issue and I'll add you as fast as I can! The exception is proprietary software
+If you want me to add your project, then open an issue and I'll add you as fast as I can! The exception is proprietary software though, won't add any of that here!
 
 
 ### Shells
@@ -171,6 +171,7 @@ If you want me to add your project, then open an issue and I'll add you as fast 
 -   [Project p1an0Xshell](https://github.com/wh0wfg/greyscripts-p1an0) by Irtalhmu
 -   [Project Vexxed](https://github.com/WizeWizard42/GreyHack-Vexxed) by WizeWizard
 -   [OpenViper](https://github.com/cantemizyurek/viper-3.0) by SkidMall
+-   [Viper](https://github.com/EntitySeaker/viper-git) by Volk
 
 
 ### Other

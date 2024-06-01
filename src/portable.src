@@ -1520,7 +1520,7 @@ end function
 ////////////////////////////////////////////////////////////
 
 // Fixes various actions being completed incorrectly because
-// multiplayer desync, such as:
+// of multiplayer desync, such as:
 // * various progress-based actions being completed incorrectly
 // * files not being deleted with fd.delete
 // * to be encountered yet...
