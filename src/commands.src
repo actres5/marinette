@@ -1412,6 +1412,7 @@ command "connect", [], Const.computer, Messages.HelpEntryNetcon, function(argume
     bssid = network[0]
     essid = network[2]
 
+    hasNetworkConnectionBefore = Intrinsics.computer.is_network_active
     result = Intrinsics.computer.connect_wifi(iface, bssid, essid, password)
     if result isa string then
         return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "connect_wifi", "ERROR": result}))
@@ -1419,7 +1420,7 @@ command "connect", [], Const.computer, Messages.HelpEntryNetcon, function(argume
         Console.log(replaceF(Messages.LogConnectedToEssidSuccessfully, {"ESSID": essid}))
     end if
 
-    if Intrinsics.isConnectionRemote then return
+    if Intrinsics.isConnectionRemote or hasNetworkConnectionBefore then return
     RuntimeHelpers.makeNeccessaryRuntimeAssigns
     RuntimeHelpers.checkIfEverythingIsAssigned
 end function

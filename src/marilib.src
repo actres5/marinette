@@ -102,8 +102,13 @@ end function
 // Update displayed addresses
 IntrinsicsHelpers.updateAddresses = function(intrinsics)
     if not intrinsics.computer or intrinsics.port != null then return
-    intrinsics.publicAddress = intrinsics.computer.public_ip
-    intrinsics.localAddress = intrinsics.computer.local_ip
+    if not intrinsics.computer.is_network_active then
+        Intrinsics.publicAddress = null
+        Intrinsics.localAddress = null
+    else
+        intrinsics.publicAddress = intrinsics.computer.public_ip
+        intrinsics.localAddress = intrinsics.computer.local_ip
+    end if
 end function
 
 
