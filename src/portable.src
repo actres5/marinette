@@ -1479,10 +1479,7 @@ end function
 // }
 // vulnerabilities = [vulnerability]
 scanMemoryAddress = function(metaxploit, metalib, address)
-    // 
-    // This is a desync fix
-    yield
-    wait(0.01)
+    desyncFix
     
     scanResult = metaxploit.scan_address(metalib, address)
     if not scanResult then return
@@ -1513,4 +1510,21 @@ scanMemoryAddress = function(metaxploit, metalib, address)
 	end while
 	
 	return vulnerabilities
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Multiplayer specific
+////////////////////////////////////////////////////////////
+
+// Fixes various actions being completed incorrectly because
+// multiplayer desync, such as:
+// * various progress-based actions being completed incorrectly
+// * files not being deleted with fd.delete
+// * to be encountered yet...
+desyncFix = function(waitTime=0.01)
+    yield
+    wait(waitTime)
 end function

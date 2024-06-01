@@ -219,11 +219,7 @@ command "hashes", [], Const.any, Messages.HelpEntryHashcrack, function(arguments
             toCrack = parts[1]
         end if
         
-        // 
-        // This is a desync fix
-        yield
-        wait(0.01)
-
+        desyncFix
         result = crypto.decipher(toCrack)
         if not result then
             Console.error(replaceF(Messages.ErrorUncrackableHash, {"HASH": name}))
@@ -366,11 +362,7 @@ command "pktmon", [], Const.any, Messages.HelpEntryPktmon, function(arguments)
 
     Console.log(Messages.LogStartingSniffing)
     i = 0; while i < packets; i = i + 1
-        // 
-        // This is a desync fix
-        yield
-        wait(0.01)
-        
+        desyncFix
         result = metaxploit.sniffer(true)
         if not result then return Console.error(Messages.ErrorUnknown)
 
@@ -1095,6 +1087,7 @@ command "wificrack", [], Const.host, Messages.HelpEntryNetcrack, function(argume
     password = crypto.aircrack(current_path+"/file.cap")
 
     cap = get_shell.host_computer.File(current_path+"/file.cap")
+    desyncFix
     if cap then cap.delete
 
     Console.log(Messages.LogStoppingMonitorMode)
@@ -1553,17 +1546,20 @@ command "netrandom", [], Const.computer, Messages.HelpEntryNetrandom, function(a
 
     if credentials.len == 0 then return
 
+    credential = null
     while true
-        credentials.shuffle
+        while credentials[0] == credential
+            credentials.shuffle
+        end while
         credential = credentials[0]
         
         parts = credential.split(":")
         id = parts[0].to_int
         password = parts[1]
 
+        desyncFix
         result = connectWirelessNetworkById(Intrinsics.computer, iface, networks, id, password)
         Console.log(Messages.LogConnectedToEssidSuccessfully, {"ESSID": getNetworkEssidById(networks, id)})
-        wait(0.01)
     end while
 end function
 
@@ -1707,11 +1703,12 @@ command "del", [], Const.file, Messages.HelpEntryDelete, function(arguments)
             end for
             if areAllAccessible then
                 for dirfd in dirfds
-                    yield
+                    desyncFix(0.02)
                     dirfd.delete
                 end for
             end if
         end if
+        desyncFix
         result = fd.delete
         if result != "" then return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "delete", "ERROR": result}))
         Console.log(replaceF(Messages.LogFileDeletedSuccessfully, {"PATH": fd.path}))
