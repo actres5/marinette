@@ -23,7 +23,7 @@ Important note: this is **NOT A REAL HACKING TOOLKIT**! This has been made, work
 
 ## About
 
-Marinette is my view on what a shell should look like in Grey Hack. She has no fancy features and won't stand out from the crowd. I've made it so there would be a shell I 100% understand and can hack on. The code is publicly available, which means you can fork, hack on and redistribute Marinette as you wish, though, I generally discourage you from doing so because the code itself is very questionable :P
+Marinette is my view on what a shell should look like in Grey Hack. She has no fancy features and won't stand out from the crowd. I've created her so there would be a shell I 100% understand and can hack on. The code is publicly available, which means you can fork, hack on and redistribute Marinette as you wish, though, I generally discourage you from doing so because the code itself is very questionable :P
 
 Anyway, have fun! <3
 
