@@ -226,6 +226,8 @@ Locales.ErrorFailedLogCorruption = {}
 Locales.LogSuccessfullLogCorruption = {}
 Locales.HelpEntryNetrandom = {}
 Locales.ErrorFollowingCredentialsAreIncorrect = {}
+Locales.HelpEntryScp = {}
+Locales.LogSuccessfullySentFile = {}
 
 
 
@@ -451,6 +453,8 @@ Locales.ErrorFailedLogCorruption[_language] = "Could not corrupt system's logs!"
 Locales.LogSuccessfullLogCorruption[_language] = "System's logs are corrupted successfully"
 Locales.HelpEntryNetrandom[_language] = "(iface) (creds) - Network switcher"
 Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Following credentials are incorrect: {CREDENTIALS}"
+Locales.HelpEntryScp[_language] = "download/upload (ap/path) (dest) - Send file"
+Locales.LogSuccessfullySentFile[_language] = "Sent file successfully"
 
 
 
@@ -801,7 +805,7 @@ Locales.ErrorCouldNotLaunchBinary[_language] = "Не удалось запуст
 Locales.LogRunningBinary[_language] = "Запускаю посторонний бинарный файл..."
 Locales.HelpEntryHelp[_language] = "[комды] - Справка с доступными командами"
 Locales.HelpEntryLicense[_language] = "Благодарности и признательности"
-Locales.HelpEntryQuit[_language] = "Выключить Маринет"
+Locales.HelpEntryQuit[_language] = "Выключить Маринетт"
 Locales.HelpEntryClear[_language] = "Опустошить окно консоли"
 Locales.HelpEntrySm[_language] = "add | delete (айди) | use (айди) | look - Менеджер сессии"
 Locales.HelpEntryHashcrack[_language] = "(хэши) - Крякер MD5 хешей"
@@ -840,7 +844,7 @@ Locales.ErrorConfigIsMalformed[_language] = "Конфигурация настр
 Locales.ErrorIsIncorrectlySet[_language] = "<i>{VALUE}</i> выставлен неверно!"
 Locales.ErrorGenerateAtCompileTime[_language] = "Сгенерируйте всё что выше на этапе сборки! Выключаюсь"
 Locales.SpecialThanksAndCredits[_language] = "Особые благодарности выражены:"
-Locales.YouAreAllAwesome[_language] = "Вы все замечательные! Большое вам спасибо, Маринет не была бы тем чем она является если бы не вы!"
+Locales.YouAreAllAwesome[_language] = "Вы все замечательные! Большое вам спасибо, Маринетт не была бы тем чем она является если бы не вы!"
 Locales.HelpEntryReload[_language] = "Запустить и проверить различные системы"
 Locales.HelpCategoryPlugins[_language] = "Патчи"
 Locales.LogPleaseEnterPassword[_language] = "Пожалуйста, введите пароль чтобы продолжить"
@@ -865,6 +869,8 @@ Locales.ErrorFailedLogCorruption[_language] = "Не удалось повред�
 Locales.LogSuccessfullLogCorruption[_language] = "Системный журнал успешно повреждён"
 Locales.HelpEntryNetrandom[_language] = "(ифейс) (данные) - Переключатель сетей"
 Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Следующие данные для присоединения неверны: {CREDENTIALS}"
+Locales.HelpEntryScp[_language] = "download/upload (ап/путь) (назн) - Отправить файл"
+Locales.LogSuccessfullySentFile[_language] = "Файл успешно отправлен"
 
 
 

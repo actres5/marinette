@@ -58,9 +58,6 @@ end function
 // 
 // Loads stuff that could be loaded only at runtime
 RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
-    Console.log(Messages.LogRuntimeLoading)
-
-
     pwd = Intrinsics.file.path
 
     Intrinsics.shell = get_shell
@@ -80,12 +77,12 @@ RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
     end if
 
 
-    // 
-    // Loads every library it can find on the system
-    // Loads the most recent versions if metaxploit has been found
-    for kv in loadLibraries
-        Libs[kv["key"]] = kv["value"]
-    end for
+    // // 
+    // // Loads every library it can find on the system
+    // // Loads the most recent versions if metaxploit has been found
+    // for kv in loadLibraries
+    //     Libs[kv["key"]] = kv["value"]
+    // end for
 
 
     shared = get_custom_object
@@ -121,6 +118,14 @@ RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
     end if
 
 
+    // 
+    // Loads every library it can find on the system
+    // Loads the most recent versions if metaxploit has been found
+    for kv in loadLibraries
+        Libs[kv["key"]] = kv["value"]
+    end for
+
+
     SessionsHelpers.add(Intrinsics)
     RuntimeHelpers.assignMainframeIfConfigured
 end function
@@ -128,8 +133,6 @@ end function
 // 
 // Checks if all stuff that loads at runtime is loaded
 RuntimeHelpers.checkIfEverythingIsAssigned = function
-    Console.log(Messages.LogSystemChecks)
-    
     haveAllPassed = true
     if not (Intrinsics.publicAddress and Intrinsics.localAddress) then haveAllPassed = false
     if Libs.len < 4 then haveAllPassed = false

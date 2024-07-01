@@ -146,6 +146,7 @@ command "sessions", [], Const.any, Messages.HelpEntrySm, function(arguments)
         SessionsHelpers.add(Intrinsics)
         Console.log(Messages.LogSuccessfullSessionsUpdate)
     else if "delete".indexOf(command) == 0 then
+        shownIds = deepCopy(arguments)
         i = 0; while i < arguments.len; i = i + 1
             id = arguments[i-1]
             if id isa string or not SessionsHelpers.delete(id) then
@@ -154,7 +155,7 @@ command "sessions", [], Const.any, Messages.HelpEntrySm, function(arguments)
                 j = i-1; while j < arguments.len; j = j + 1
                     arguments[j-1] = arguments[j-1] - 1
                 end while
-                Console.log(Messages.LogSuccessfullSessionDeletion, {"ID": id})
+                Console.log(Messages.LogSuccessfullSessionDeletion, {"ID": shownIds[i-1]})
             end if
         end while
     else if "use".indexOf(command) == 0 then
@@ -1291,20 +1292,34 @@ command "hostify", [], Const.shell, Messages.HelpEntryHostify, function(argument
         fdMarinette = findMyself(get_shell, Config.identificator, "--identify-marinette --password "+Var.password)
         if not fdMarinette then return Console.error(Messages.ErrorCouldNotFindMyself)
         
-        Console.log(Messages.LogUploadingNeccessary)
-        fdBin = get_shell.host_computer.File(fdMarinette.path)
-        result = get_shell.scp(fdMarinette.path, fdPermissive.path, Intrinsics.shell)
-        if result isa string then
-            return Console.error(Messages.ErrorStringGeneral, {"FUNC": "scp", "ERROR": result})
-        else if not result then
-            return Console.error(Messages.ErrorUnknown)
+        if Libs.indexes.indexOf("metaxploit") != null then
+            uploads = [fdMarinette.path] + loadLibraries(Libs.metaxploit, true).values
+        else
+            uploads = [fdMarinette.path] + loadLibraries(null, true).values
         end if
-        Console.log("<i>"+fdMarinette.path+"</i> -> <i>"+fdPermissive.path)
-        marinettePath = fdPermissive.path+"/"+fdMarinette.name
+
+        Console.log(Messages.LogUploadingNeccessary)
+        for upload in uploads
+            hasFailed = false
+            result = get_shell.scp(upload, fdPermissive.path, Intrinsics.shell)
+            if result isa string then
+                Console.error(Messages.ErrorStringGeneral, {"FUNC": "scp", "ERROR": result})
+                hasFailed = true
+            else if not result then
+                Console.error(Messages.ErrorUnknown)
+                hasFailed = true
+            end if
+            if hasFailed then
+                Console.error("<i>"+upload+"</i> -/> <i>"+fdPermissive.path)
+                if upload == fdMarinette.path then return
+            else
+                Console.log("<i>"+upload+"</i> --> <i>"+fdPermissive.path)
+                if upload == fdMarinette.path then marinettePath = fdPermissive.path+"/"+fdMarinette.name
+            end if
+        end for
     end if
 
     Intrinsics.isConnectionRemote = false
-
     RuntimeHelpers.startMarinette(Intrinsics.shell, marinettePath)
 end function
 
@@ -1341,6 +1356,44 @@ command "start", [], Const.shell, Messages.HelpEntryRun, function(arguments)
         Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "launch", "ERROR": result}))
     else if not result then
         Console.error(Messages.ErrorCouldNotLaunchBinary)
+    end if
+end function
+
+
+command "scp", ["ftp"], Const.shell, Messages.HelpEntryScp, function(arguments)
+    Conditions.arguments(arguments, 3)
+    Conditions.remote
+    Conditions.shell
+
+    command = str(arguments[0])
+    path = str(arguments[1])
+    dest = str(arguments[2])
+
+    fdHost = get_shell.host_computer.File("/")
+    if "download".indexOf(command) == 0 then
+        fdSource = iterateToPath(Intrinsics.file, path)
+        fdDest = iterateToPath(fdHost, dest)
+        shellSource = Intrinsics.shell
+        shellDest = get_shell
+    else if "upload".indexOf(command) == 0 then
+        fdSource = iterateToPath(fdHost, path)
+        fdDest = iterateToPath(Intrinsics.file, dest)
+        shellSource = get_shell
+        shellDest = Intrinsics.shell
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+    
+    if not fdSource then return Console.error(Messages.ErrorSourcePathDoesNotExist)
+    if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
+
+    result = sendFile(shellSource, fdSource.path, fdDest.path, shellDest)
+    if result isa string then
+        Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "sendFile", "ERROR": result}))
+    else if not result then
+        Console.error(Messages.ErrorUnknown)
+    else
+        Console.log(Messages.LogSuccessfullySentFile)
     end if
 end function
 
@@ -1720,7 +1773,7 @@ command "del", [], Const.file, Messages.HelpEntryDelete, function(arguments)
 end function
 
 
-command "copy", [], Const.file, Messages.HelpEntryCopy, function(arguments)
+command "copy", ["cp"], Const.file, Messages.HelpEntryCopy, function(arguments)
     Conditions.arguments(arguments, 2)
     
     fd = Intrinsics.file
@@ -1774,7 +1827,7 @@ command "tree", [], Const.file, Messages.HelpEntryTree, function(arguments)
 end function
 
 
-command "move", [], Const.file, Messages.HelpEntryMove, function(arguments)
+command "move", ["mv"], Const.file, Messages.HelpEntryMove, function(arguments)
     Conditions.arguments(arguments, 2)
     
     fd = Intrinsics.file
@@ -1816,3 +1869,8 @@ command "corrupt", [], Const.file, Messages.HelpEntryCorrupt, function(arguments
     if not result then return Console.error(Messages.ErrorFailedLogCorruption)
     Console.log(Messages.LogSuccessfullLogCorruption)
 end function
+
+
+// command "perms", [], Const.file, Messages.TODO, function(arguments)
+
+// end function

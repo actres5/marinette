@@ -1195,11 +1195,11 @@ end function
 // Loads all the libraries it can find on host
 // Returns the following:
 // libs = {
-//     "libName1": libObject,
-//     "libName2": libObject,
+//     "libName1": libObject/string,
+//     "libName2": libObject/string,
 //     ...
 // }
-loadLibraries = function(metaxploit=null)
+loadLibraries = function(metaxploit=null, pathsInsteadOfObjects=false)
     libs = {}
     versions = {}
 
@@ -1233,10 +1233,18 @@ loadLibraries = function(metaxploit=null)
             end if
             comparing.sort
             comparing.reverse
-            libs[libName] = library
+            if pathsInsteadOfObjects then
+                libs[libName] = fd.path
+            else
+                libs[libName] = library
+            end if
             versions[libName] = comparing[0]
         else
-            libs[libName] = library
+            if pathsInsteadOfObjects then
+                libs[libName] = fd.path
+            else
+                libs[libName] = library
+            end if
         end if
     end while
 
@@ -1301,6 +1309,11 @@ findMyself = function(shell, identificator, args, lightMode=false)
             end if
         end if
     end while
+end function
+
+sendFile = function(shell, source, dest, remoteShell)
+    if typeof(shell) == "shell" then return shell.scp(source, dest, remoteShell)
+    if typeof(shell) == "ftpshell" then return shell.put(source, dest, remoteShell)
 end function
 
 
