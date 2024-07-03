@@ -228,6 +228,7 @@ Locales.HelpEntryNetrandom = {}
 Locales.ErrorFollowingCredentialsAreIncorrect = {}
 Locales.HelpEntryScp = {}
 Locales.LogSuccessfullySentFile = {}
+Locales.ErrorFailedFileTransfer = {}
 
 
 
@@ -455,6 +456,7 @@ Locales.HelpEntryNetrandom[_language] = "(iface) (creds) - Network switcher"
 Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Following credentials are incorrect: {CREDENTIALS}"
 Locales.HelpEntryScp[_language] = "download/upload (ap/path) (dest) - Send file"
 Locales.LogSuccessfullySentFile[_language] = "Sent file successfully"
+Locales.ErrorFailedFileTransfer[_language] = "Could not send file! Perhaps, the session type is insufficient?"
 
 
 
@@ -871,6 +873,7 @@ Locales.HelpEntryNetrandom[_language] = "(ифейс) (данные) - Пере�
 Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Следующие данные для присоединения неверны: {CREDENTIALS}"
 Locales.HelpEntryScp[_language] = "download/upload (ап/путь) (назн) - Отправить файл"
 Locales.LogSuccessfullySentFile[_language] = "Файл успешно отправлен"
+Locales.ErrorFailedFileTransfer[_language] = "Не удалось отправить файл! Может, типа сессии недостаточно?"
 
 
 

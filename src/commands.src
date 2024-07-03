@@ -1314,7 +1314,7 @@ command "hostify", [], Const.shell, Messages.HelpEntryHostify, function(argument
                 if upload == fdMarinette.path then return
             else
                 Console.log("<i>"+upload+"</i> --> <i>"+fdPermissive.path)
-                if upload == fdMarinette.path then marinettePath = fdPermissive.path+"/"+fdMarinette.name
+                if upload == fdMarinette.path then marinettePath = pathJoin([fdPermissive.path, fdMarinette.name])
             end if
         end for
     end if
@@ -1363,7 +1363,6 @@ end function
 command "scp", ["ftp"], Const.shell, Messages.HelpEntryScp, function(arguments)
     Conditions.arguments(arguments, 3)
     Conditions.remote
-    Conditions.shell
 
     command = str(arguments[0])
     path = str(arguments[1])
@@ -1371,30 +1370,37 @@ command "scp", ["ftp"], Const.shell, Messages.HelpEntryScp, function(arguments)
 
     fdHost = get_shell.host_computer.File("/")
     if "download".indexOf(command) == 0 then
-        fdSource = iterateToPath(Intrinsics.file, path)
-        fdDest = iterateToPath(fdHost, dest)
+        source = iterateToPath(Intrinsics.file, path)
+        dest = iterateToPath(fdHost, dest)
+
         shellSource = Intrinsics.shell
+        computerSource = Intrinsics.computer
+        fdSource = Intrinsics.file
+
         shellDest = get_shell
+        computerDest = shellDest.host_computer
+        fdDest = computerDest.File("/")
     else if "upload".indexOf(command) == 0 then
-        fdSource = iterateToPath(fdHost, path)
-        fdDest = iterateToPath(Intrinsics.file, dest)
+        source = iterateToPath(fdHost, path)
+        dest = iterateToPath(Intrinsics.file, dest)
+
         shellSource = get_shell
+        computerSource = shellSource.host_computer
+        fdSource = computerSource.File("/")
+
         shellDest = Intrinsics.shell
+        computerDest = Intrinsics.computer
+        fdDest = Intrinsics.file
     else
         return Console.error(Messages.ErrorUnknownArguments)
     end if
     
-    if not fdSource then return Console.error(Messages.ErrorSourcePathDoesNotExist)
-    if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
+    if not source then return Console.error(Messages.ErrorSourcePathDoesNotExist)
+    if not dest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
 
-    result = sendFile(shellSource, fdSource.path, fdDest.path, shellDest)
-    if result isa string then
-        Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "sendFile", "ERROR": result}))
-    else if not result then
-        Console.error(Messages.ErrorUnknown)
-    else
-        Console.log(Messages.LogSuccessfullySentFile)
-    end if
+    result = sendFile(shellSource, computerSource, fdSource, source.path, dest.path, shellDest, computerDest, fdDest)
+    if not result then return Console.error(Messages.ErrorFailedFileTransfer)
+    Console.log(Messages.LogSuccessfullySentFile)
 end function
 
 
@@ -1610,7 +1616,6 @@ command "netrandom", [], Const.computer, Messages.HelpEntryNetrandom, function(a
         id = parts[0].to_int
         password = parts[1]
 
-        desyncFix
         result = connectWirelessNetworkById(Intrinsics.computer, iface, networks, id, password)
         Console.log(Messages.LogConnectedToEssidSuccessfully, {"ESSID": getNetworkEssidById(networks, id)})
     end while
@@ -1869,8 +1874,3 @@ command "corrupt", [], Const.file, Messages.HelpEntryCorrupt, function(arguments
     if not result then return Console.error(Messages.ErrorFailedLogCorruption)
     Console.log(Messages.LogSuccessfullLogCorruption)
 end function
-
-
-// command "perms", [], Const.file, Messages.TODO, function(arguments)
-
-// end function
