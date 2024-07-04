@@ -195,14 +195,10 @@ end function
 Console.cmdloop = function
     while true
         input = Console.input(Console.prompt).trim
-
-        // 
-        // Various handlers that get executed each loop
-        RuntimeHelpers.reloadIfNetworkAppeared
-        RuntimeHelpers.updateSessionsAddresses
-        IntrinsicsHelpers.tryToFixFdIfCorrupted
-
-        if input.len == 0 then continue
+        if input.len == 0 then
+            RuntimeHelpers.cmdAllHandlers
+            continue
+        end if
 
         parts = input.split(" ")
 
@@ -217,6 +213,7 @@ Console.cmdloop = function
 
             if Commands.indexes.indexOf(command) == null then
                 Console.error(Messages.ErrorCommandNotFound)
+                RuntimeHelpers.cmdAllHandlers
                 continue
             end if
         end if
@@ -226,7 +223,10 @@ Console.cmdloop = function
             arguments.push(part.to_int)
         end for
         command = Commands[command]
+
+        RuntimeHelpers.cmdPreHandlers
         command(arguments)
+        RuntimeHelpers.cmdPostHandlers
     end while
 end function
 

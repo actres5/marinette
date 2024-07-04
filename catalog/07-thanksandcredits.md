@@ -15,6 +15,7 @@ Special thanks and credits goes to:
 -   [Simonize](https://github.com/Simoniko) - for color scheme(see `NoAuthV3Ocean` [theme](themes/nav3ocean.src)) and Polish translation
 -   [Olipro](https://github.com/Olipro) - for making Omni, from leaked version of which I've borrowed a color scheme(see `Omni` [theme](themes/omni.src))
 -   [Volk](https://github.com/EntitySeaker) - for making Viper, from leaked version of which I've borrowed a color scheme(see `Viper` [theme](themes/viper.src))
+-   [Plu70](https://github.com/jhook777) - for making 5hell, port scanner of which inspired me(see `netscan`)
 
 You are all awesome! Thank you a lot, Marinette wouldn't be what it is if it weren't for you people! <3
 

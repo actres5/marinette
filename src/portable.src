@@ -284,49 +284,53 @@ getNetworkNode = function(address)
     return router
 end function
 
-getPublicPortsWithLocalStates = function(address)
+getNetworkPorts = function(address)
     router = getNetworkNode(address)
     if not router then return []
 
-    ports = []
-    for localAddress in router.devices_lan_ip
-        devicePorts = router.device_ports(localAddress)
-        if devicePorts == null or devicePorts isa string then continue
-        for localPort in devicePorts
-            isPublicPort = false
-            for publicPort in router.used_ports
-                if publicPort.get_lan_ip != localPort.get_lan_ip then continue
-                if publicPort.port_number != localPort.port_number then continue
-                isPublicPort = true
+    devicePorts = []
+    for address in router.devices_lan_ip
+        localPorts = router.device_ports(address)
+        if localPorts == null or localPorts isa string then continue
+        for localPort in localPorts
+            publicPort = null
+            for port in router.used_ports
+                if port.get_lan_ip != localPort.get_lan_ip or router.port_info(port) != router.port_info(localPort) then continue
+                publicPort = port
                 break
             end for
-            if isPublicPort then ports.push(localPort)
+            devicePorts.push({"public": publicPort, "local": localPort})
         end for
     end for
-    return ports
-end function
 
-getLocalPorts = function(address)
-    router = getNetworkNode(address)
-    if not router then return []
-
-    ports = []
-    for localAddress in router.devices_lan_ip
-        devicePorts = router.device_ports(localAddress)
-        if devicePorts == null or devicePorts isa string then continue
-        for localPort in devicePorts
-            isPublicPort = false
-            for publicPort in router.used_ports
-                if publicPort.get_lan_ip != localPort.get_lan_ip then continue
-                if publicPort.port_number != localPort.port_number then continue
-                isPublicPort = true
-                break
-            end for
-            if not isPublicPort then ports.push(localPort)
+    networkPorts = []
+    for devicePort in devicePorts
+        isUnique = true
+        for networkPort in networkPorts
+            if devicePort.local.get_lan_ip != networkPort.local.get_lan_ip or router.port_info(devicePort.local) != router.port_info(networkPort.local) then continue
+            isUnique = false
+            break
         end for
+        if isUnique then networkPorts.push(devicePort)
     end for
-    return ports
+
+    return networkPorts
 end function
+
+// getLocalPorts = function(address)
+//     router = getNetworkNode(address)
+//     if not router then return []
+
+//     ports = []
+//     for localAddress in router.devices_lan_ip
+//         devicePorts = router.device_ports(localAddress)
+//         if devicePorts == null or devicePorts isa string then continue
+//         for localPort in devicePorts
+//             ports.push(localPort)
+//         end for
+//     end for
+//     return ports
+// end function
 
 // 
 // Returns computers without ports
@@ -345,14 +349,8 @@ end function
 // 
 // Returns port behind router/switch with exact localAddress and portNumber
 getExactPort = function(nodeAddress, localAddress, portNumber)
-    router = getNetworkNode(nodeAddress)
-    if not router then return
-
-    ports = router.used_ports
-    if isNodeLocallyAccessible(router) then ports = getPublicPortsWithLocalStates(nodeAddress) + getLocalPorts(nodeAddress)
-
-    for port in ports
-        if port.get_lan_ip == localAddress and port.port_number == portNumber then return port
+    for port in getNetworkPorts(nodeAddress)
+        if port.local.get_lan_ip == localAddress and port.local.port_number == portNumber then return port
     end for
 end function
 

@@ -77,14 +77,6 @@ RuntimeHelpers.makeNeccessaryRuntimeAssigns = function
     end if
 
 
-    // // 
-    // // Loads every library it can find on the system
-    // // Loads the most recent versions if metaxploit has been found
-    // for kv in loadLibraries
-    //     Libs[kv["key"]] = kv["value"]
-    // end for
-
-
     shared = get_custom_object
 
     if shared.indexes.indexOf("Var") != null then 
@@ -132,7 +124,7 @@ end function
 
 // 
 // Checks if all stuff that loads at runtime is loaded
-RuntimeHelpers.checkIfEverythingIsAssigned = function
+RuntimeHelpers.checkIfEverythingIsAssigned = function(supressOutput=false)
     haveAllPassed = true
     if not (Intrinsics.publicAddress and Intrinsics.localAddress) then haveAllPassed = false
     if Libs.len < 4 then haveAllPassed = false
@@ -148,6 +140,7 @@ RuntimeHelpers.checkIfEverythingIsAssigned = function
         if not MainframeHelpers.isReachable then haveAllPassed = false
     end if
 
+    if supressOutput then return
     if not haveAllPassed then
         Console.warning(Messages.WarningFailedSystemChecks)
     else
@@ -219,9 +212,8 @@ end function
 RuntimeHelpers.reloadIfNetworkAppeared = function
     if (Intrinsics.publicAddress and Intrinsics.localAddress) or not get_shell.host_computer.is_network_active then return
     if Intrinsics.isConnectionRemote then return
-    Console.log(Messages.LogReloadingNetworkAppeared)
     RuntimeHelpers.makeNeccessaryRuntimeAssigns
-    RuntimeHelpers.checkIfEverythingIsAssigned
+    RuntimeHelpers.checkIfEverythingIsAssigned(true)
 end function
 
 RuntimeHelpers.updateSessionsAddresses = function
@@ -229,4 +221,19 @@ RuntimeHelpers.updateSessionsAddresses = function
     for intrinsics in sessions
         IntrinsicsHelpers.updateAddresses(intrinsics)
     end for
+end function
+
+RuntimeHelpers.cmdPreHandlers = function
+    RuntimeHelpers.reloadIfNetworkAppeared
+    RuntimeHelpers.updateSessionsAddresses
+    IntrinsicsHelpers.tryToFixFdIfCorrupted
+end function
+
+RuntimeHelpers.cmdPostHandlers = function
+    RuntimeHelpers.updateSessionsAddresses
+end function
+
+RuntimeHelpers.cmdAllHandlers = function
+    RuntimeHelpers.cmdPreHandlers
+    RuntimeHelpers.cmdPostHandlers
 end function

@@ -222,3 +222,6 @@ Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Following credential
 Locales.HelpEntryScp[_language] = "download/upload (ap/path) (dest) - Send file"
 Locales.LogSuccessfullySentFile[_language] = "Sent file successfully"
 Locales.ErrorFailedFileTransfer[_language] = "Could not send file! Perhaps, the session type is insufficient?"
+Locales.NescaHeaderNew[_language] = "Svc Ver State Pub Loc Addr"
+Locales.PortStateLocal[_language] = "Local"
+Locales.LogNescaNoPorts[_language] = "Nodes with no ports on <i>{DOMAIN}</i> <i>{PUBADDR}</i> <i>{LOCADDR}</i>"

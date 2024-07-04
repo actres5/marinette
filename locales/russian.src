@@ -222,3 +222,6 @@ Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Следующие �
 Locales.HelpEntryScp[_language] = "download/upload (ап/путь) (назн) - Отправить файл"
 Locales.LogSuccessfullySentFile[_language] = "Файл успешно отправлен"
 Locales.ErrorFailedFileTransfer[_language] = "Не удалось отправить файл! Может, типа сессии недостаточно?"
+Locales.NescaHeaderNew[_language] = "Серв Вер Сост Пуб Лок Адр"
+Locales.PortStateLocal[_language] = "Локаль"
+Locales.LogNescaNoPorts[_language] = "Узлы без портов на <i>{DOMAIN}</i> <i>{PUBADDR}</i> <i>{LOCADDR}</i>"

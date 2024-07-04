@@ -107,7 +107,8 @@ command "credits", [], Const.any, Messages.HelpEntryLicense, function(arguments)
 
     contributors = [
         "Kurouzu", "Joe Strout", "Clover", "Roupi",
-        "Finko42", "Ariavne", "Guest", "Simonize", "Olipro", "Volk",
+        "Finko42", "Ariavne", "Guest", "Simonize", "Olipro", 
+        "Volk", "Plu70",
     ]
 
     print(primary(Messages.SpecialThanksAndCredits))
@@ -536,9 +537,10 @@ command "netcat", ["ncat", "nc"], Const.host, Messages.HelpEntrySvcon, function(
 
     svcPort = getExactPort(addr, locAddr, port)
     if not svcPort then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
+    if not isNodeLocallyAccessible(router) and not svcPort.public then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
 
     target = addr
-    if isNodeLocallyAccessible(router) then target = locAddr
+    if isNodeLocallyAccessible(router) then target = locAddr else port = svcPort.public.port_number
     result = Intrinsics.shell.connect_service(addr, port, user, pass, svc)
     if not result then return Console.error(Messages.ErrorConnectionFailed)
     if ["shell", "ftpshell"].indexOf(typeof(result)) == null then Console.error(Messages.ErrorConnectionUnknownShell)
@@ -746,12 +748,12 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
 
     targets = []
     if isNodeLocallyAccessible(router) then
-        for port in getPublicPortsWithLocalStates(addr) + getLocalPorts(addr)
+        for port in getNetworkPorts(addr)
             target = {
                 "publicAddr": router.public_ip,
-                "localAddr": port.get_lan_ip,
-                "ip": port.get_lan_ip,
-                "port": port.port_number,
+                "localAddr": port.local.get_lan_ip,
+                "ip": port.local.get_lan_ip,
+                "port": port.local.port_number,
             }
             targets.push(target)
         end for
@@ -774,12 +776,13 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
             end if
         end for
     else
-        for port in router.used_ports
+        for port in getNetworkPorts(addr)
+            if not port.public then continue
             target = {
                 "publicAddr": router.public_ip,
-                "localAddr": port.get_lan_ip,
+                "localAddr": port.public.get_lan_ip,
                 "ip": router.public_ip,
-                "port": port.port_number,
+                "port": port.public.port_number,
             }
             targets.push(target)
         end for
@@ -953,7 +956,7 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
 end function
 
 
-command "addresses", [], Const.host, Messages.HelpEntryRaddr, function(arguments)
+command "addr", [], Const.host, Messages.HelpEntryRaddr, function(arguments)
     Conditions.argumentsFewerThan(arguments, 2)
     Conditions.host
     Conditions.network
@@ -1111,108 +1114,47 @@ command "netscan", ["nesca"], Const.host, Messages.HelpEntryNesca, function(argu
 
         router = getNetworkNode(address)
         if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
-        nodes.push(router)
 
         domain = getDomainName(address)
-        Console.log(replaceF(Messages.LogNescaOn, {"DOMAIN": domain, "PUBADDR": router.public_ip, "LOCADDR": router.local_ip}))
-        
-        output = Messages.NescaHeader
-        if not isNodeLocallyAccessible(router) then output = output+char(10)+"0 "+Messages.PortStateOpened+" "+Messages.PortStateOpened+" "+Messages.ServiceNode+" "+router.kernel_version+" "+router.local_ip
-        for publicPort in router.used_ports
-            localAddr = publicPort.get_lan_ip
-            port = publicPort.port_number
-            pubState = Messages.PortStateClosed
-            locState = Messages.PortStateClosed
-            info = router.port_info(publicPort)
-            if not publicPort.is_closed then pubState = Messages.PortStateOpened
-            for localPort in getPublicPortsWithLocalStates(address)
-                if localPort.get_lan_ip != localAddr then continue
-                if localPort.port_number != port then continue
-                if not localPort.is_closed then
-                    locState = Messages.PortStateOpened
-                    break
-                end if
+
+        portlessNodes = getPortlessNodes(address)
+        if portlessNodes.len > 0 then
+            Console.log(Messages.LogNescaNoPorts, {"DOMAIN": domain, "PUBADDR": router.public_ip, "LOCADDR": router.local_ip})
+            for portlessAddress in portlessNodes
+                print(secondary(portlessAddress))
             end for
-            output = output+char(10)+[port,pubState,locState,info,localAddr].join(" ")
-        end for
-
-        for localPort in getLocalPorts(address)
-            localAddr = localPort.get_lan_ip
-            port = localPort.port_number
-            pubState = Messages.PortStateClosed
-            locState = Messages.PortStateClosed
-            info = router.port_info(localPort)
-            if not localPort.is_closed then locState = Messages.PortStateOpened
-            output = output+char(10)+[port,pubState,locState,info,localAddr].join(" ")
-        end for
-
-        for localAddr in router.devices_lan_ip
-            node = null
-            if isNodeLocallyAccessible(router) then node = getNetworkNode(localAddr)
-            if not node then continue
-            nodes.push(node)
-
-            localAddr = node.local_ip
-            port = "0"
-            pubState = Messages.PortStateOpened
-            locState = Messages.PortStateOpened
-            info = Messages.ServiceNode+" "+node.kernel_version
-            output = output+char(10)+[port,pubState,locState,info,localAddr].join(" ")
-        end for
-
-        for portlessAddr in getPortlessNodes(address)
-            output = output+char(10)+"- - - "+Messages.ServiceComputer+" - "+portlessAddr
-        end for
-
-        lines = output.split(char(10))
-        addrPredicate = function(iItem, jItem)
-            iAddr = iItem.split(" ")[5]
-            jAddr = jItem.split(" ")[5]
-            return iAddr > jAddr
-        end function
-        compPredicate = function(iItem, jItem)
-            iSvc = iItem.split(" ")[3]
-            jSvc = jItem.split(" ")[3]
-            return iSvc != jSvc and jSvc == Messages.ServiceComputer
-        end function
-        nodePredicate = function(iItem, jItem)
-            iSvc = iItem.split(" ")[3]
-            jSvc = jItem.split(" ")[3]
-            return iSvc != jSvc and jSvc == Messages.ServiceNode
-        end function
-        mergeSort(lines, @addrPredicate, 1)
-        mergeSort(lines, @compPredicate, 1)
-        mergeSort(lines, @nodePredicate, 1)
-
-        output = lines.join(char(10))
-        print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
+        end if
 
         output = Messages.NescaFirewallHeader
-        for node in nodes
-            for rule in node.firewall_rules
-                parts = rule.split(" ")
-                action = parts[0]
-                port = parts[1]
-                source = parts[2]
-                dest = parts[3]
-                addr = node.local_ip
-                output = output+char(10)+[port,action,source,dest,addr].join(" ")
-            end for
+        for rule in router.firewall_rules
+            parts = rule.split(" ")
+            action = parts[0]
+            port = parts[1]
+            source = parts[2]
+            dest = parts[3]
+            addr = router.local_ip
+            output = output+char(10)+[port,action,source,dest,addr].join(" ")
         end for
-
-        if output == Messages.NescaFirewallHeader then return
-        Console.log(replaceF(Messages.LogNescaFirewallOn, {"DOMAIN": domain, "PUBADDR": router.public_ip, "LOCADDR": router.local_ip}))
-
-        lines = output.split(char(10))
-        addrPredicate = function(iItem, jItem)
-            iAddr = iItem.split(" ")[4]
-            jAddr = jItem.split(" ")[4]
-            return iAddr > jAddr
-        end function
-        mergeSort(lines, @addrPredicate, 1)
+        if output != Messages.NescaFirewallHeader then 
+            Console.log(replaceF(Messages.LogNescaFirewallOn, {"DOMAIN": domain, "PUBADDR": router.public_ip, "LOCADDR": router.local_ip}))
+            print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
+        end if
         
-        output = lines.join(char(10))
-        print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
+        output = Messages.NescaHeaderNew
+        for port in getNetworkPorts(address)
+            public = "-"
+            state = Messages.PortStateLocal
+            if port.public then
+                public = port.public.port_number
+                state = Messages.PortStateClosed
+                if not port.public.is_closed then state = Messages.PortStateOpened
+            end if
+            output = output+char(10)+[router.port_info(port.local),state,public,port.local.port_number,port.local.get_lan_ip].join(" ")
+        end for
+        if output != Messages.NescaHeaderNew then 
+            Console.log(replaceF(Messages.LogNescaOn, {"DOMAIN": domain, "PUBADDR": router.public_ip, "LOCADDR": router.local_ip}))
+            print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
+        end if
     end function
 
     if arguments.len == 0 then
@@ -1248,10 +1190,11 @@ command "mails", [], Const.host, Messages.HelpEntryMaildump, function(arguments)
 
     smtpPort = getExactPort(addr, locAddr, port)
     if not smtpPort then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
-    if router.port_info(smtpPort).indexOf("smtp") == null then return Console.error(replaceF(Messages.ErrorNoServiceOnPort, {"SERVICE": "smtp", "PORT": port}))
+    if not isNodeLocallyAccessible(router) and not smtpPort.public then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
+    if router.port_info(smtpPort.local).indexOf("smtp") == null then return Console.error(replaceF(Messages.ErrorNoServiceOnPort, {"SERVICE": "smtp", "PORT": port}))
 
     target = addr
-    if isNodeLocallyAccessible(router) then target = locAddr
+    if isNodeLocallyAccessible(router) then target = locAddr else port = smtpPort.public.port_number
     result = crypto.smtp_user_list(target, port)
     if result isa string then
         return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "smtp_user_list", "ERROR": result}))
@@ -1474,7 +1417,7 @@ command "connect", [], Const.computer, Messages.HelpEntryNetcon, function(argume
 
     if Intrinsics.isConnectionRemote or hasNetworkConnectionBefore then return
     RuntimeHelpers.makeNeccessaryRuntimeAssigns
-    RuntimeHelpers.checkIfEverythingIsAssigned
+    RuntimeHelpers.checkIfEverythingIsAssigned(true)
 end function
 
 
@@ -1726,7 +1669,7 @@ command "more", [], Const.file, Messages.HelpEntryRead, function(arguments)
         lines = content.split(char(10))
         i = 0; while i < lines.len; i = i + 1
             line = escape(lines[i-1])
-            print("<color="+Theme.miscSecondary+">"+str(i-1 + 1)+"<color="+Theme.miscPrimary+">:</color> "+line)
+            print("<color="+Theme.miscSecondary+">"+str(i-1 + 1)+"</color><color="+Theme.miscPrimary+">:</color> "+line)
         end while
     end function
 

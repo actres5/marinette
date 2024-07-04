@@ -229,6 +229,9 @@ Locales.ErrorFollowingCredentialsAreIncorrect = {}
 Locales.HelpEntryScp = {}
 Locales.LogSuccessfullySentFile = {}
 Locales.ErrorFailedFileTransfer = {}
+Locales.NescaHeaderNew = {}
+Locales.PortStateLocal = {}
+Locales.LogNescaNoPorts = {}
 
 
 
@@ -457,6 +460,9 @@ Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Following credential
 Locales.HelpEntryScp[_language] = "download/upload (ap/path) (dest) - Send file"
 Locales.LogSuccessfullySentFile[_language] = "Sent file successfully"
 Locales.ErrorFailedFileTransfer[_language] = "Could not send file! Perhaps, the session type is insufficient?"
+Locales.NescaHeaderNew[_language] = "Svc Ver State Pub Loc Addr"
+Locales.PortStateLocal[_language] = "Local"
+Locales.LogNescaNoPorts[_language] = "Nodes with no ports on <i>{DOMAIN}</i> <i>{PUBADDR}</i> <i>{LOCADDR}</i>"
 
 
 
@@ -874,6 +880,9 @@ Locales.ErrorFollowingCredentialsAreIncorrect[_language] = "Следующие �
 Locales.HelpEntryScp[_language] = "download/upload (ап/путь) (назн) - Отправить файл"
 Locales.LogSuccessfullySentFile[_language] = "Файл успешно отправлен"
 Locales.ErrorFailedFileTransfer[_language] = "Не удалось отправить файл! Может, типа сессии недостаточно?"
+Locales.NescaHeaderNew[_language] = "Серв Вер Сост Пуб Лок Адр"
+Locales.PortStateLocal[_language] = "Локаль"
+Locales.LogNescaNoPorts[_language] = "Узлы без портов на <i>{DOMAIN}</i> <i>{PUBADDR}</i> <i>{LOCADDR}</i>"
 
 
 
