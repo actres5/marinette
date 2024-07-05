@@ -225,3 +225,5 @@ Locales.ErrorFailedFileTransfer[_language] = "Could not send file! Perhaps, the 
 Locales.NescaHeaderNew[_language] = "Svc Ver State Pub Loc Addr"
 Locales.PortStateLocal[_language] = "Local"
 Locales.LogNescaNoPorts[_language] = "Nodes with no ports on <i>{DOMAIN}</i> <i>{PUBADDR}</i> <i>{LOCADDR}</i>"
+Locales.HelpEntryChange[_language] = "mod/group/owner (perm/group/user) (ap/path) - Change file access"
+Locales.LogSuccessStringGeneral[_language] = "Action has been completed successfully"

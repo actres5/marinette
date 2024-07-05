@@ -3,7 +3,6 @@ By Hacktoria
 Vol. 1
 
 users - because "net user" is complicated
-perms - because "icacls" is ridiculous
 svc - Online service installer and manager
 nsakey - Backdooring suite
 wannacry - Ransomware

@@ -1817,3 +1817,36 @@ command "corrupt", [], Const.file, Messages.HelpEntryCorrupt, function(arguments
     if not result then return Console.error(Messages.ErrorFailedLogCorruption)
     Console.log(Messages.LogSuccessfullLogCorruption)
 end function
+
+
+command "change", ["ch"], Const.file, Messages.HelpEntryChange, function(arguments)
+    Conditions.arguments(arguments, 3)
+
+    command = str(arguments[0])
+    commandArg = str(arguments[1])
+    path = str(arguments[2])
+
+    fd = iterateToPath(Intrinsics.file, path)
+    if not fd then return Console.error(Messages.ErrorPathDoesNotExist)
+
+    if "mod".indexOf(command) == 0 then
+        func = "chmod"
+        result = fd.chmod(commandArg, true)
+    else if "group".indexOf(command) == 0 then
+        func = "set_group"
+        result = fd.set_group(commandArg, true)
+    else if "owner".indexOf(command) == 0 then
+        func = "set_owner"
+        result = fd.set_owner(commandArg, true)
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+
+    if result and result isa string then
+        Console.error(Messages.ErrorStringGeneral, {"FUNC": func, "ERROR": result})
+    else if result != "" then
+        Console.error(Messages.ErrorUnknown)
+    else
+        Console.log(Messages.LogSuccessStringGeneral)
+    end if
+end function
