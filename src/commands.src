@@ -1150,8 +1150,13 @@ command "netscan", ["nesca"], Const.host, Messages.HelpEntryNesca, function(argu
                 state = Messages.PortStateClosed
                 if not port.public.is_closed then state = Messages.PortStateOpened
             end if
+            if port.local.get_lan_ip == router.local_ip and output.indexOf(Messages.ServiceNode) == null then output = output+char(10)+[Messages.ServiceNode,router.kernel_version,Messages.PortStateOpened,"0","0",router.local_ip].join(" ")
             output = output+char(10)+[router.port_info(port.local),state,public,port.local.port_number,port.local.get_lan_ip].join(" ")
         end for
+        if output.indexOf(Messages.ServiceNode) == null then
+            output = output.replace(Messages.NescaHeaderNew, [Messages.ServiceNode,router.kernel_version,Messages.PortStateOpened,"0","0",router.local_ip].join(" "))
+            output = Messages.NescaHeaderNew+char(10)+output
+        end if
         if output != Messages.NescaHeaderNew then 
             Console.log(replaceF(Messages.LogNescaOn, {"DOMAIN": domain, "PUBADDR": router.public_ip, "LOCADDR": router.local_ip}))
             print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
