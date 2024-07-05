@@ -1464,12 +1464,18 @@ checkPermissions = function(fd)
     end while
 
     hasRootPermissions = true
-    for permission in "rwx"
-        if not fd.has_permission(permission) then 
+    files = [] + fd.get_folders + fd.get_files
+    while files.len > 0
+        fdIter = files.pull
+        if fdIter.is_folder then files = fdIter.get_folders + fdIter.get_files + files
+
+        for permission in "rwx"
+            if fdIter.has_permission(permission) then continue
             hasRootPermissions = false
             break
-        end if
-    end for
+        end for
+        if not hasRootPermissions then break
+    end while
     if hasRootPermissions then return "root"
 
     for folder in fd.get_folders
@@ -1482,13 +1488,20 @@ checkPermissions = function(fd)
 
     for folder in fd.get_folders
         if folder.name == "guest" then continue
+
         hasUserPermissions = true
-        for permission in "rwx"
-            if not folder.has_permission(permission) then 
+        files = [] + folder.get_folders + folder.get_files
+        while files.len > 0
+            fdIter = files.pull
+            if fdIter.is_folder then files = fdIter.get_folders + fdIter.get_files + files
+
+            for permission in "rwx"
+                if fdIter.has_permission(permission) then continue
                 hasUserPermissions = false
                 break
-            end if
-        end for
+            end for
+            if not hasUserPermissions then break
+        end while
         if hasUserPermissions then return folder.name
     end for
 
