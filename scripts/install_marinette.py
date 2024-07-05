@@ -76,8 +76,12 @@ import src_make_localization
 import src_make_themeing
 
 
-blacklist_folders = ["etc", "locales", "scripts", "themes", "vols", ".venv", ".gitattributes"]
-blacklist_files = [".gitattributes", ".gitignore"]
+blacklist_folders = [
+    ".venv", "catalog", "etc", "locales", "scripts", "standalone", "themes", "vols",
+]
+blacklist_files = [
+    ".gitattributes", ".gitignore",
+]
 filename = Path(__file__).name.replace(".py", ".src")
 with open(f"scriptsgh/{filename}", "w") as installer:
     installer.write(gh_init())

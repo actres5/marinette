@@ -317,21 +317,6 @@ getNetworkPorts = function(address)
     return networkPorts
 end function
 
-// getLocalPorts = function(address)
-//     router = getNetworkNode(address)
-//     if not router then return []
-
-//     ports = []
-//     for localAddress in router.devices_lan_ip
-//         devicePorts = router.device_ports(localAddress)
-//         if devicePorts == null or devicePorts isa string then continue
-//         for localPort in devicePorts
-//             ports.push(localPort)
-//         end for
-//     end for
-//     return ports
-// end function
-
 // 
 // Returns computers without ports
 getPortlessNodes = function(address)
@@ -376,6 +361,40 @@ randomNetworkAddress = function
         ].join(".")
     end while
     return ip
+end function
+
+decimalToAddress = function(n)
+    // 
+    // 1.0.0.0 <= address <= 255.255.255.255
+    if n >= 256^4 then return
+    if n <= 16777215 then return
+
+    a = div(div(div(n, 256), 256), 256)
+    b = div(div(n, 256), 256) % 256
+    c = div(n, 256) % 256 % 256
+    d = n % 256 % 256 % 256
+    
+    return [a, b, c, d].join(".")
+end function
+
+addressToDecimal = function(address)
+    parts = address.split("\.")
+    if parts.len != 4 then return
+
+    a = parts[0].to_int
+    b = parts[1].to_int
+    c = parts[2].to_int
+    d = parts[3].to_int
+
+    for octet in [a, b, c, d]
+        if not (octet isa number) then return
+        if octet < 0 then return
+        if octet > 255 then return
+    end for
+
+    n = a*(256^3) + b*(256^2) + c*256 + d
+    if decimalToAddress(n) == null then return
+    return n
 end function
 
 
@@ -426,7 +445,7 @@ isExistingWirelessInterface = function(computer, iface)
 end function
 
 getNetworksSortedByPower = function(computer, iface)
-    networks = Intrinsics.computer.wifi_networks(iface)
+    networks = computer.wifi_networks(iface)
     if not networks then return
     powerPredicate = function(iItem, jItem)
         iPwr = iItem.split(" ")[1].replace("%", "").to_int
@@ -1176,6 +1195,35 @@ end function
 
 randomNumber = function(min, max)
     return floor(rnd * (max - min + 1) + min)
+end function
+
+div = function(a, b)
+    return floor(a / b)
+end function
+
+convertFromDecimal = function(n, base)
+    converted = []
+
+    while n > 0
+        converted = [n % base] + converted
+        n = div(n, base)
+    end while
+
+    return converted
+end function
+
+convertToDecimal = function(c, base)
+    n = 0
+
+    pos = 0
+    pow = len(c) - 1
+    while pos < len(c)
+        n = n + c[pos]*(base^pow)
+        pos = pos + 1
+        pow = pow - 1
+    end while
+
+    return n
 end function
 
 
