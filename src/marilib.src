@@ -25,6 +25,8 @@ Const = {
     "computer": Messages.SessionTypeComputer,
     "file": Messages.SessionTypeFile,
     "plugin": Messages.HelpCategoryPlugins,
+
+    "checkPermissionsUniqueName": "MARINETTE_PERMISSIONS_CHECK",
 }
 
 
@@ -177,7 +179,7 @@ end function
 
 Console.prompt = function
     fd = Intrinsics.file
-    user = checkPermissions(fd)
+    user = checkPermissions(Intrinsics.computer, Intrinsics.file, Const.checkPermissionsUniqueName)
     object = IntrinsicsHelpers.getSessionType(Intrinsics)
     locIp = Intrinsics.localAddress
 
@@ -375,7 +377,7 @@ SessionsHelpers.generateSessionName = function(intrinsics)
     pubAddr = intrinsics.publicAddress
     locAddr = intrinsics.localAddress
     port = intrinsics.port
-    user = checkPermissions(intrinsics.file)
+    user = checkPermissions(intrinsics.computer, intrinsics.file, Const.checkPermissionsUniqueName)
 
     if not pubAddr then pubAddr = "-"
     if not locAddr then locAddr = "-"

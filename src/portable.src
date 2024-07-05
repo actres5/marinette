@@ -1458,24 +1458,57 @@ end function
 // 
 // Checks what access we have got on file object
 // Returns "undetermined" if the access if not root and there is no /home
-checkPermissions = function(fd)
+checkPermissions = function(computer=null, fd, uniqueName)
+    preciseChecks = {
+        "root": false,
+    }
+    if computer then
+        something = randomString(15)
+        
+        if computer.create_group("root", something) == true then
+            computer.delete_group("root", something)
+            return "root"
+        else if computer.create_user(something, "love") == true then
+            computer.delete_user(something, "love")
+            return "root"
+        end if
+        preciseChecks["root"] = true
+
+        home = computer.File("/home")
+        if home then
+            for folder in home.get_folders
+                if folder.name == "guest" then continue
+                
+                uniqueName = uniqueName.upper
+                dirCreated = computer.create_folder(pathJoin(["/home", folder.name]), "."+uniqueName+".D") == 1
+                dirExists = computer.File(pathJoin(["/home", folder.name, "."+uniqueName+".D"]))
+                dirHasPermissions = false
+                if dirExists then
+                    dirHasPermissions = true
+                    for permission in "rwx"
+                        if not dirExists.has_permission(permission) then
+                            dirHasPermissions = false
+                            break
+                        end if
+                    end for
+                end if
+                if dirCreated or (dirExists and dirHasPermissions) then return folder.name
+                if dirCreated then preciseChecks[folder.name] = true
+            end for
+        end if
+    end if
+
     while fd.parent
         fd = fd.parent
     end while
 
-    hasRootPermissions = true
-    files = [] + fd.get_folders + fd.get_files
-    while files.len > 0
-        fdIter = files.pull
-        if fdIter.is_folder then files = fdIter.get_folders + fdIter.get_files + files
-
-        for permission in "rwx"
-            if fdIter.has_permission(permission) then continue
+    hasRootPermissions = true and not preciseChecks["root"]
+    for permission in "rwx"
+        if not fd.has_permission(permission) then
             hasRootPermissions = false
             break
-        end for
-        if not hasRootPermissions then break
-    end while
+        end if
+    end for
     if hasRootPermissions then return "root"
 
     for folder in fd.get_folders
@@ -1488,20 +1521,15 @@ checkPermissions = function(fd)
 
     for folder in fd.get_folders
         if folder.name == "guest" then continue
+        if preciseChecks.indexes.indexOf(folder.name) != null and preciseChecks[folder.name] then continue
 
         hasUserPermissions = true
-        files = [] + folder.get_folders + folder.get_files
-        while files.len > 0
-            fdIter = files.pull
-            if fdIter.is_folder then files = fdIter.get_folders + fdIter.get_files + files
-
-            for permission in "rwx"
-                if fdIter.has_permission(permission) then continue
+        for permission in "rwx"
+            if not folder.has_permission(permission) then
                 hasUserPermissions = false
                 break
-            end for
-            if not hasUserPermissions then break
-        end while
+            end if
+        end for
         if hasUserPermissions then return folder.name
     end for
 
