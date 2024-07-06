@@ -1491,6 +1491,21 @@ checkPermissions = function(computer=null, fd)
         if possiblyRoot then return "root"
     end if
 
+    allAccess = true
+    files = [] + fd.get_folders + fd.get_files
+    while files.len > 0
+        fdIter = files.pull
+        if fdIter.is_folder then files = fdIter.get_folders + fdIter.get_files + files
+
+        for perm in "rwx"
+            if not fdIter.has_permission(perm) then
+                allAccess = false
+                break
+            end if
+        end for
+        if not allAccess then break
+    end while
+
     fdHome = iterateToPath(fd, "/home")
     if fdHome and fdHome.is_folder then
         for fdUser in fdHome.get_folders
@@ -1508,7 +1523,7 @@ checkPermissions = function(computer=null, fd)
     end if
 
     fdGuest = iterateToPath(fd, "/home/guest")
-    if fdGuest and fdGuest.is_folder then
+    if not allAccess and fdGuest and fdGuest.is_folder then
         possiblyGuest = true
         for perm in "rwx"
             if not fdGuest.has_permission(perm) then
@@ -1535,7 +1550,7 @@ checkPermissions = function(computer=null, fd)
     end while
 
     if possiblyRoot then return "root"
-    if possiblyGuest then return "guest"
+    if possiblyGuest and not allAccess then return "guest"
     return "undetermined"
 end function
 
