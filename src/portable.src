@@ -1456,84 +1456,87 @@ isFdCorrupt = function(fd)
 end function
 
 // 
-// Checks what access we have got on file object
-// Returns "undetermined" if the access if not root and there is no /home
-checkPermissions = function(computer=null, fd, uniqueName)
-    preciseChecks = {
-        "root": false,
-    }
+// Checks what access we have got on an object
+checkPermissions = function(computer=null, fd)
+    possiblyRoot = true
     if computer then
+        permissionDeniedError = "Denied. Only root user can execute this command."
         something = randomString(15)
-        
-        if computer.create_group("root", something) == true then
+
+        result = computer.create_group("root", something)
+        if result == permissionDeniedError then
+            possiblyRoot = false
+        else if result == true then
             computer.delete_group("root", something)
             return "root"
-        else if computer.create_user(something, "love") == true then
+        end if
+
+        result = computer.create_user(something, "love")
+        if result == permissionDeniedError then
+            possiblyRoot = false
+        else if result == true then
             computer.delete_user(something, "love")
             return "root"
         end if
-        preciseChecks["root"] = true
-
-        home = computer.File("/home")
-        if home then
-            for folder in home.get_folders
-                if folder.name == "guest" then continue
-                
-                uniqueName = uniqueName.upper
-                dirCreated = computer.create_folder(pathJoin(["/home", folder.name]), "."+uniqueName+".D") == 1
-                dirExists = computer.File(pathJoin(["/home", folder.name, "."+uniqueName+".D"]))
-                dirHasPermissions = false
-                if dirExists then
-                    dirHasPermissions = true
-                    for permission in "rwx"
-                        if not dirExists.has_permission(permission) then
-                            dirHasPermissions = false
-                            break
-                        end if
-                    end for
-                end if
-                if dirCreated or (dirExists and dirHasPermissions) then return folder.name
-                if dirCreated then preciseChecks[folder.name] = true
-            end for
-        end if
     end if
 
-    while fd.parent
-        fd = fd.parent
-    end while
-
-    hasRootPermissions = true and not preciseChecks["root"]
-    for permission in "rwx"
-        if not fd.has_permission(permission) then
-            hasRootPermissions = false
-            break
-        end if
-    end for
-    if hasRootPermissions then return "root"
-
-    for folder in fd.get_folders
-        if folder.name == "home" then
-            fd = folder
-            break
-        end if
-    end for
-    if fd.path != "/home" then return "undetermined"
-
-    for folder in fd.get_folders
-        if folder.name == "guest" then continue
-        if preciseChecks.indexes.indexOf(folder.name) != null and preciseChecks[folder.name] then continue
-
-        hasUserPermissions = true
-        for permission in "rwx"
-            if not folder.has_permission(permission) then
-                hasUserPermissions = false
+    fdRoot = iterateToPath(fd, "/root")
+    if possiblyRoot and fdRoot and fdRoot.is_folder and fdRoot.owner == "root" and fdRoot.group == "root" then
+        for perm in "rwx"
+            if not fdRoot.has_permission(perm) then
+                possiblyRoot = false
                 break
             end if
         end for
-        if hasUserPermissions then return folder.name
-    end for
+        if possiblyRoot then return "root"
+    end if
 
-    return "guest"
+    fdHome = iterateToPath(fd, "/home")
+    if fdHome and fdHome.is_folder then
+        for fdUser in fdHome.get_folders
+            if not (fdUser.is_folder and fdUser.owner == fdUser.name and fdUser.group == fdUser.name) then continue
+            if fdUser.name == "guest" then continue
+            possiblyUser = true
+            for perm in "rwx"
+                if not fdUser.has_permission(perm) then
+                    possiblyUser = false
+                    break
+                end if
+            end for
+            if possiblyUser then return fdUser.name
+        end for
+    end if
+
+    fdGuest = iterateToPath(fd, "/home/guest")
+    if fdGuest and fdGuest.is_folder then
+        possiblyGuest = true
+        for perm in "rwx"
+            if not fdGuest.has_permission(perm) then
+                possiblyGuest = false
+                break
+            end if
+        end for
+        if possiblyGuest then return "guest"
+    end if
+
+    possiblyGuest = true
+    files = [] + fd.get_folders + fd.get_files
+    while files.len > 0
+        fdIter = files.pull
+        if fdIter.is_folder then files = fdIter.get_folders + fdIter.get_files + files
+
+        permsCount = 0
+        for perm in "rwx"
+            if fdIter.has_permission(perm) then permsCount = permsCount + 1
+        end for
+        if permsCount != 3 then possiblyRoot = false
+        if permsCount != 0 then possiblyGuest = false
+        if not possiblyRoot and not possiblyGuest then break
+    end while
+
+    if possiblyRoot then return "root"
+    if possiblyGuest then return "guest"
+    return "undetermined"
 end function
 
 // 
