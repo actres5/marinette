@@ -456,21 +456,24 @@ command "systeminfo", ["si"], Const.host, Messages.HelpEntrySysinf, function(arg
 
     print(primary("<b><--"+Messages.SysInfMainframe+"-->"))
     protocol = error(Messages.SysInfUnavailable)
-    address = error(Messages.SysInfUnavailable)
+    publicAddress = error(Messages.SysInfUnavailable)
+    localAddress = error(Messages.SysInfUnavailable)
     port = error(Messages.SysInfUnavailable)
     credentials = error(Messages.SysInfUnavailable)
     connection = error(Messages.SysInfUnavailable)
     patches = error(Messages.SysInfUnavailable)
     if Config.mainframe then
         if Mainframe.protocol then protocol = Mainframe.protocol
-        if Mainframe.address then address = Mainframe.address
+        if Mainframe.publicAddress then publicAddress = Mainframe.publicAddress
+        if Mainframe.localAddress then localAddress = Mainframe.localAddress
         if Mainframe.port != null then port = Mainframe.port
         if Mainframe.credentials then credentials = Mainframe.credentials
         if Mainframe.shell then connection = Messages.SysInfAvailable
         if Config.patches.len > 0 then patches = Mainframe.patches.len+"/"+Config.patches.len
     end if
     print(primary(Messages.SysInfMainframeProtocol)+secondary(" - "+protocol))
-    print(primary(Messages.SysInfMainframeAddress)+secondary(" - "+address))
+    print(primary(Messages.SysInfPublicAddress)+secondary(" - "+publicAddress))
+    print(primary(Messages.SysInfLocalAddress)+secondary(" - "+localAddress))
     print(primary(Messages.SysInfMainframePort)+secondary(" - "+port))
     print(primary(Messages.SysInfMainframeCredentials)+secondary(" - "+credentials))
     print(primary(Messages.SysInfMainframeConnection)+secondary(" - "+connection))
@@ -599,7 +602,7 @@ command "ariadne", ["aria"], Const.host, Messages.HelpEntryAriadne, function(arg
     Console.log(Messages.LogScanningLocalLibraries, {"AMOUNT": metalibs.len})
     exploits = []
     for metalib in metalibs
-        memory = metaxploit.scan(metalib)
+        memory = scanLibrary(metaxploit, metalib)
         for address in memory
             vulners = scanMemoryAddress(metaxploit, metalib, address)
             exploits.push({"metalib": metalib, "address": address, "vulners": vulners})
@@ -616,11 +619,7 @@ command "ariadne", ["aria"], Const.host, Messages.HelpEntryAriadne, function(arg
             if arguments.len > 0 then ofArgs = ofArgs + fmap(@str, arguments)
             ofArgs = removeDuplicates(ofArgs)
             for ofArg in ofArgs
-                if ofArg == null then
-                    result = exploit.metalib.overflow(exploit.address, vulner.value)
-                else
-                    result = exploit.metalib.overflow(exploit.address, vulner.value, ofArg)
-                end if
+                result = bufferOverflow(exploit.metalib, exploit.address, vulner.value, ofArg)
                 if result == null then continue
                 object = result
                 result = {
@@ -817,7 +816,7 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
     Console.log(Messages.LogScanningRemoteLibraries, {"AMOUNT": libraries.len})
     exploits = []
     for library in libraries
-        memory = metaxploit.scan(library.metalib)
+        memory = scanLibrary(metaxploit, library.metalib)
         for address in memory
             vulners = scanMemoryAddress(metaxploit, library.metalib, address)
             exploit = {
@@ -839,14 +838,10 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
     for exploit in exploits
         for vulner in exploit.vulners
             ofArgs = [null]
-            if arguments.len > 0 then ofArgs = ofArgs + arguments
+            if arguments.len > 0 then ofArgs = ofArgs + fmap(@str, arguments)
             ofArgs = removeDuplicates(ofArgs)
             for ofArg in ofArgs
-                if ofArg == null then
-                    result = exploit.metalib.overflow(exploit.address, vulner.value)
-                else
-                    result = exploit.metalib.overflow(exploit.address, vulner.value, str(ofArg))
-                end if
+                result = bufferOverflow(exploit.metalib, exploit.address, vulner.value, ofArg)
                 if result == null then continue
                 object = result
                 result = {

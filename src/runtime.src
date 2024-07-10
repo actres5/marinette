@@ -138,6 +138,28 @@ RuntimeHelpers.checkIfEverythingIsAssigned = function(supressOutput=false)
         end for
 
         if not MainframeHelpers.isReachable then haveAllPassed = false
+        if not Mainframe.shell then 
+            if not supressOutput then Console.warning(Messages.WarningDeadMainframe)
+            haveAllPassed = false
+        else
+            total = Config.patches.len
+            if total == 0 then 
+                if not supressOutput then Console.log(Messages.LogSucessfullyConnectedToMainframe)
+            else
+                for patch in Config.patches
+                    MainframeHelpers.applyPatch(patch)
+                end for
+
+                applied = Mainframe.patches.len
+                percent = applied / total * 100
+                if percent < 50 or applied == 0 then
+                    applied = error(applied)
+                else if percent < 100 then
+                    applied = warning(applied)
+                end if
+                if not supressOutput then Console.log(Messages.LogAppliedPatches, {"APPLIED": applied, "TOTAL": total})
+            end if
+        end if
     end if
 
     if supressOutput then return
@@ -173,40 +195,28 @@ end function
 
 RuntimeHelpers.assignMainframeIfConfigured = function
     if not Config.mainframe then return
-    if not get_shell.host_computer.is_network_active then return Console.warning(Messages.WarningDeadMainframe)
+    if not get_shell.host_computer.is_network_active then return
 
     if not Mainframe.shell then
         data = aes128("decrypt", passwordToAesKey(Var.password), Config.mainframe)
         parts = data.split("@")
-        if parts.len != 5 then return
+        if parts.len != 6 then return
         proto = parts[0]
         if ["ssh", "of"].indexOf(proto) == null then return
-        addr = parts[1]
-        if not is_valid_ip(addr) then return
-        port = parts[2].to_int
+        pubAddr = parts[1]
+        if not is_valid_ip(pubAddr) then return
+        locAddr = parts[2]
+        if not is_valid_ip(locAddr) then return
+        port = parts[3].to_int
         if not port isa number then return
+        
         Mainframe.protocol = proto
-        Mainframe.address = addr
+        Mainframe.publicAddress = pubAddr
+        Mainframe.localAddress = locAddr
         Mainframe.port = port
-        Mainframe.credentials = [parts[3], parts[4]]
+        Mainframe.credentials = [parts[4], parts[5]]
         Mainframe.shell = MainframeHelpers.connect
     end if
-
-    if not Mainframe.shell then return Console.warning(Messages.WarningDeadMainframe)
-
-    total = Config.patches.len
-    if total == 0 then return Console.log(Messages.LogSucessfullyConnectedToMainframe)
-    for patch in Config.patches
-        MainframeHelpers.applyPatch(patch)
-    end for
-    applied = Mainframe.patches.len
-    percent = applied / total * 100
-    if percent < 50 or applied == 0 then
-        applied = error(applied)
-    else if percent < 100 then
-        applied = warning(applied)
-    end if
-    Console.log(Messages.LogAppliedPatches, {"APPLIED": applied, "TOTAL": total})
 end function
 
 RuntimeHelpers.reloadIfNetworkAppeared = function
@@ -222,6 +232,7 @@ RuntimeHelpers.updateSessionsAddresses = function
         IntrinsicsHelpers.updateAddresses(intrinsics)
     end for
 end function
+
 
 RuntimeHelpers.cmdPreHandlers = function
     RuntimeHelpers.reloadIfNetworkAppeared

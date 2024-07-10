@@ -9,9 +9,11 @@
 Config = {
     // 
     // Password is a string iterated with sha256() 25 times
+    // Neccessary to configure
     "password": null,
     // 
     // Identificator is a 32 characters long string
+    // Neccessary to configure
     "identificator": null,
     // 
     // Literally a language which Marinette will be speaking with you in

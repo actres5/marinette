@@ -416,7 +416,6 @@ aes128 = function(choice, key, text)
     return null
 end function
 
-
 loadLibraries = function(metaxploit=null)
     libs = {}
     versions = {}
@@ -462,77 +461,29 @@ loadLibraries = function(metaxploit=null)
 end function
 
 
-ensureCorrectKey = function(key)
-    while key.len < 16
-		key = "0"+key
+passwordToAesKey = function(password)
+    while password.len < 16
+        password = "0"+password
     end while
 
-    while key.len > 16
-		key = key[1:]
+    while password.len > 16
+        password = password[1:]
     end while
 
-    return key
+    return password
 end function
 
 
-validateCredentials = function(creds)
-	parts = creds.split("@")
-
-	proto = parts[0]
-	addr = parts[1]
-	port = parts[2].to_int
-
-	if ["ssh", "of"].indexOf(proto) == null then exit "Incorrect proto!"
-	if not is_valid_ip(addr) then exit "Incorrect addr!"
-	if not port isa number then exit "Incorrect port!"
-
-	if get_shell.host_computer.is_network_active then
-		router = get_router(addr)
-		if not router then exit "Incorrect addr!"
-		port_ = router.ping_port(port)
-		if not port_ or not router.port_info(port_) then exit "Incorrect port!"
-	else
-		print "No internet access. Some checks are skipped"
-	end if
-
-	if proto == "ssh" then
-		user = parts[3]
-		pass = parts[4]
-		router = get_router(addr)
-		if router.port_info(router.ping_port(port)).indexOf("ssh") == null then exit "Incorrect port!"
-		if get_shell.host_computer.is_network_active then
-			mainframeShell = get_shell.connect_service(addr, port, user, pass, "ssh")
-			if not mainframeShell then exit "Incorrect credentials!"
-		end if
-	else if proto == "of" then
-		mem = parts[3]
-		vuln = parts[4]
-		libs = loadLibraries
-		if libs.indexes.indexOf("metaxploit") != null then
-			netSession = metaxploit.net_use(addr, port)
-			if not netSession then exit "Incorrect addr/port!"
-			metalib = netSession.dump_lib
-			mainframeShell = metalib.overflow(mem, vuln)
-			if typeof(mainframeShell) != "shell" then exit "Incorrect credentials!"
-		end if
-	end if
-
-	return creds
-end function
-
-
-
-
-if params.len != 2 or (params.len == 2 and params[1].split("@").len != 5) then
-    print "Incorrect arguments. Specify as follows:"
-    print "1. Password a hash of which you set in Config.password"
-	print "2. Credentials which are specially* formatted"
-    print "   * For SSH: 		ssh@addr@port@user@pass"
-    print "   * For OverFlow: 	of@addr@port@mem@vuln"
-    exit ""
-end if
-
-
-key = ensureCorrectKey(params[0])
-creds = validateCredentials(params[1])
-print aes128("encrypt", key, creds)
+// proto@pubAddr@locAddr@port@user@pass
+// proto@pubAddr@locAddr@port@addr@value
+main = function
+	password 		= user_input("Marinette password: ", true)
+	proto 			= user_input("Protocol:           ")
+	publicAddress 	= user_input("Public address:     ")
+	localAddress 	= user_input("Local address:      ")
+	port 			= user_input("Port:               ")
+	credentials0	= user_input("Credentials[0]:     ")
+	credentials1	= user_input("Credentials[1]:     ", true)
+	
+	print(aes128("encrypt", passwordToAesKey(password), [proto,publicAddress,localAddress,port,credentials0,credentials1].join("@")))
+end function; main

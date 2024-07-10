@@ -1,0 +1,42 @@
+// 
+// AntiLog is a patch to corrupt logs on Mainframe to enhance user security a bit
+// Hooks antiLog() into cmdPreHandlers() and cmdPostHandlers()
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality
+////////////////////////////////////////////////////////////
+antiLog = function
+    computer = Marinette.Mainframe.shell.host_computer
+
+    if computer.touch("/var", "temp") != true then return print("AntiLog: COULD NOT CORRUPT MAINFRAME LOGS!!!")
+    fd = computer.File("/var/temp")
+    if not fd then return print("AntiLog: COULD NOT CORRUPT MAINFRAME LOGS!!!")
+    fd.move("/var", "system.log")
+end function
+
+// 
+// Running AntiLog() on patch injection so we won't have logs laying around
+antiLog
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Hooks
+////////////////////////////////////////////////////////////
+_CMD_PRE_HANDLERS = @Marinette["RuntimeHelpers"]["cmdPreHandlers"]
+Marinette.RuntimeHelpers.cmdPreHandlers = function
+    _CMD_PRE_HANDLERS
+    antiLog
+end function
+
+_CMD_POST_HANDLERS = @Marinette["RuntimeHelpers"]["cmdPostHandlers"]
+Marinette.RuntimeHelpers.cmdPostHandlers = function
+    _CMD_POST_HANDLERS
+    antiLog
+end function

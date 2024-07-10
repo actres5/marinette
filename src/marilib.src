@@ -399,7 +399,8 @@ end function
 
 Mainframe = {
     "protocol": null,
-    "address": null,
+    "publicAddress": null,
+    "localAddress": null,
     "port": null,
     "credentials": null,
     "shell": null,
@@ -411,20 +412,30 @@ MainframeHelpers = {}
 
 MainframeHelpers.isReachable = function
     if not get_shell.host_computer.is_network_active then return false
-    router = getNetworkNode(Mainframe.address)
-    if not router or not router.ping_port(Mainframe.port) then return false
-    return true
+    router = getNetworkNode(Mainframe.publicAddress)
+    port = getExactPort(Mainframe.publicAddress, Mainframe.localAddress, Mainframe.port)
+    return port and (port.public or (router and isNodeLocallyAccessible(router)))
 end function
 
 MainframeHelpers.connect = function
     if not MainframeHelpers.isReachable then return
 
+    router = getNetworkNode(Mainframe.publicAddress)
+    port = getExactPort(Mainframe.publicAddress, Mainframe.localAddress, Mainframe.port)
+    if isNodeLocallyAccessible(router) then
+        address = Mainframe.localAddress
+        port = port.local.port_number
+    else
+        address = Mainframe.publicAddress
+        port = port.public.port_number
+    end if
+
     if Mainframe.protocol == "ssh" then
-        mainframeShell = get_shell.connect_service(Mainframe.address, Mainframe.port, Mainframe.credentials[0], Mainframe.credentials[1], "ssh")
+        mainframeShell = get_shell.connect_service(address, port, Mainframe.credentials[0], Mainframe.credentials[1], "ssh")
     else if Mainframe.protocol == "of" then
         if Libs.indexes.indexOf("metaxploit") == null then return
         metaxploit = Libs.metaxploit
-        netSession = metaxploit.net_use(Mainframe.address, Mainframe.port)
+        netSession = metaxploit.net_use(address, port)
         if not netSession then return
         metalib = netSession.dump_lib
         if not metalib then return
