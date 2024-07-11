@@ -29,6 +29,7 @@ Config = {
     "mainframe": null,
     // 
     // Paths to compiled patches on mainframe
+    // Patches are executed in up to down order
     "patches": [
         
     ],

@@ -196,7 +196,7 @@ Console.cmdloop = function
     while true
         input = Console.input(Console.prompt).trim
         if input.len == 0 then
-            RuntimeHelpers.cmdAllHandlers
+            RuntimeHelpers.cmdFailHandlers
             continue
         end if
 
@@ -213,7 +213,7 @@ Console.cmdloop = function
 
             if Commands.indexes.indexOf(command) == null then
                 Console.error(Messages.ErrorCommandNotFound)
-                RuntimeHelpers.cmdAllHandlers
+                RuntimeHelpers.cmdFailHandlers
                 continue
             end if
         end if

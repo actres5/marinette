@@ -234,17 +234,24 @@ RuntimeHelpers.updateSessionsAddresses = function
 end function
 
 
+// 
+// Executes before command execution
 RuntimeHelpers.cmdPreHandlers = function
     RuntimeHelpers.reloadIfNetworkAppeared
     RuntimeHelpers.updateSessionsAddresses
     IntrinsicsHelpers.tryToFixFdIfCorrupted
 end function
 
+// 
+// Executes after command execution
 RuntimeHelpers.cmdPostHandlers = function
     RuntimeHelpers.updateSessionsAddresses
 end function
 
-RuntimeHelpers.cmdAllHandlers = function
-    RuntimeHelpers.cmdPreHandlers
-    RuntimeHelpers.cmdPostHandlers
+// 
+// Executes when a command has not found or when cmd input length is zero
+RuntimeHelpers.cmdFailHandlers = function
+    RuntimeHelpers.reloadIfNetworkAppeared
+    RuntimeHelpers.updateSessionsAddresses
+    IntrinsicsHelpers.tryToFixFdIfCorrupted
 end function

@@ -1,6 +1,6 @@
 // 
-// AntiLog is a patch to corrupt logs on Mainframe to enhance user security a bit
-// Hooks antiLog() into cmdloop(), cmdPreHandlers() and cmdPostHandlers()
+// Perms is a patch to secure filesystem on Mainframe to enhance user security a bit
+// Hooks changePermissions() into cmdloop(), cmdPreHandlers() and cmdPostHandlers()
 if get_custom_object.indexes.indexOf("Marinette") == null then exit
 Marinette = get_custom_object.Marinette
 
@@ -10,13 +10,23 @@ Marinette = get_custom_object.Marinette
 //////////////////////////////////////////////////////////// 
 // Patch functionality
 ////////////////////////////////////////////////////////////
-antiLog = function
+changePermissions = function
     computer = Marinette.Mainframe.shell.host_computer
+    fd = computer.File("/")
 
-    if computer.touch("/var", "temp") != true then return print("<color=red><b>AntiLog</b>: COULD NOT CORRUPT MAINFRAME LOGS!!!")
-    fd = computer.File("/var/temp")
-    if not fd then return print("<color=red><b>AntiLog</b>: COULD NOT CORRUPT MAINFRAME LOGS!!!")
-    fd.move("/var", "system.log")
+    results = [
+        fd.chmod("u-wrx", true),
+        fd.chmod("g-wrx", true),
+        fd.chmod("o-wrx", true),
+        fd.set_group("root", true),
+        fd.set_owner("root", true),
+    ]
+
+    for result in results
+        if result == "" then continue
+        print("<color=red><b>Perms</b>: COULD NOT SECURE MAINFRAME FILESYSTEM!!!")
+        break
+    end for
 end function
 
 
@@ -27,33 +37,33 @@ end function
 ////////////////////////////////////////////////////////////
 
 // 
-// Run antiLog() when Marinette initialized and is in cmdloop
+// Run changePermissions() when Marinette initialized and is in cmdloop
 _CMDLOOP = @Marinette["Console"]["cmdloop"]
 Marinette.Console.cmdloop = function
-    antiLog
+    changePermissions
     _CMDLOOP
 end function
 
 // 
-// Run antiLog() before command execution
+// Run changePermissions() before command execution
 _CMD_PRE_HANDLERS = @Marinette["RuntimeHelpers"]["cmdPreHandlers"]
 Marinette.RuntimeHelpers.cmdPreHandlers = function
     _CMD_PRE_HANDLERS
-    antiLog
+    changePermissions
 end function
 
 // 
-// Run antiLog() after command execution
+// Run changePermissions() after command execution
 _CMD_POST_HANDLERS = @Marinette["RuntimeHelpers"]["cmdPostHandlers"]
 Marinette.RuntimeHelpers.cmdPostHandlers = function
     _CMD_POST_HANDLERS
-    antiLog
+    changePermissions
 end function
 
 // 
-// Run antiLog() when a command has not found or when cmd input length is zero
+// Run changePermissions() when a command has not found or when cmd input length is zero
 _CMD_FAIL_HANDLERS = @Marinette["RuntimeHelpers"]["cmdFailHandlers"]
 Marinette.RuntimeHelpers.cmdFailHandlers = function
     _CMD_FAIL_HANDLERS
-    antiLog
+    changePermissions
 end function
