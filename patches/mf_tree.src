@@ -1,0 +1,145 @@
+// 
+// Tree is a patch that adds new command treea implementing tree functionality alternatively
+// Thanks and credits for alternative implementation goes to Darkie <3
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Configuration
+////////////////////////////////////////////////////////////
+
+// 
+// By default, this patch creates new command treea
+// for alternative tree implementation. If you want
+// to replace default one instead, set this to true
+REPLACE_DEFAULT_TREE = false
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Marinette.Messages
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesEmptyFolder = "ПУСТАЯ ПАПКА"
+    Marinette.Messages.PatchesFile = "Файл"
+    Marinette.Messages.PatchesHelpEntryAlternativeTree = "Альтернативная реализация дерева от Darkie <3 [*]"
+else
+    Marinette.Messages.PatchesEmptyFolder = "EMPTY FOLDER"
+    Marinette.Messages.PatchesFile = "File"
+    Marinette.Messages.PatchesHelpEntryAlternativeTree = "Alternative tree implementation by Darkie <3 [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality
+////////////////////////////////////////////////////////////
+alternativeTree = function(fd)
+    // Command: tree
+    // This command will show every folder in the pc you are launching the script
+    // with. You can also prompt a specific absolute path of your choice as arg.
+
+    Spacing0 = "   "
+    Spacing = "   "
+    CurrentCycle = 0
+
+    GREEN = "<color=green>"
+    BLUE = "<color=blue>"
+    RED = "<color=red>"
+    YELLOW = "<color=yellow>"
+    Colors = [GREEN, BLUE, RED, YELLOW]*3125
+    EmptyFolder = []
+    //*********************** FUNCTIONS *******************************
+
+    CheckTree = function(thing, cycle, spacing)
+        nextCycle = cycle + 1
+        if thing.is_folder then
+            // if parent is a folder, get every folder inside it
+            folders = thing.get_folders
+            // for every folder, get folder.name
+            for folder in folders
+                folderName = folder.name
+                folderEmpty = folder.size
+                if folderEmpty == "0" then
+                    //if folder.get_files == 0 then
+                    if folder.get_files == EmptyFolder and folder.get_folders == EmptyFolder then	
+                        folderEmpty = "<color=orange><---"+Messages.PatchesEmptyFolder+"</color>"
+                    else
+                        folderEmpty = ""
+                    end if
+                else
+                    folderEmpty = ""
+                end if
+                print(Colors[cycle] + spacing + spacing+ "¦______" + folderName + "</color>" + folderEmpty)
+                files = folder.get_files
+                space = spacing
+                for file in files
+                    print(space+Spacing0+spacing+ "¦______"+Messages.PatchesFile+": " + file.name)
+                end for
+                CheckTree(folder, nextCycle, spacing+Spacing)
+                files = folder.get_files
+                // display every file inside the current folder
+            end for
+        else
+            print(thing.name)
+        end if
+    end function
+
+    //************************** MAIN *********************************
+    parent = fd
+    if parent.is_folder then
+        print(Colors[CurrentCycle] + "¦______" + parent.name + "</color>")
+        // if parent is a folder, get every folder inside it
+        folders = parent.get_folders
+        // for every folder, get folder.name
+        for folder in folders
+            folderName = folder.name
+            FolderEmpty = folder.size
+            if FolderEmpty == "0" then
+                if folder.get_files == EmptyFolder and folder.get_folders == EmptyFolder then
+                    FolderEmpty = "<color=orange><---"+Messages.PatchesEmptyFolder+"</color>"
+                else
+                    FolderEmpty = ""
+                end if
+            else
+                FolderEmpty = ""
+            end if
+            print(Colors[CurrentCycle] + Spacing + "¦______" + folderName + "</color>" + FolderEmpty)
+            files = folder.get_files
+            // display every file inside the current folder
+            for file in files
+                print(Spacing + Spacing + "¦______"+Messages.PatchesFile+": " + file.name)
+            end for
+            CheckTree(folder, CurrentCycle+1, Spacing)
+        end for
+    else	
+        print(parent.name)
+    end if
+
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Hooks
+////////////////////////////////////////////////////////////
+
+COMMAND_TREEA = function(arguments)
+    Conditions.arguments(arguments, 0)
+
+    Console.log(Messages.LogFileSystemTree)
+    fd = iterateToPath(Intrinsics.file, "/")
+    alternativeTree(fd)
+end function
+
+if REPLACE_DEFAULT_TREE then
+    Marinette.command "tree", [], Marinette.Const.file, Marinette.Messages.HelpEntryTree+" [*]", @COMMAND_TREEA
+else
+    Marinette.command "treea", [], Marinette.Const.file, Marinette.Messages.PatchesHelpEntryAlternativeTree, @COMMAND_TREEA
+end if
