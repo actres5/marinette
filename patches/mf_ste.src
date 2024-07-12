@@ -1,0 +1,183 @@
+// 
+// STE is a patch to add new command ste implementing a simple text editor by Rocketorbit
+// Does not contain translations because I am lazy :P
+// Thanks and credits for simple text editor goes to Rocketorbit <3
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesHelpEntrySTE = "(ап/путь) Простой Редактор Текста от Rocketorbit <3 [*]"
+else
+    Marinette.Messages.PatchesHelpEntrySTE = "(ap/path) Simple Text Editor by Rocketorbit <3 [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality
+////////////////////////////////////////////////////////////
+simpleTextEditor = function(fd)
+    commands = {}
+
+    commands["h"] = {"name": "h", "desc": "Displays this message."}
+    commands["h"]["run"] = function()
+        output = "Commands:" + "\n" 
+        for command in commands
+            commandData = command.value
+            output = output + " " + commandData.name + " " + commandData.desc + "\n"
+        end for
+        output = output + "Press any key to continue..."
+        return user_input(output, false, true)
+    end function
+
+    commands["i"] = {"name":"i", "desc":"Insert a line before a number."}
+    commands["i"]["run"] = function()
+        input = user_input("[Number] [NewText]\n>")
+        input = input.split(" ")
+        lineNumber = input[0].to_int
+        if typeof(lineNumber) != "number" then return user_input("Invalid line number.", false ,true)
+        if lineNumber < 0 then return user_input("Invalid line number.", false ,true)
+        input.pull
+        subStr = input.join(" ")
+        if lineNumber >= lines.len then
+            outer.lines.push(subStr)
+            outer.text = lines.join(char(10))
+            return outer.text
+        end if
+        if lineNumber == 0 then
+            outer.lines.reverse
+            outer.lines.push(subStr)
+            outer.lines.reverse
+            outer.text = lines.join(char(10))
+            return outer.text
+        end if
+        upLines = lines[:lineNumber - 1]
+        downLines = lines[lineNumber - 1:]
+        lines = upLines + [subStr] + downLines
+        outer.text = lines.join(char(10))
+        return outer.text
+    end function
+
+    commands["m"] = {"name":"m", "desc":"Modify a line."}
+    commands["m"]["run"] = function()
+        input = user_input("[Number] [NewText]\n>")
+        input = input.split(" ")
+        lineNumber = input[0].to_int
+        if typeof(lineNumber) != "number" then return user_input("Invalid line number.", false ,true)
+        input.pull
+        subStr = input.join(" ")
+        if lineNumber > lines.len then
+            outer.lines.push(subStr)
+            outer.text = lines.join(char(10))
+            return outer.text
+        end if
+        if lineNumber <= 0 then return user_input("Invalid line number.", false ,true)
+        lines[lineNumber - 1] = subStr
+        outer.text = lines.join(char(10))
+        return outer.text
+    end function
+
+    commands["c"] = {"name":"c", "desc":"Clear a line."}
+    commands["c"]["run"] = function()
+        input = user_input("[Number]\n>")
+        lineNumber = input.to_int
+        if typeof(lineNumber) != "number" then return user_input("Invalid line number.", false ,true)
+        if lineNumber > lines.len then return user_input("Invalid line number.", false ,true)
+        if lineNumber <= 0 then return user_input("Invalid line number.", false ,true)
+        outer.lines[lineNumber - 1] = ""
+        outer.text = lines.join(char(10))
+        return outer.text
+    end function
+
+    commands["r"] = {"name":"r", "desc":"Remove a line."}
+    commands["r"]["run"] = function()
+        input = user_input("[Number]\n>")
+        lineNumber = input.to_int
+        if typeof(lineNumber) != "number" then return user_input("Invalid line number.", false ,true)
+        if lineNumber > lines.len then return user_input("Invalid line number.", false ,true)
+        if lineNumber == 0 then return user_input("Invalid line number.", false ,true)
+        if lineNumber == lines.len and lines.len == 1 then return user_input("Cannot remove the only line.", false ,true)
+        upLines = outer.lines[:lineNumber - 1]
+        downLines = outer.lines[lineNumber:]
+        outer.lines = upLines + downLines
+        outer.text = lines.join(char(10))
+        return outer.text
+    end function
+
+    commands["x"] = {"name":"x", "desc":"Save and exit."}
+    commands["x"]["run"] = function()
+        if writeFile then 
+            print("Changes saved. Exiting.")
+            outer.toExit = true 
+        else 
+            return user_input("Failed to save.", false ,true)
+        end if
+    end function
+
+    commands["s"] = {"name":"s", "desc":"Save changes."}
+    commands["s"]["run"] = function()
+        if writeFile then return user_input("Changes saved.", false, true) else return user_input("Failed to save.", false ,true)
+    end function
+
+    commands["q"] = {"name":"q", "desc":"Exit without save."}
+    commands["q"]["run"] = function()
+        print("Changes not saved. Exiting.")
+        outer.toExit = true
+    end function
+
+    writeFile = function()
+        if outer.file.set_content(outer.text) != 1 then return null else return true
+    end function
+
+    execute = function(input = "")
+        if not commands.hasIndex(input) then return user_input("Error: Command not found! Press h for a list of commands.\nPress any key to continue", false, true)
+        command = commands[input]
+        command.run
+    end function
+
+    main = function()
+        fileName = fd.name
+        outer.file = fd
+        outer.text = file.get_content
+        outer.toExit = false
+        while true
+            clear_screen
+            outer.lines = outer.text.split(char(10))
+            if not lines then lines = [""]
+            for i in range(0, lines.len - 1)
+                print("<color=orange>" + (i + 1) + "<color=white>:</color> " + lines[i])
+            end for
+            input = user_input("<color=yellow>" + fileName + "></color> ", false, true)
+            execute(input.lower)
+            if outer.toExit then return
+        end while
+    end function; main
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Hooks
+////////////////////////////////////////////////////////////
+
+COMMAND_STE = function(arguments)
+    Conditions.arguments(arguments, 1)
+
+    path = arguments[0]
+
+    fd = iterateToPath(Intrinsics.file, path)
+    if not fd or fd.is_binary or fd.is_folder then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
+    if not fd.set_content(fd.get_content) == true then return Console.error(Messages.ErrorCouldReadFile)
+
+    simpleTextEditor(fd)
+end function
+
+Marinette.command "ste", ["vim"], Marinette.Const.file, Marinette.Messages.PatchesHelpEntrySTE, @COMMAND_STE

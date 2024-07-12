@@ -146,6 +146,7 @@ RuntimeHelpers.checkIfEverythingIsAssigned = function(supressOutput=false)
             if total == 0 then 
                 if not supressOutput then Console.log(Messages.LogSucessfullyConnectedToMainframe)
             else
+                Mainframe.patches = []
                 for patch in Config.patches
                     MainframeHelpers.applyPatch(patch)
                 end for

@@ -17,6 +17,7 @@ Special thanks and credits goes to:
 -   [Volk](https://github.com/EntitySeaker) - for making Viper, from leaked version of which I've borrowed a color scheme(see `Viper` [theme](/themes/viper.src))
 -   [Plu70](https://github.com/jhook777) - for making 5hell, port scanner of which inspired me(see `netscan`)
 -   Darkie - for making cool tree command, which you can use as a Mainframe patch(see `treea` [here](/patches/mf_tree.src))
+-   [Rocketorbit](https://github.com/rocketorbit) - for making [Simple Text Editor](https://github.com/rocketorbit/Simple-Text-Editor-for-Grey-Hack), which you can use as a Mainframe patch(see `ste` [here](/patches/mf_ste.src))
 
 You are all awesome! Thank you a lot, Marinette wouldn't be what it is if it weren't for you people! <3
 

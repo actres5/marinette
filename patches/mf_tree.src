@@ -21,7 +21,7 @@ REPLACE_DEFAULT_TREE = false
 
 
 //////////////////////////////////////////////////////////// 
-// Marinette.Messages
+// Localization
 ////////////////////////////////////////////////////////////
 if Marinette.Config.language == "Russian" then
     Marinette.Messages.PatchesEmptyFolder = "ПУСТАЯ ПАПКА"

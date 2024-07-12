@@ -122,6 +122,10 @@ secondary = function(str)
     return "<color="+Theme.miscSecondary+">"+str+"</color>"
 end function
 
+warning = function(str)
+    return "<color="+Theme.warning+">"+str+"</color>"
+end function
+
 error = function(str)
     return "<color="+Theme.error+">"+str+"</color>"
 end function

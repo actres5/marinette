@@ -1002,6 +1002,7 @@ command "findservice", ["findsvc"], Const.host, Messages.HelpEntrySvcfind, funct
         version = ""
         if serviceVersion then version = " "+serviceVersion
         Console.error(Messages.ErrorServiceNotFound, {"SERVICE": service+version, "ADDRESS": ip})
+        desyncFix
     end while
 end function
 
