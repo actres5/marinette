@@ -205,7 +205,7 @@ command "theme", [], Const.any, Messages.HelpEntryTheme, function(arguments)
 end function
 
 
-command "hashes", [], Const.any, Messages.HelpEntryHashcrack, function(arguments)
+command "hash", [], Const.any, Messages.HelpEntryHashcrack, function(arguments)
     Conditions.argumentsMoreThan(arguments, 0)
     Conditions.crypto
 
@@ -391,182 +391,9 @@ command "pktmon", [], Const.any, Messages.HelpEntryPktmon, function(arguments)
 end function
 
 
-
-
-////////////////////////////////////////////////////////////
-// Host session type
-////////////////////////////////////////////////////////////
-
-command "systeminfo", ["si"], Const.host, Messages.HelpEntrySysinf, function(arguments)
-    Conditions.arguments(arguments, 0)
-    Conditions.host
-
-    shell = get_shell
-    computer = shell.host_computer
-
-    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfLocalSystem+"-->")
-    if user_bank_number then bank = user_bank_number else bank = error(Messages.SysInfUnavailable)
-    if user_mail_address then mail = user_mail_address else mail = error(Messages.SysInfUnavailable)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfUserName+" <color="+Theme.miscSecondary+">- "+active_user)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfHostName+" <color="+Theme.miscSecondary+">- "+computer.get_name)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfHomePath+" <color="+Theme.miscSecondary+">- "+home_dir)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfBankLogin+" <color="+Theme.miscSecondary+">- "+bank)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfEmail+" <color="+Theme.miscSecondary+">- "+mail)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfProgramPath+" <color="+Theme.miscSecondary+">- "+program_path)
-    print("")
-
-    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfNetwork+"-->")
-    bssid = error(Messages.SysInfUnavailable)
-    essid = error(Messages.SysInfUnavailable)
-    kernel = error(Messages.SysInfUnavailable)
-    localIp = error(Messages.SysInfUnavailable)
-    publicIp = error(Messages.SysInfUnavailable)
-    deviceIp = error(Messages.SysInfUnavailable)
-    if computer.is_network_active then
-        router = getNetworkNode
-        bssid = router.bssid_name
-        essid = router.essid_name
-        kernel = router.kernel_version
-        localIp = router.local_ip
-        publicIp = router.public_ip
-        deviceIp = computer.local_ip
-    end if
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfMacAddress+" <color="+Theme.miscSecondary+">- "+bssid)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfNetworkName+" <color="+Theme.miscSecondary+">- "+essid)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfKernelVersion+" <color="+Theme.miscSecondary+">- "+kernel)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfLocalAddress+" <color="+Theme.miscSecondary+">- "+localIp)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfPublicAddress+" <color="+Theme.miscSecondary+">- "+publicIp)
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfDeviceAddress+" <color="+Theme.miscSecondary+">- "+deviceIp)
-    print(" ")
-
-    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfLibraries+"-->")
-    crypto = error(Messages.SysInfNotLoaded)
-    apt = error(Messages.SysInfNotLoaded)
-    metaxploit = error(Messages.SysInfNotLoaded)
-    blockchain = error(Messages.SysInfNotLoaded)
-    if Libs.indexes.indexOf("crypto") != null then crypto = Messages.SysInfLoaded
-    if Libs.indexes.indexOf("apt") != null then apt = Messages.SysInfLoaded
-    if Libs.indexes.indexOf("metaxploit") != null then metaxploit = Messages.SysInfLoaded
-    if Libs.indexes.indexOf("blockchain") != null then blockchain = Messages.SysInfLoaded
-    print("<color="+Theme.miscPrimary+">Crypto <color="+Theme.miscSecondary+">- "+crypto)
-    print("<color="+Theme.miscPrimary+">Apt <color="+Theme.miscSecondary+">- "+apt)
-    print("<color="+Theme.miscPrimary+">Metaxploit <color="+Theme.miscSecondary+">- "+metaxploit)
-    print("<color="+Theme.miscPrimary+">Blockchain <color="+Theme.miscSecondary+">- "+blockchain)
-    print(" ")
-
-    print(primary("<b><--"+Messages.SysInfMainframe+"-->"))
-    protocol = error(Messages.SysInfUnavailable)
-    publicAddress = error(Messages.SysInfUnavailable)
-    localAddress = error(Messages.SysInfUnavailable)
-    port = error(Messages.SysInfUnavailable)
-    credentials = error(Messages.SysInfUnavailable)
-    connection = error(Messages.SysInfUnavailable)
-    patches = error(Messages.SysInfUnavailable)
-    if Config.mainframe then
-        if Mainframe.protocol then protocol = Mainframe.protocol
-        if Mainframe.publicAddress then publicAddress = Mainframe.publicAddress
-        if Mainframe.localAddress then localAddress = Mainframe.localAddress
-        if Mainframe.port != null then port = Mainframe.port
-        if Mainframe.credentials then credentials = Mainframe.credentials
-        if Mainframe.shell then connection = Messages.SysInfAvailable
-        if Config.patches.len > 0 then patches = Mainframe.patches.len+"/"+Config.patches.len
-    end if
-    print(primary(Messages.SysInfMainframeProtocol)+secondary(" - "+protocol))
-    print(primary(Messages.SysInfPublicAddress)+secondary(" - "+publicAddress))
-    print(primary(Messages.SysInfLocalAddress)+secondary(" - "+localAddress))
-    print(primary(Messages.SysInfMainframePort)+secondary(" - "+port))
-    print(primary(Messages.SysInfMainframeCredentials)+secondary(" - "+credentials))
-    print(primary(Messages.SysInfMainframeConnection)+secondary(" - "+connection))
-    print(primary(Messages.SysInfMainframePatches)+secondary(" - "+patches))
-    print(" ")
-
-    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfMiscellaneous+"-->")
-    print("<color="+Theme.miscPrimary+">"+Messages.SysInfDateTime+" <color="+Theme.miscSecondary+">- "+current_date)
-end function
-
-
-command "reload", ["rl"], Const.host, Messages.HelpEntryReload, function(arguments)
-    Conditions.arguments(arguments, 0)
-    Conditions.host
-
-    RuntimeHelpers.makeNeccessaryRuntimeAssigns
-    RuntimeHelpers.checkIfEverythingIsAssigned
-end function
-
-
-command "su", [], Const.host, Messages.HelpEntryUserchange, function(arguments)
-    Conditions.arguments(arguments, 2)
-    Conditions.host
-
-    user = str(arguments[0])
-    pass = str(arguments[1])
-    
-    shell = get_shell(user, pass)
-    if not shell then
-        Console.error(Messages.ErrorIncorrectUsernameOrPassword)
-    else
-        Console.log(Messages.LogLookingForMyself)
-        // Now that I think of it - this is potentially a security vulnerability. Should be cautious.
-        fd = findMyself(get_shell, Config.identificator, "--identify-marinette --password "+Var.password)
-        if not fd then return Console.error(Messages.ErrorCouldNotFindMyself)
-
-        Intrinsics.shell = shell
-        Intrinsics.computer = Intrinsics.shell.host_computer
-        Intrinsics.file = Intrinsics.computer.File("/")
-        
-        RuntimeHelpers.startMarinette(shell, fd.path)
-    end if
-end function
-
-
-command "netcat", ["ncat", "nc"], Const.host, Messages.HelpEntrySvcon, function(arguments)
-    Conditions.arguments(arguments, 6)
-    Conditions.host
-    Conditions.network
-
-    addr = str(arguments[0])
-    locAddr = str(arguments[1])
-    port = arguments[2]
-    user = str(arguments[3])
-    pass = str(arguments[4])
-    svc = str(arguments[5])
-
-
-    router = getNetworkNode(addr)
-    if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
-    
-    addr = router.public_ip
-    if isNodeLocallyAccessible(router) then addr = router.local_ip
-
-    svcPort = getExactPort(addr, locAddr, port)
-    if not svcPort then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
-    if not isNodeLocallyAccessible(router) and not svcPort.public then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
-
-    target = addr
-    if isNodeLocallyAccessible(router) then target = locAddr else port = svcPort.public.port_number
-    result = Intrinsics.shell.connect_service(addr, port, user, pass, svc)
-    if not result then return Console.error(Messages.ErrorConnectionFailed)
-    if result isa string then return Console.error(Messages.ErrorStringGeneral, {"FUNC": "connect_service", "ERROR": result})
-    if ["shell", "ftpshell"].indexOf(typeof(result)) == null then Console.error(Messages.ErrorConnectionUnknownShell)
-    
-    intrinsics = deepCopy(Intrinsics)
-    intrinsics.shell = result
-    intrinsics.computer = intrinsics.shell.host_computer
-    intrinsics.file = intrinsics.computer.File("/")
-    intrinsics.publicAddress = intrinsics.computer.public_ip
-    intrinsics.localAddress = intrinsics.computer.local_ip
-    intrinsics.port = port
-    intrinsics.isConnectionRemote = true
-    
-    SessionsHelpers.add(intrinsics)
-    Console.log(Messages.LogSuccessfullSessionsUpdate)
-end function
-
-
 // 
-// Thanks Ariavne for allowing me to use their nickname as a tool name :D
-command "ariadne", ["aria"], Const.host, Messages.HelpEntryAriadne, function(arguments)
-    Conditions.host
+// Thanks Ariavne for allowing me to use their nickname as a tool name <3
+    command "ariadne", ["aria"], Const.any, Messages.HelpEntryAriadne, function(arguments)
     Conditions.metaxploit
 
     fd = Intrinsics.file
@@ -726,9 +553,8 @@ command "ariadne", ["aria"], Const.host, Messages.HelpEntryAriadne, function(arg
 end function
 
 
-command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(arguments)
+command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(arguments)
     Conditions.argumentsMoreThan(arguments, 2)
-    Conditions.host
     Conditions.network
     Conditions.metaxploit
 
@@ -952,6 +778,237 @@ command "nemesis", ["ns"], Const.host, Messages.HelpEntryNemesis, function(argum
 end function
 
 
+command "wificrack", [], Const.any, Messages.HelpEntryNetcrack, function(arguments)
+    Conditions.arguments(arguments, 2)
+    Conditions.crypto
+
+    crypto = Libs.crypto
+    iface = str(arguments[0])
+    id = arguments[1]
+
+    if not isExistingWirelessInterface(Intrinsics.computer, iface) then return Console.error(Messages.ErrorIncorrectNetworkInterface)
+
+    networks = getNetworksSortedByPower(Intrinsics.computer, iface)
+    if not networks then return Console.error(Messages.ErrorCouldNotGetNetworksList)
+    if not id isa number or id > networks.len then return Console.error(Messages.ErrorIncorrectNetworkId)
+
+    network = networks[id-1].split(" ")
+    bssid = network[0]
+    pwr = network[1].replace("%", "").to_int
+    essid = network[2]
+    acks = ceil(300000 / pwr)
+
+    Console.log(Messages.LogStartingMonitorMode)
+    result = crypto.airmon("start", iface)
+    if result isa string then
+        crypto.airmon("stop", iface)
+        return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "airmon", "ERROR": result}))
+    end if
+
+    Console.log(replaceF(Messages.LogAireplayingOn, {"ESSID": essid, "ACKS": acks}))
+    result = crypto.aireplay(bssid, essid, acks)
+    if result isa string then
+        crypto.airmon("stop", iface)
+        return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "aireplay", "ERROR": result}))
+    end if
+
+    desyncFix
+    Console.log(Messages.LogAircrackingTheHandshake)
+    password = crypto.aircrack(current_path+"/file.cap")
+
+    Console.log(Messages.LogStoppingMonitorMode)
+    crypto.airmon("stop", iface)
+
+    if not password then
+        return Console.error(Messages.ErrorFailedPasswordCrack)
+    else
+        return Console.log(replaceF(Messages.LogSuccessfullPasswordCrack, {"ESSID": essid, "ID": id, "PASSWORD": password}))
+    end if
+end function
+
+
+command "string", ["str"], Const.any, Messages.HelpEntryString, function(arguments)
+    Conditions.arguments(arguments, 1)
+
+    length = arguments[0]
+    if not length isa number or length < 1 then return Console.error(Messages.ErrorUnknownArguments)
+
+    Console.log(randomString(length))
+end function
+
+
+
+
+////////////////////////////////////////////////////////////
+// Host session type
+////////////////////////////////////////////////////////////
+
+command "systeminfo", ["si"], Const.host, Messages.HelpEntrySysinf, function(arguments)
+    Conditions.arguments(arguments, 0)
+    Conditions.host
+
+    shell = get_shell
+    computer = shell.host_computer
+
+    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfLocalSystem+"-->")
+    if user_bank_number then bank = user_bank_number else bank = error(Messages.SysInfUnavailable)
+    if user_mail_address then mail = user_mail_address else mail = error(Messages.SysInfUnavailable)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfUserName+" <color="+Theme.miscSecondary+">- "+active_user)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfHostName+" <color="+Theme.miscSecondary+">- "+computer.get_name)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfHomePath+" <color="+Theme.miscSecondary+">- "+home_dir)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfBankLogin+" <color="+Theme.miscSecondary+">- "+bank)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfEmail+" <color="+Theme.miscSecondary+">- "+mail)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfProgramPath+" <color="+Theme.miscSecondary+">- "+program_path)
+    print("")
+
+    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfNetwork+"-->")
+    bssid = error(Messages.SysInfUnavailable)
+    essid = error(Messages.SysInfUnavailable)
+    kernel = error(Messages.SysInfUnavailable)
+    localIp = error(Messages.SysInfUnavailable)
+    publicIp = error(Messages.SysInfUnavailable)
+    deviceIp = error(Messages.SysInfUnavailable)
+    if computer.is_network_active then
+        router = getNetworkNode
+        bssid = router.bssid_name
+        essid = router.essid_name
+        kernel = router.kernel_version
+        localIp = router.local_ip
+        publicIp = router.public_ip
+        deviceIp = computer.local_ip
+    end if
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfMacAddress+" <color="+Theme.miscSecondary+">- "+bssid)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfNetworkName+" <color="+Theme.miscSecondary+">- "+essid)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfKernelVersion+" <color="+Theme.miscSecondary+">- "+kernel)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfLocalAddress+" <color="+Theme.miscSecondary+">- "+localIp)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfPublicAddress+" <color="+Theme.miscSecondary+">- "+publicIp)
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfDeviceAddress+" <color="+Theme.miscSecondary+">- "+deviceIp)
+    print(" ")
+
+    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfLibraries+"-->")
+    crypto = error(Messages.SysInfNotLoaded)
+    apt = error(Messages.SysInfNotLoaded)
+    metaxploit = error(Messages.SysInfNotLoaded)
+    blockchain = error(Messages.SysInfNotLoaded)
+    if Libs.indexes.indexOf("crypto") != null then crypto = Messages.SysInfLoaded
+    if Libs.indexes.indexOf("apt") != null then apt = Messages.SysInfLoaded
+    if Libs.indexes.indexOf("metaxploit") != null then metaxploit = Messages.SysInfLoaded
+    if Libs.indexes.indexOf("blockchain") != null then blockchain = Messages.SysInfLoaded
+    print("<color="+Theme.miscPrimary+">Crypto <color="+Theme.miscSecondary+">- "+crypto)
+    print("<color="+Theme.miscPrimary+">Apt <color="+Theme.miscSecondary+">- "+apt)
+    print("<color="+Theme.miscPrimary+">Metaxploit <color="+Theme.miscSecondary+">- "+metaxploit)
+    print("<color="+Theme.miscPrimary+">Blockchain <color="+Theme.miscSecondary+">- "+blockchain)
+    print(" ")
+
+    print(primary("<b><--"+Messages.SysInfMainframe+"-->"))
+    protocol = error(Messages.SysInfUnavailable)
+    publicAddress = error(Messages.SysInfUnavailable)
+    localAddress = error(Messages.SysInfUnavailable)
+    port = error(Messages.SysInfUnavailable)
+    credentials = error(Messages.SysInfUnavailable)
+    connection = error(Messages.SysInfUnavailable)
+    patches = error(Messages.SysInfUnavailable)
+    if Config.mainframe then
+        if Mainframe.protocol then protocol = Mainframe.protocol
+        if Mainframe.publicAddress then publicAddress = Mainframe.publicAddress
+        if Mainframe.localAddress then localAddress = Mainframe.localAddress
+        if Mainframe.port != null then port = Mainframe.port
+        if Mainframe.credentials then credentials = Mainframe.credentials
+        if Mainframe.shell then connection = Messages.SysInfAvailable
+        if Config.patches.len > 0 then patches = Mainframe.patches.len+"/"+Config.patches.len
+    end if
+    print(primary(Messages.SysInfMainframeProtocol)+secondary(" - "+protocol))
+    print(primary(Messages.SysInfPublicAddress)+secondary(" - "+publicAddress))
+    print(primary(Messages.SysInfLocalAddress)+secondary(" - "+localAddress))
+    print(primary(Messages.SysInfMainframePort)+secondary(" - "+port))
+    print(primary(Messages.SysInfMainframeCredentials)+secondary(" - "+credentials))
+    print(primary(Messages.SysInfMainframeConnection)+secondary(" - "+connection))
+    print(primary(Messages.SysInfMainframePatches)+secondary(" - "+patches))
+    print(" ")
+
+    print("<color="+Theme.miscPrimary+"><b><--"+Messages.SysInfMiscellaneous+"-->")
+    print("<color="+Theme.miscPrimary+">"+Messages.SysInfDateTime+" <color="+Theme.miscSecondary+">- "+current_date)
+end function
+
+
+command "reload", ["rl"], Const.host, Messages.HelpEntryReload, function(arguments)
+    Conditions.arguments(arguments, 0)
+    Conditions.host
+
+    RuntimeHelpers.makeNeccessaryRuntimeAssigns
+    RuntimeHelpers.checkIfEverythingIsAssigned
+end function
+
+
+command "su", [], Const.host, Messages.HelpEntryUserchange, function(arguments)
+    Conditions.arguments(arguments, 2)
+    Conditions.host
+
+    user = str(arguments[0])
+    pass = str(arguments[1])
+    
+    shell = get_shell(user, pass)
+    if not shell then
+        Console.error(Messages.ErrorIncorrectUsernameOrPassword)
+    else
+        Console.log(Messages.LogLookingForMyself)
+        // Now that I think of it - this is potentially a security vulnerability. Should be cautious.
+        fd = findMyself(get_shell, Config.identificator, "--identify-marinette --password "+Var.password)
+        if not fd then return Console.error(Messages.ErrorCouldNotFindMyself)
+
+        Intrinsics.shell = shell
+        Intrinsics.computer = Intrinsics.shell.host_computer
+        Intrinsics.file = Intrinsics.computer.File("/")
+        
+        RuntimeHelpers.startMarinette(shell, fd.path)
+    end if
+end function
+
+
+command "netcat", ["ncat", "nc"], Const.host, Messages.HelpEntrySvcon, function(arguments)
+    Conditions.arguments(arguments, 6)
+    Conditions.host
+    Conditions.network
+
+    addr = str(arguments[0])
+    locAddr = str(arguments[1])
+    port = arguments[2]
+    user = str(arguments[3])
+    pass = str(arguments[4])
+    svc = str(arguments[5])
+
+
+    router = getNetworkNode(addr)
+    if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
+    
+    addr = router.public_ip
+    if isNodeLocallyAccessible(router) then addr = router.local_ip
+
+    svcPort = getExactPort(addr, locAddr, port)
+    if not svcPort then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
+    if not isNodeLocallyAccessible(router) and not svcPort.public then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
+
+    target = addr
+    if isNodeLocallyAccessible(router) then target = locAddr else port = svcPort.public.port_number
+    result = Intrinsics.shell.connect_service(addr, port, user, pass, svc)
+    if not result then return Console.error(Messages.ErrorConnectionFailed)
+    if result isa string then return Console.error(Messages.ErrorStringGeneral, {"FUNC": "connect_service", "ERROR": result})
+    if ["shell", "ftpshell"].indexOf(typeof(result)) == null then Console.error(Messages.ErrorConnectionUnknownShell)
+    
+    intrinsics = deepCopy(Intrinsics)
+    intrinsics.shell = result
+    intrinsics.computer = intrinsics.shell.host_computer
+    intrinsics.file = intrinsics.computer.File("/")
+    intrinsics.publicAddress = intrinsics.computer.public_ip
+    intrinsics.localAddress = intrinsics.computer.local_ip
+    intrinsics.port = port
+    intrinsics.isConnectionRemote = true
+    
+    SessionsHelpers.add(intrinsics)
+    Console.log(Messages.LogSuccessfullSessionsUpdate)
+end function
+
+
 command "addr", [], Const.host, Messages.HelpEntryRaddr, function(arguments)
     Conditions.argumentsFewerThan(arguments, 2)
     Conditions.host
@@ -1046,59 +1103,6 @@ command "lib", [], Const.host, Messages.HelpEntryInspect, function(arguments)
         print(" ")
     end for
     inspectOne(last)
-end function
-
-
-command "wificrack", [], Const.host, Messages.HelpEntryNetcrack, function(arguments)
-    Conditions.arguments(arguments, 2)
-    Conditions.host
-    Conditions.crypto
-
-    crypto = Libs.crypto
-    iface = str(arguments[0])
-    id = arguments[1]
-
-    if not isExistingWirelessInterface(Intrinsics.computer, iface) then return Console.error(Messages.ErrorIncorrectNetworkInterface)
-
-    networks = getNetworksSortedByPower(Intrinsics.computer, iface)
-    if not networks then return Console.error(Messages.ErrorCouldNotGetNetworksList)
-    if not id isa number or id > networks.len then return Console.error(Messages.ErrorIncorrectNetworkId)
-
-    network = networks[id-1].split(" ")
-    bssid = network[0]
-    pwr = network[1].replace("%", "").to_int
-    essid = network[2]
-    acks = ceil(300000 / pwr)
-
-    Console.log(Messages.LogStartingMonitorMode)
-    result = crypto.airmon("start", iface)
-    if result isa string then
-        crypto.airmon("stop", iface)
-        return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "airmon", "ERROR": result}))
-    end if
-
-    Console.log(replaceF(Messages.LogAireplayingOn, {"ESSID": essid, "ACKS": acks}))
-    result = crypto.aireplay(bssid, essid, acks)
-    if result isa string then
-        crypto.airmon("stop", iface)
-        return Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "aireplay", "ERROR": result}))
-    end if
-
-    Console.log(Messages.LogAircrackingTheHandshake)
-    password = crypto.aircrack(current_path+"/file.cap")
-
-    cap = get_shell.host_computer.File(current_path+"/file.cap")
-    desyncFix
-    if cap then cap.delete
-
-    Console.log(Messages.LogStoppingMonitorMode)
-    crypto.airmon("stop", iface)
-
-    if not password then
-        return Console.error(Messages.ErrorFailedPasswordCrack)
-    else
-        return Console.log(replaceF(Messages.LogSuccessfullPasswordCrack, {"ESSID": essid, "ID": id, "PASSWORD": password}))
-    end if
 end function
 
 

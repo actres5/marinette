@@ -1,0 +1,157 @@
+// 
+// Database is a patch that makes it possible to create an exploit db on a mainframe
+// Implements two commands: ariadnedb and nemesisdb
+// Use one of these when you need to hack using a database
+// Use default ones when you want to update the db
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesHelpEntryAriadneDB = "[аргыПер] - БД версия ariadne [*]"
+    Marinette.Messages.PatchesHelpEntryNemesisDB = "(адрМарш) all/(локАдр) all/(порт) [аргыПер] - БД версия nemesis [*]"
+else
+    Marinette.Messages.PatchesHelpEntryAriadneDB = "[ofargs] - DB version of ariadne [*]"
+    Marinette.Messages.PatchesHelpEntryNemesisDB = "(gateAddr) all/(locAddr) all/(port) [ofargs] - DB version of nemesis [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality
+////////////////////////////////////////////////////////////
+readExploitDatabase = function
+    dbfiles = Marinette.findFilesByHeader(Marinette.Mainframe.shell.host_computer.File("/"), "Marinette Exploit Database")
+    db = {}
+    for file in dbfiles
+        for line in file.get_content.split(char(10))
+            parts = line.trim.split("#")
+            if parts.len != 3 then continue
+            libName = parts[0]
+            libVersion = parts[1]
+            memories = parts[2].split(":")
+            db[libName] = {}
+            db[libName][libVersion] = memories
+        end for
+    end for
+    return db
+end function
+
+writeExploitDatabase = function(db)
+    computer = Marinette.Mainframe.shell.host_computer
+    fd = computer.File("/")
+
+    lines = []
+    for libName in db.indexes
+        for libVersion in db[libName].indexes
+            memories = db[libName][libVersion].join(":")
+            lines.push([libName,libVersion,memories].join("#"))
+        end for
+    end for
+    if lines.len == 0 then return
+
+    dbWritables = []
+    dbfiles = Marinette.findFilesByHeader(fd, "Marinette Exploit Database")
+    for fd in dbfiles
+        if fd.has_permission("w") then
+            dbWritables.push(fd)
+        else
+            fd.delete
+        end if
+    end for
+
+    neededAmount = ceil(lines.join(char(10)).len / 140000)
+    while dbWritables.len < neededAmount
+        computer.create_folder("/", "marinette")
+        computer.create_folder("/marinette", "mainframe")
+        computer.create_folder("/marinette/mainframe", "database")
+        filename = Marinette.randomString(16)+".maridb"
+        result = computer.touch("/marinette/mainframe/database", filename)
+        if result != true then return print("Database: COULD NOT WRITE DB ON MAINFRAME!!!")
+        fdNew = computer.File("/marinette/mainframe/database/"+filename)
+        if not fdNew then return print("Database: COULD NOT WRITE DB ON MAINFRAME!!!")
+        dbWritables.push(fdNew)
+    end while
+
+    for fd in dbWritables
+        content = "Marinette Exploit Database"
+        while content.len < 140000 and lines.len > 0
+            content = content+char(10)+lines.pull
+        end while
+        if fd.set_content(content) != true then return print("Database: COULD NOT WRITE DB ON MAINFRAME!!!")
+    end for
+end function
+
+scanLibraryDatabase = function(metaxploit, metalib, useDatabase=false)
+    db = readExploitDatabase
+    if db.indexes.indexOf(metalib.lib_name) == null then db[metalib.lib_name] = {}
+    if db[metalib.lib_name].indexes.indexOf(metalib.version) == null then db[metalib.lib_name][metalib.version] = []
+    if db[metalib.lib_name][metalib.version].len == 0 then useDatabase = false
+
+    if useDatabase then
+        return db[metalib.lib_name][metalib.version]
+    else
+        desyncFix
+        db[metalib.lib_name][metalib.version] = metaxploit.scan(metalib)
+        writeExploitDatabase(db)
+        return db[metalib.lib_name][metalib.version]
+    end if
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Hooks
+////////////////////////////////////////////////////////////
+
+_SCAN_LIBRARY = @Marinette["scanLibrary"]
+
+scanLibraryTrue = function(metaxploit, metalib)
+    return scanLibraryDatabase(metaxploit, metalib, true)
+end function
+
+scanLibraryFalse = function(metaxploit, metalib)
+    return scanLibraryDatabase(metaxploit, metalib, false)
+end function
+
+
+_ARIADNE = @Marinette["Commands"]["ariadne"]
+COMMAND_ARIADNE = function(arguments)
+    Marinette.scanLibrary = @scanLibraryFalse
+    _ARIADNE(arguments)
+    Marinette.scanLibrary = @_SCAN_LIBRARY
+end function
+
+_ARIADNE_DB = @Marinette["Commands"]["ariadne"]
+COMMAND_ARIADNE_DB = function(arguments)
+    Marinette.scanLibrary = @scanLibraryTrue
+    _ARIADNE_DB(arguments)
+    Marinette.scanLibrary = @_SCAN_LIBRARY
+end function
+
+_NEMESIS = @Marinette["Commands"]["nemesis"]
+COMMAND_NEMESIS = function(arguments)
+    Marinette.scanLibrary = @scanLibraryFalse
+    _NEMESIS(arguments)
+    Marinette.scanLibrary = @_SCAN_LIBRARY
+end function
+
+_NEMESIS_DB = @Marinette["Commands"]["nemesis"]
+COMMAND_NEMESIS_DB = function(arguments)
+    Marinette.scanLibrary = @scanLibraryTrue
+    _NEMESIS_DB(arguments)
+    Marinette.scanLibrary = @_SCAN_LIBRARY
+end function
+
+
+Marinette.command "ariadne", ["aria"], Marinette.Const.any, Marinette.Messages.HelpEntryAriadne+" [*]", @COMMAND_ARIADNE
+Marinette.command "ariadnedb", ["ariadb"], Marinette.Const.any, Marinette.Messages.PatchesHelpEntryAriadneDB, @COMMAND_ARIADNE_DB
+Marinette.command "nemesis", ["ns"], Marinette.Const.any, Marinette.Messages.HelpEntryNemesis+" [*]", @COMMAND_NEMESIS
+Marinette.command "nemesisdb", ["nsdb"], Marinette.Const.any, Marinette.Messages.PatchesHelpEntryNemesisDB, @COMMAND_NEMESIS_DB
