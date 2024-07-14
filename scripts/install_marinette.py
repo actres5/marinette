@@ -86,6 +86,7 @@ filename = Path(__file__).name.replace(".py", ".src")
 with open(f"scriptsgh/{filename}", "w") as installer:
     installer.write(gh_init())
     installer.write(create_folder("/home"))
+    installer.write(create_folder("/home/guest"))
     installer.write(create_folder("/home/guest/Sources"))
     installer.write(create_folder("/home/guest/Sources/Marinette"))
 

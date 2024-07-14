@@ -141,5 +141,5 @@ end function
 if REPLACE_DEFAULT_TREE then
     Marinette.command "tree", [], Marinette.Const.file, Marinette.Messages.HelpEntryTree+" [*]", @COMMAND_TREEA
 else
-    Marinette.command "treea", [], Marinette.Const.file, Marinette.Messages.PatchesHelpEntryAlternativeTree, @COMMAND_TREEA
+    Marinette.command "treea", [], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryAlternativeTree, @COMMAND_TREEA
 end if

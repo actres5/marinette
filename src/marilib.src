@@ -24,7 +24,7 @@ Const = {
     "shell": Messages.SessionTypeShell,
     "computer": Messages.SessionTypeComputer,
     "file": Messages.SessionTypeFile,
-    "plugin": Messages.HelpCategoryPlugins,
+    "patch": Messages.HelpCategoryPlugins,
 }
 
 

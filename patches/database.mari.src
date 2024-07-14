@@ -33,11 +33,18 @@ readExploitDatabase = function
         for line in file.get_content.split(char(10))
             parts = line.trim.split("#")
             if parts.len != 3 then continue
+
             libName = parts[0]
             libVersion = parts[1]
             memories = parts[2].split(":")
+
+            validatedMemories = []
+            for memory in memories
+                if memory[:2] == "0x" then validatedMemories.push(memory)
+            end for
+
             db[libName] = {}
-            db[libName][libVersion] = memories
+            db[libName][libVersion] = validatedMemories
         end for
     end for
     return db
@@ -122,6 +129,15 @@ scanLibraryFalse = function(metaxploit, metalib)
 end function
 
 
+// 
+// CHange to default scanLibrary() if Conditions error has taken place
+_CMDLOOP = @Marinette["Console"]["cmdloop"]
+Marinette.Console.cmdloop = function
+    Marinette.scanLibrary = @_SCAN_LIBRARY
+    _CMDLOOP
+end function
+
+
 _ARIADNE = @Marinette["Commands"]["ariadne"]
 COMMAND_ARIADNE = function(arguments)
     Marinette.scanLibrary = @scanLibraryFalse
@@ -152,6 +168,6 @@ end function
 
 
 Marinette.command "ariadne", ["aria"], Marinette.Const.any, Marinette.Messages.HelpEntryAriadne+" [*]", @COMMAND_ARIADNE
-Marinette.command "ariadnedb", ["ariadb"], Marinette.Const.any, Marinette.Messages.PatchesHelpEntryAriadneDB, @COMMAND_ARIADNE_DB
+Marinette.command "ariadnedb", ["ariadb"], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryAriadneDB, @COMMAND_ARIADNE_DB
 Marinette.command "nemesis", ["ns"], Marinette.Const.any, Marinette.Messages.HelpEntryNemesis+" [*]", @COMMAND_NEMESIS
-Marinette.command "nemesisdb", ["nsdb"], Marinette.Const.any, Marinette.Messages.PatchesHelpEntryNemesisDB, @COMMAND_NEMESIS_DB
+Marinette.command "nemesisdb", ["nsdb"], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryNemesisDB, @COMMAND_NEMESIS_DB

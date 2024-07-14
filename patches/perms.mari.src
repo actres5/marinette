@@ -37,7 +37,8 @@ end function
 ////////////////////////////////////////////////////////////
 
 // 
-// Run changePermissions() when Marinette initialized and is in cmdloop
+// Run changePermissions() when Marinette is initialized
+// or when a Conditions error has taken place
 _CMDLOOP = @Marinette["Console"]["cmdloop"]
 Marinette.Console.cmdloop = function
     changePermissions

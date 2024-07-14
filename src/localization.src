@@ -235,6 +235,11 @@ Locales.LogNescaNoPorts = {}
 Locales.HelpEntryChange = {}
 Locales.LogSuccessStringGeneral = {}
 Locales.HelpEntryString = {}
+Locales.HelpEntryMake = {}
+Locales.HelpEntryCopyNew = {}
+Locales.HelpEntryMoveNew = {}
+Locales.LogSuccessfullCompilation = {}
+Locales.LogCompilingTheSource = {}
 
 
 
@@ -469,6 +474,11 @@ Locales.LogNescaNoPorts[_language] = "Nodes with no ports on <i>{DOMAIN}</i> <i>
 Locales.HelpEntryChange[_language] = "mod/group/owner (perm/group/user) (ap/path) - Change file access"
 Locales.LogSuccessStringGeneral[_language] = "Action has been completed successfully"
 Locales.HelpEntryString[_language] = "(length) - Generate random string"
+Locales.HelpEntryMake[_language] = "(ap/path) (dest) (size) (allow) - Compile source file"
+Locales.HelpEntryCopyNew[_language] = "(ap/path) (dest) [name] - Copy file"
+Locales.HelpEntryMoveNew[_language] = "(ap/path) (dest) [name] - Move file"
+Locales.LogSuccessfullCompilation[_language] = "File is coompiled successfully"
+Locales.LogCompilingTheSource[_language] = "Compiling the file...."
 
 
 
@@ -892,6 +902,11 @@ Locales.LogNescaNoPorts[_language] = "Узлы без портов на <i>{DOMA
 Locales.HelpEntryChange[_language] = "mod/group/owner (разр/груп/польз) (ап/путь) - Изменить доступ к файлу"
 Locales.LogSuccessStringGeneral[_language] = "Действие выполнено успешно"
 Locales.HelpEntryString[_language] = "(length) - Сгенерировать случайную строку"
+Locales.HelpEntryMake[_language] = "(ап/путь) (назн) (размер) (разр) - Скомпилировать исходный файл"
+Locales.HelpEntryCopyNew[_language] = "(ап/путь) (назн) [имя] - Копировать файл"
+Locales.HelpEntryMoveNew[_language] = "(ап/путь) (назн) [имя] - Передвинуть файл"
+Locales.LogSuccessfullCompilation[_language] = "Файл успешно скомпилирован"
+Locales.LogCompilingTheSource[_language] = "Собираю файл...."
 
 
 

@@ -82,7 +82,8 @@ command "help", ["h", "?"], Const.any, Messages.HelpEntryHelp, function(argument
                 Messages.SessionTypeShell: "A"*31+"C",
                 Messages.SessionTypeComputer: "A"*31+"D",
                 Messages.SessionTypeFile: "A"*31+"E",
-                Messages.HelpUndeterminedDescription: "A"*31+"F",
+                Messages.HelpCategoryPlugins: "A"*31+"F",
+                Messages.HelpUndeterminedDescription: "A"*31+"G",
             }
             if priority.indexes.indexOf(iItem) == null then priority[iItem] = iItem
             if priority.indexes.indexOf(jItem) == null then priority[jItem] = jItem
@@ -1353,6 +1354,80 @@ command "scp", ["ftp"], Const.shell, Messages.HelpEntryScp, function(arguments)
 end function
 
 
+command "make", [], Const.shell, Messages.HelpEntryMake, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 2)
+    Conditions.argumentsFewerThan(arguments, 5)
+
+    path = str(arguments.pull)
+    dest = str(arguments.pull)
+    size = arguments.pull
+    allow = arguments.pull
+    if allow == null then allow = 0
+
+    fdSource = iterateToPath(Intrinsics.file, path)
+    if not fdSource then return Console.error(Messages.ErrorSourcePathDoesNotExist)
+
+    fdDest = iterateToPath(Intrinsics.file, dest)
+    if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
+
+    if not size isa number then return Console.error(Messages.ErrorUnknownArguments)
+    if [false, true].indexOf(allow) == null then return Console.error(Messages.ErrorUnknownArguments)
+
+    Console.log(Messages.LogCompilingTheSource)
+
+    result = Intrinsics.shell.build(fdSource.path, fdDest.path, allow)
+    if result and result isa string then
+        return Console.error(Messages.ErrorStringGeneral, {"FUNC": "build", "ERROR": result})
+    else if result != "" then
+        return Console.error(Messages.ErrorUnknown)
+    end if
+
+    sourceName = fdSource.name
+    destName = fdSource.name.replace(".src", "")
+    fd = iterateToPath(Intrinsics.file, pathJoin([fdDest.path, destName]))
+    if not fd or not fd.is_binary then return Console.error(Messages.ErrorUnknown)
+    fd.delete
+    
+    while true
+        desyncFix
+        
+        newDestName = randomString(randomNumber(1, 8))
+        newSourceName = newDestName+".src"
+
+        fdSource = renameFile(fdSource, newSourceName)
+        if not fdSource then return Console.error(Messages.ErrorUnknown)
+
+        result = Intrinsics.shell.build(fdSource.path, fdDest.path, allow)
+        if result and result isa string then
+            return Console.error(Messages.ErrorStringGeneral, {"FUNC": "build", "ERROR": result})
+        else if result != "" then
+            return Console.error(Messages.ErrorUnknown)
+        end if
+
+        fd = iterateToPath(Intrinsics.file, pathJoin([fdDest.path, newDestName]))
+        if not fd or not fd.is_binary then return Console.error(Messages.ErrorUnknown)
+
+        if fd.size.to_int > size then
+            desyncFix
+            fd.delete
+        else
+            break
+        end if
+    end while
+
+    results = [fdSource.rename(sourceName), fd.rename(destName)]
+    for result in results
+        if result and result isa string then
+            return Console.error(Messages.ErrorStringGeneral, {"FUNC": "rename", "ERROR": result})
+        else if result != "" then
+            return Console.error(Messages.ErrorUnknown)
+        end if
+    end for
+
+    Console.log(Messages.LogSuccessfullCompilation)
+end function
+
+
 
 
 ////////////////////////////////////////////////////////////
@@ -1727,29 +1802,21 @@ command "del", [], Const.file, Messages.HelpEntryDelete, function(arguments)
 end function
 
 
-command "copy", ["cp"], Const.file, Messages.HelpEntryCopy, function(arguments)
-    Conditions.arguments(arguments, 2)
-    
+command "copy", ["cp"], Const.file, Messages.HelpEntryCopyNew, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 1)
+    Conditions.argumentsFewerThan(arguments, 4)
+
     fd = Intrinsics.file
-    path = str(arguments[0])
-    dest = str(arguments[1])
+    path = str(arguments.pull)
+    dest = str(arguments.pull)
 
     fdSource = iterateToPath(fd, path)
     if not fdSource then return Console.error(Messages.ErrorSourcePathDoesNotExist)
-    fileName = fdSource.name
+    fileName = str(arguments.pull)
+    if not fileName then fileName = fdSource.name
 
     fdDest = iterateToPath(fd, dest)
-    if fdDest and not fdDest.is_folder then
-        fileName = fdDest.name
-        fdDest = fdDest.parent
-    end if
-    if not fdDest then
-        parts = dest.split("/")
-        fileName = parts.pop
-        fdDest = iterateToPath(fd, parts.join("/"))
-        if not fdDest and parts.len == 0 then fdDest = fd
-        if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
-    end if
+    if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
 
     result = fdSource.copy(fdDest.path, fileName)
     if result isa string then
@@ -1781,29 +1848,21 @@ command "tree", [], Const.file, Messages.HelpEntryTree, function(arguments)
 end function
 
 
-command "move", ["mv"], Const.file, Messages.HelpEntryMove, function(arguments)
-    Conditions.arguments(arguments, 2)
+command "move", ["mv"], Const.file, Messages.HelpEntryMoveNew, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 1)
+    Conditions.argumentsFewerThan(arguments, 4)
     
     fd = Intrinsics.file
-    path = str(arguments[0])
-    dest = str(arguments[1])
+    path = str(arguments.pull)
+    dest = str(arguments.pull)
 
     fdSource = iterateToPath(fd, path)
     if not fdSource then return Console.error(Messages.ErrorSourcePathDoesNotExist)
-    fileName = fdSource.name
+    fileName = str(arguments.pull)
+    if not fileName then fileName = fdSource.name
 
     fdDest = iterateToPath(fd, dest)
-    if fdDest and not fdDest.is_folder then
-        fileName = fdDest.name
-        fdDest = fdDest.parent
-    end if
-    if not fdDest then
-        parts = dest.split("/")
-        fileName = parts.pop
-        fdDest = iterateToPath(fd, parts.join("/"))
-        if not fdDest and parts.len == 0 then fdDest = fd
-        if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
-    end if
+    if not fdDest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
 
     result = fdSource.move(fdDest.path, fileName)
     if result isa string then

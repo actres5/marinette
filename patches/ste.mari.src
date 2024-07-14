@@ -180,4 +180,4 @@ COMMAND_STE = function(arguments)
     simpleTextEditor(fd)
 end function
 
-Marinette.command "ste", ["vim"], Marinette.Const.file, Marinette.Messages.PatchesHelpEntrySTE, @COMMAND_STE
+Marinette.command "ste", ["vim"], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntrySTE, @COMMAND_STE

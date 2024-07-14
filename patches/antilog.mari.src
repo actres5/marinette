@@ -27,7 +27,8 @@ end function
 ////////////////////////////////////////////////////////////
 
 // 
-// Run antiLog() when Marinette initialized and is in cmdloop
+// Run antiLog() when Marinette is initialized
+// or when a Conditions error has taken place
 _CMDLOOP = @Marinette["Console"]["cmdloop"]
 Marinette.Console.cmdloop = function
     antiLog
