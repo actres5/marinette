@@ -1,0 +1,108 @@
+// 
+// Database is a patch that makes it possible to create an exploit db on a mainframe
+// Implements two commands: ariadnedb and nemesisdb
+// Use one of these when you need to hack using a database
+// Use default ones when you want to update the db
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality
+////////////////////////////////////////////////////////////
+readPasswordDatabase = function
+    dbfiles = Marinette.findFilesByHeader(Marinette.Mainframe.shell.host_computer.File("/"), "Marinette Password Database")
+    db = {}
+    for file in dbfiles
+        for line in file.get_content.split(char(10))
+            parts = line.trim.split("@")
+            if parts.len != 2 then continue
+
+            encrypted = parts[0]
+            decrypted = parts[1]
+
+            db[encrypted] = decrypted
+        end for
+    end for
+    return db
+end function
+
+writePasswordDatabase = function(db)
+    computer = Marinette.Mainframe.shell.host_computer
+    fd = computer.File("/")
+
+    lines = []
+    for encrypted in db.indexes
+        decrypted = db[encrypted]
+        lines.push([encrypted,decrypted].join("@"))
+    end for
+    if lines.len == 0 then return
+
+    dbWritables = []
+    dbfiles = Marinette.findFilesByHeader(fd, "Marinette Password Database")
+    for fd in dbfiles
+        if fd.has_permission("w") then
+            dbWritables.push(fd)
+        else
+            fd.delete
+        end if
+    end for
+
+    neededAmount = ceil(lines.join(char(10)).len / 140000)
+    while dbWritables.len < neededAmount
+        computer.create_folder("/", "marinette")
+        computer.create_folder("/marinette", "mainframe")
+        computer.create_folder("/marinette/mainframe", "database")
+        filename = Marinette.randomString(16)+".mpdb"
+        result = computer.touch("/marinette/mainframe/database", filename)
+        if result != true then return print("PasswordDB: COULD NOT WRITE DB ON MAINFRAME!!!")
+        fdNew = computer.File("/marinette/mainframe/database/"+filename)
+        if not fdNew then return print("PasswordDB: COULD NOT WRITE DB ON MAINFRAME!!!")
+        dbWritables.push(fdNew)
+    end while
+
+    for fd in dbWritables
+        content = "Marinette Password Database"
+        while content.len < 140000 and lines.len > 0
+            content = content+char(10)+lines.pull
+        end while
+        if fd.set_content(content) != true then return print("PasswordDB: COULD NOT WRITE DB ON MAINFRAME!!!")
+    end for
+end function
+
+decipherPasswordDatabase = function(crypto, password)
+    db = readPasswordDatabase
+    if db.indexes.indexOf(password) != null then return db[password]
+
+    desyncFix
+    db[password] = crypto.decipher(password)
+    writePasswordDatabase(db)
+    return db[password]
+end function
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Hooks
+////////////////////////////////////////////////////////////
+_INTRINSIC_MD5 = @md5
+md5 = function(value)
+    db = readPasswordDatabase
+    encrypted = _INTRINSIC_MD5(value)
+    if db.indexes.indexOf(encrypted) != null then return encrypted
+    db[encrypted] = value
+    writePasswordDatabase(db)
+    return encrypted
+end function
+
+Marinette.md5 = @md5
+Marinette.decipherPassword = @decipherPasswordDatabase
+
+_MD5 = @Marinette["Commands"]["md5"]
+_HASH = @Marinette["Commands"]["hash"]
+
+Marinette.command "md5", [], Marinette.Const.any, Marinette.Messages.HelpEntryMd5+" [*]", @_MD5
+Marinette.command "hash", [], Marinette.Const.any, Marinette.Messages.HelpEntryHashcrack+" [*]", @_HASH

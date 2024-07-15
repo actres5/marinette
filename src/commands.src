@@ -222,8 +222,7 @@ command "hash", [], Const.any, Messages.HelpEntryHashcrack, function(arguments)
             toCrack = parts[1]
         end if
         
-        desyncFix
-        result = crypto.decipher(toCrack)
+        result = decipherPassword(crypto, toCrack)
         if not result then
             Console.error(replaceF(Messages.ErrorUncrackableHash, {"HASH": name}))
         else
@@ -835,6 +834,15 @@ command "string", ["str"], Const.any, Messages.HelpEntryString, function(argumen
     if not length isa number or length < 1 then return Console.error(Messages.ErrorUnknownArguments)
 
     Console.log(randomString(length))
+end function
+
+
+command "md5", [], Const.any, Messages.HelpEntryMd5, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 0)
+
+    for arg in fmap(@str, arguments)
+        Console.log(arg+" -> "+md5(arg))
+    end for
 end function
 
 
