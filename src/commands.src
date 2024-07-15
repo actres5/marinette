@@ -999,7 +999,7 @@ command "netcat", ["ncat", "nc"], Const.host, Messages.HelpEntrySvcon, function(
 
     target = addr
     if isNodeLocallyAccessible(router) then target = locAddr else port = svcPort.public.port_number
-    result = Intrinsics.shell.connect_service(addr, port, user, pass, svc)
+    result = Intrinsics.shell.connect_service(target, port, user, pass, svc)
     if not result then return Console.error(Messages.ErrorConnectionFailed)
     if result isa string then return Console.error(Messages.ErrorStringGeneral, {"FUNC": "connect_service", "ERROR": result})
     if ["shell", "ftpshell"].indexOf(typeof(result)) == null then Console.error(Messages.ErrorConnectionUnknownShell)
