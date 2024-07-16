@@ -1,0 +1,63 @@
+// 
+// Populate is a patch that adds a command to populate exploitdb or passworddb
+// populate edb hacks random addresses in hope to find libraries that are not in exploitdb yet
+// and therefore is not recommended to run on home machine
+// populate pdb generates random strings and adds them into passworddb
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesHelpEntryPopulate = "edb/pdb - Пополнить базы данных [*]"
+else
+    Marinette.Messages.PatchesHelpEntryPopulate = "edb/pdb - Populate data bases [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Dependencies
+////////////////////////////////////////////////////////////
+areDepsMissing = false
+if Marinette.indexes.indexOf("md5") == null then 
+    print("Populate: Install PasswordDB patch!")
+    areDepsMissing = true
+end if
+if Marinette.Commands.indexes.indexOf("nemesisdb") == null then 
+    print("Populate: Install ExploitDB patch!")
+    areDepsMissing = true
+end if
+if areDepsMissing then exit("Populate: Didn't load - not all dependencies are installed!")
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality & Hooks
+////////////////////////////////////////////////////////////
+Marinette.command "populate", [], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryPopulate, function(arguments)
+    Conditions.arguments(arguments, 1)
+
+    command = str(arguments[0])
+    if "edb".indexOf(command) == 0 then
+        Conditions.network
+
+        while true
+            corruptLogs(Intrinsics.computer, Intrinsics.file)
+            Commands.nemesisdb([randomNetworkAddress, "all", "all"])
+        end while
+    else if "pdb".indexOf(command) == 0 then
+        while true
+            desyncFix
+            Commands.md5([randomString(randomNumber(1, 15))])
+        end while
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+end function

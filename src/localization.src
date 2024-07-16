@@ -480,7 +480,7 @@ Locales.HelpEntryCopyNew[_language] = "(ap/path) (dest) [name] - Copy file"
 Locales.HelpEntryMoveNew[_language] = "(ap/path) (dest) [name] - Move file"
 Locales.LogSuccessfullCompilation[_language] = "File is coompiled successfully"
 Locales.LogCompilingTheSource[_language] = "Compiling the file...."
-Locales.HelpEntryMd5[_language] = "(data) - Hash the data with md5"
+Locales.HelpEntryMd5[_language] = "(data) - Hash the data with MD5"
 
 
 
@@ -909,7 +909,7 @@ Locales.HelpEntryCopyNew[_language] = "(ап/путь) (назн) [имя] - К�
 Locales.HelpEntryMoveNew[_language] = "(ап/путь) (назн) [имя] - Передвинуть файл"
 Locales.LogSuccessfullCompilation[_language] = "Файл успешно скомпилирован"
 Locales.LogCompilingTheSource[_language] = "Собираю файл...."
-Locales.HelpEntryMd5[_language] = "(данные) - Хешировать данные при помощи md5"
+Locales.HelpEntryMd5[_language] = "(данные) - Хешировать данные при помощи MD5"
 
 
 
