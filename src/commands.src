@@ -393,7 +393,7 @@ end function
 
 // 
 // Thanks Ariavne for allowing me to use their nickname as a tool name <3
-    command "ariadne", ["aria"], Const.any, Messages.HelpEntryAriadne, function(arguments)
+command "ariadne", ["aria"], Const.any, Messages.HelpEntryAriadne, function(arguments)
     Conditions.metaxploit
 
     fd = Intrinsics.file

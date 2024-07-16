@@ -48,6 +48,12 @@ Marinette.command "populate", [], Marinette.Const.patch, Marinette.Messages.Patc
     if "edb".indexOf(command) == 0 then
         Conditions.network
 
+        // 
+        // Removing heavy lifting in some functions to increase performance
+        // Doing this without hooking because next part is going to be in while loop anyway
+        globals.mergeSort = function(arr, predicate, start, end_); end function
+        SessionsHelpers.add = function(intrinsics); end function
+
         while true
             corruptLogs(Intrinsics.computer, Intrinsics.file)
             Commands.nemesisdb([randomNetworkAddress, "all", "all"])
