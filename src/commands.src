@@ -240,9 +240,6 @@ command "whois", ["wi"], Const.any, Messages.HelpEntryWhois, function(arguments)
         if not router then return Console.error(Messages.ErrorIncorrectNetworkAddress)
         addr = router.public_ip
 
-        output = whois(addr)
-        lines = output.split(char(10))
-
         domain = getDomainName(addr)
         email = getDomainEmailAddress(addr)
         phone = getDomainPhoneNumber(addr)
@@ -255,6 +252,7 @@ command "whois", ["wi"], Const.any, Messages.HelpEntryWhois, function(arguments)
             "<color="+Theme.miscPrimary+">"+Messages.WhoisPhoneNumber+" - <color="+Theme.miscSecondary+">"+phone,
             "<color="+Theme.miscPrimary+">"+Messages.WhoisAdministrator+" - <color="+Theme.miscSecondary+">"+admin,
         ]
+        if whois(addr).indexOf("[Neurobox Network]") != null then lines.push(primary("[Neurobox Network]"))
         print(lines.join(char(10)))
     end function
 

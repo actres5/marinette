@@ -196,41 +196,45 @@ Console.prompt = function
     return lines.join(char(10))
 end function
 
+Console.cmdDispatch = function(input)
+    if input.len == 0 then return RuntimeHelpers.cmdFailHandlers
+
+    parts = input.split(" ")
+
+    command = parts.pull
+    if Commands.indexes.indexOf(command) == null then
+        for kv in Aliases
+            if kv.value.indexOf(command) != null then
+                command = kv.key
+                break
+            end if
+        end for
+
+        if Commands.indexes.indexOf(command) == null then
+            Console.error(Messages.ErrorCommandNotFound)
+            return RuntimeHelpers.cmdFailHandlers
+        end if
+    end if
+
+    arguments = []
+    for part in parts
+        arguments.push(part.to_int)
+    end for
+    command = Commands[command]
+
+    RuntimeHelpers.cmdPreHandlers
+    command(arguments)
+    RuntimeHelpers.cmdPostHandlers
+end function
+
 Console.cmdloop = function
     while true
         input = Console.input(Console.prompt).trim
-        if input.len == 0 then
-            RuntimeHelpers.cmdFailHandlers
-            continue
-        end if
 
-        parts = input.split(" ")
-
-        command = parts.pull
-        if Commands.indexes.indexOf(command) == null then
-            for kv in Aliases
-                if kv.value.indexOf(command) != null then
-                    command = kv.key
-                    break
-                end if
-            end for
-
-            if Commands.indexes.indexOf(command) == null then
-                Console.error(Messages.ErrorCommandNotFound)
-                RuntimeHelpers.cmdFailHandlers
-                continue
-            end if
-        end if
-
-        arguments = []
-        for part in parts
-            arguments.push(part.to_int)
+        cmds = input.split(";")
+        for cmd in cmds
+            Console.cmdDispatch(cmd.trim)
         end for
-        command = Commands[command]
-
-        RuntimeHelpers.cmdPreHandlers
-        command(arguments)
-        RuntimeHelpers.cmdPostHandlers
     end while
 end function
 
