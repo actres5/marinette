@@ -161,7 +161,7 @@ end function
 Console.input = function(message=" ", isPassword=false, anyKey=false, toReplaceFormat=null)
     if toReplaceFormat then message = replaceF(message, toReplaceFormat)
     input = user_input("<color="+Theme.inputMessage+">"+message+"<color="+Theme.input+">", isPassword, anyKey)
-    if isInputValid(input) then return input
+    if isInputValid(input, ["<", ">", "\", char(10)]) then return input
     return ""
 end function
 
@@ -191,17 +191,13 @@ Console.prompt = function
     inp = Theme.input
     lines = [
         " <color="+msg+"> "+replaceF(Messages.ConsolePromptHeader, {"USER": user, "SESSION": object, "LAN": locIp, "PATH": fd.path}),
-        "<color="+msg+">% <color="+inp+">",
+        "<color="+msg+">:: <color="+inp+">",
     ]
     return lines.join(char(10))
 end function
 
-Console.cmdDispatch = function(input)
-    if input.len == 0 then return RuntimeHelpers.cmdFailHandlers
-
-    parts = input.split(" ")
-
-    command = parts.pull
+Console.executeCommand = function(parsed)
+    command = parsed.cmd
     if Commands.indexes.indexOf(command) == null then
         for kv in Aliases
             if kv.value.indexOf(command) != null then
@@ -217,24 +213,59 @@ Console.cmdDispatch = function(input)
     end if
 
     arguments = []
-    for part in parts
-        arguments.push(part.to_int)
+    for argument in parsed.args
+        if ["Word", "String"].indexOf(argument.type) == null then continue
+        arguments.push(argument.value.to_int)
     end for
-    command = Commands[command]
+    if arguments.len != parsed.args.len then
+        Console.error(Messages.ErrorFailedParsing)
+        return RuntimeHelpers.cmdFailHandlers
+    end if
 
+    command = Commands[command]
     RuntimeHelpers.cmdPreHandlers
     command(arguments)
     RuntimeHelpers.cmdPostHandlers
 end function
 
+Console.interpretLine = function(input)
+    if input.trim.len == 0 then return RuntimeHelpers.cmdFailHandlers
+
+    shellLexer = SH.Lexer(input)
+    result = shellLexer.lex
+    if result.indexes.indexOf("bool") == null or not result.bool then
+        Console.error(Messages.ErrorFailedParsing)
+        return RuntimeHelpers.cmdFailHandlers
+    end if
+    tokens = result.out
+
+    shellParser = SH.Parser(tokens)
+    result = shellParser.parse
+    if result.indexes.indexOf("bool") == null or not result.bool then
+        Console.error(Messages.ErrorFailedParsing)
+        return RuntimeHelpers.cmdFailHandlers
+    end if
+
+    parsed = result.out
+    if parsed.classID == "CMD" then
+        Console.executeCommand(parsed)
+    else if parsed.classID == "CMDS" then
+        for parsed in parsed.cmds
+            Console.executeCommand(parsed)
+        end for
+    else if parsed.classID == "Assign" then
+        Console.error(Messages.ErrorNotImplemented)
+        RuntimeHelpers.cmdFailHandlers
+    else
+        Console.error(Messages.ErrorFailedParsing)
+        RuntimeHelpers.cmdFailHandlers
+    end if
+end function
+
 Console.cmdloop = function
     while true
-        input = Console.input(Console.prompt).trim
-
-        cmds = input.split(";")
-        for cmd in cmds
-            Console.cmdDispatch(cmd.trim)
-        end for
+        input = Console.input(Console.prompt)
+        Console.interpretLine(input)
     end while
 end function
 

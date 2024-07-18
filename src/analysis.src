@@ -1,0 +1,410 @@
+// 
+// All credits for the code below goes to Clover
+// You are awesome! <3
+
+
+
+
+SH={}
+
+
+
+
+// LEXER CODE for creating custom shells
+SH.Token=function(type,value,line)
+    out={"bool": 1}
+    out.out={"type": type, "value": value, "line": line}
+    return out
+end function
+
+SH.Lexer=function(input)
+    out={}
+    out.input=input
+    out.pos=0
+    out.line={"line": {"real": 0, "disp": 1}, "ind": {"real": 0, "disp": 1}}
+    out.getline=function(sub=0)
+        out={"line": {}, "ind": {}}
+        out.line.real=self.line.line.real
+        out.line.disp=self.line.line.disp
+        out.ind.real=self.line.ind.real
+        out.ind.disp=self.line.ind.disp - sub
+        return out
+    end function
+
+    out.err=function(token)
+        token.bool=0
+        return token
+    end function
+
+    out.gnt=function(start)
+        return self.input[start:self.pos]
+    end function
+
+    out.peek=function()
+        if self.pos >= self.input.len then return null else return self.input[self.pos]
+    end function
+
+    out.get=function()
+        out=self.input[self.pos]
+        self.pos=self.pos+1
+        self.line.ind.real=self.pos
+        self.line.ind.disp=self.line.ind.disp+1
+        if out == char(10) then
+            self.line.line.real=self.line.ind.real
+            self.line.line.disp=self.line.line.disp+1
+            self.line.ind.disp=1
+        end if
+        if self.pos-1 >= self.input.len then return null else return out
+    end function
+
+    out.atom=function(type)
+        return SH.Token(type, self.get, self.getline(1))
+    end function
+
+    out.next=function()
+        while [" ", "	", char(10)].indexOf(self.peek) != null
+            self.get
+        end while
+
+        c=self.peek
+
+        if not c then return SH.Token("End", null, self.getline(1))
+
+        if "abcdefghijklmnopqrstuvwxyz0123456789/._-$".values.indexOf(c.lower) != null then
+            return self.var
+        end if
+
+        // if c == "(" then
+        //     return self.atom("LParen")
+        // else if c == ")" then
+        //     return self.atom("RParen")
+        // else if c == "[" then
+        //     return self.atom("LSquare")
+        // else if c == "]" then
+        //     return self.atom("RSquare")
+        // else if c == "{" then
+        //     return self.atom("LCurly")
+        // else if c == "}" then
+        //     return self.atom("RCurly")
+        //end if
+
+        if "&!|>".values.indexOf(c) != null then
+            return self.sign
+        else if c == ";" then
+            return self.atom("Semi")
+        else if c == "," then
+            return self.atom("Comma")
+        end if
+
+        if ["""", "'"].indexOf(c) != null then
+            return self.chstr
+        end if
+
+        if c == "=" then
+            return self.atom("Assign")
+        end if
+
+        if self.pos >= self.input.len then return SH.Token("End", null, self.getline(1))
+        return self.err(SH.Token("Err", "Got "+c, self.getline))
+    end function
+
+    out.var=function()
+        start=self.pos
+        type="Word"
+
+        if self.peek == "$" then
+            type="Reference"
+            self.get
+            start=self.pos
+        end if
+
+        while self.peek and "abcdefghijklmnopqrstuvwxyz0123456789/._-".values.indexOf(self.peek.lower) != null
+            if type != "Word" and "/.-".values.indexOf(self.peek) != null then return self.err(SH.Token("Err", "Got "+self.peek, self.getline(1)))
+            self.get
+        end while
+        out=self.gnt(start)
+
+        return SH.Token(type,out,self.getline)
+    end function
+
+    out.sign=function()
+        out=self.get
+        chars=out+self.peek
+
+        if chars == "&&" then
+            self.get
+            return SH.Token("And", chars, self.getline(1))
+        else if chars == "!!" then
+            self.get
+            return SH.Token("Prev", chars, self.getline(1))
+        else if chars == "||" then
+            self.get
+            return SH.Token("Or", chars, self.getline(1))
+        else if chars == ">>" then
+            self.get
+            return SH.Token("RAppend",chars,self.getline(1))
+        end if
+
+        if out == "|" then
+            return SH.Token("Pipe", out, self.getline(1))
+        else if out == ">" then
+            return SH.Token("RArrow",out,self.getline(1))
+        end if
+
+        return self.err(SH.Token("Err", "Got "+out, self.getline(1)))
+    end function
+
+    out.chstr=function()
+        ch=self.get
+        out=""
+
+        while self.peek
+            s=self.get
+            if s == "\" then
+                tmp=self.get
+                
+                if ch == """" and tmp == "n" then
+                    out = out + char(10)
+                else
+                    out = out + tmp
+                end if
+                
+                continue
+            end if
+            if s == ch then
+                return SH.Token("String", out, self.getline)
+            end if
+            out=out+s
+        end while
+        return self.err(SH.Token("Err", "Expecting "+ch+" to end string.",self.getline))
+    end function
+
+    out.lex=function()
+        out={}
+        out.bool=1
+        out.out=[]
+        token=self.next
+        if not token.bool then return token
+        while token.out.type != "End"
+            if not token.bool then return token
+            out.out.push(token.out)
+            token=self.next
+        end while
+        out.out.push(token.out)
+        return out
+    end function
+    
+    return out
+end function
+
+
+
+
+// PARSER CODE for creating custom shells
+
+SH.AST={}
+
+SH.AST.NoOp=function()
+    return {"classID": "NoOp"}
+end function
+
+SH.AST.CMDS=function(cmds)
+    out={}
+    out.classID="CMDS"
+    out.cmds=cmds
+    return out
+end function
+
+SH.AST.Pipe=function(cmds)
+    out={}
+    out.classID="Pipe"
+    out.cmds=cmds
+    return out
+end function
+
+SH.AST.AndOr=function(ops,cmds)
+    out={}
+    out.classID="AndOr"
+    out.ops=ops
+    out.cmds=cmds
+    return out
+end function
+
+SH.AST.Redir=function(cmd,op,redir=1)
+    out={}
+    out.classID="Redir"
+    out.cmd=cmd
+    out.op=op
+    out.redir=redir
+    return out
+end function
+
+SH.AST.CMD=function(word, args, redir=1)
+    out={}
+    out.classID="CMD"
+    out.word=word
+    out.cmd=word.value
+    out.args=args
+    return out
+end function
+
+SH.AST.Assign=function(name,content)
+    out={}
+    out.classID="Assign"
+    out.token=name
+    out.name=name.value
+    out.content=content
+    return out
+end function
+
+// SH.AST.CSV=function(l)
+//     out={}
+//     out.classID="CSV"
+//     out.l=l
+//     return out
+// end function
+
+SH.Parser=function(tokens)
+    out={}
+    out.err=function(tokentype,ttype,token)
+        return {"bool": 0, "message": "Got "+tokentype+", expected "+ttype, "token": token}
+    end function
+
+    out.tokens=tokens
+    out.ct=out.tokens.pull
+
+    out.eat=function(ttype)
+        out={"bool": 1}
+        if self.ct.type == ttype then out.out=self.tokens.pull else return self.err(self.ct.type, ttype, self.ct)
+        self.ct=out.out
+        return out
+    end function
+
+    out.empty=function()
+        return {"bool": 1, "out": SH.AST.NoOp}
+    end function
+
+    out.cmdlist=function()
+        node=self.state
+        if not node.bool then return node
+
+        results=[node.out]
+        while self.ct.type == "Semi"
+            self.eat("Semi")
+            n=self.state
+            if not n.bool then return n
+            results.push(n.out)
+        end while
+        if results.len == 1 then return {"bool": 1, "out": node.out}
+
+        return {"bool": 1, "out": SH.AST.CMDS(results)}
+    end function
+
+    out.state=function()
+        if self.ct.type != "Word" then
+            self.eat(self.ct.type)
+            return self.empty
+        end if
+
+        node=self.pipe
+        if not node.bool then return node
+
+        results=[node.out]
+        ops=[]
+        while ["And", "Or"].indexOf(self.ct.type) != null
+            ops.push(self.ct)
+            self.eat(self.ct.type)
+            n=self.pipe
+            if not n.bool then return n
+            results.push(n.out)
+        end while
+        if results.len == 1 then return {"bool": 1, "out": node.out}
+
+        return {"bool": 1, "out": SH.AST.AndOr(ops,results)}
+    end function
+
+    out.pipe=function()
+        node=self.redir
+        if not node.bool then return node
+
+        results=[node.out]
+        while self.ct.type == "Pipe"
+            self.eat("Pipe")
+            n=self.redir
+            if not n.bool then return n
+            results.push(n.out)
+        end while
+        if results.len == 1 then return {"bool": 1, "out": node.out}
+
+        return {"bool": 1, "out": SH.AST.Pipe(results)}
+    end function
+
+    out.redir=function()
+        node=self.cmd
+        if not node.bool then return node
+        result=node.out
+        op=self.ct
+
+        if ["RArrow", "RAppend"].indexOf(op.type) != null then
+            self.eat(op.type)
+            n=self.cmd
+            if not n.bool then return n
+            result=SH.AST.Redir(result, op, n.out)
+        end if
+
+        return {"bool": 1, "out": result}
+    end function
+
+    out.cmd=function()
+        var=self.ct
+        att=self.eat("Word")
+        if not att.bool then return att
+
+        if self.ct.type == "Assign" then
+            self.eat("Assign")
+            args=[]
+            content=self.ct
+            while ["Word", "String", "Reference"].indexOf(content.type) != null
+                self.eat(content.type)
+                if self.ct.type == "Comma" then
+                    l=[content]
+                    while self.ct.type == "Comma"
+                        self.eat("Comma")
+                        if ["Word", "String", "Reference"].indexOf(self.ct.type) == null then return self.err(self.ct.type, "Word / String / Reference", self.ct)
+                        self.eat(self.ct.type)
+                        l.push(self.ct)
+                    end while
+                    content=l
+                end if
+                args.push(content)
+                content=self.ct
+            end while
+            return {"bool": 1, "out": SH.AST.Assign(var, args)}
+        end if
+
+        args=[]
+        arg=self.ct
+        while ["Word", "String", "Reference"].indexOf(arg.type) != null
+            self.eat(arg.type)
+            if self.ct.type == "Comma" then
+                l=[arg]
+                while self.ct.type == "Comma"
+                    self.eat("Comma")
+                    if ["Word", "String", "Reference"].indexOf(self.ct.type) == null then return self.err(self.ct.type, "Word / String / Reference", self.ct)
+                    l.push(self.ct)
+                    self.eat(self.ct.type)
+                end while
+                arg=l
+            end if
+            args.push(arg)
+            arg=self.ct
+        end while
+
+        return {"bool": 1, "out": SH.AST.CMD(var, args)}
+    end function
+
+    out.parse=function()
+        return self.cmdlist
+    end function
+    return out
+end function

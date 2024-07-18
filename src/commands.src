@@ -109,7 +109,7 @@ command "credits", [], Const.any, Messages.HelpEntryLicense, function(arguments)
     contributors = [
         "Kurouzu", "Joe Strout", "Clover", "Roupi",
         "Finko42", "Ariavne", "Guest", "Simonize", "Olipro", 
-        "Volk", "Plu70", "Darkie",
+        "Volk", "Plu70", "Rocketorbit", "Darkie", "Ayecue", "Wyatt",
     ]
 
     print(primary(Messages.SpecialThanksAndCredits))

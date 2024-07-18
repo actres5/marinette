@@ -38,6 +38,7 @@ Config = {
 
 
 
+import_code("/home/guest/Sources/Marinette/src/analysis.src")
 import_code("/home/guest/Sources/Marinette/src/localization.src")
 import_code("/home/guest/Sources/Marinette/src/themeing.src")
 import_code("/home/guest/Sources/Marinette/src/portable.src")

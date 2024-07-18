@@ -234,3 +234,5 @@ Locales.HelpEntryMoveNew[_language] = "(ап/путь) (назн) [имя] - П�
 Locales.LogSuccessfullCompilation[_language] = "Файл успешно скомпилирован"
 Locales.LogCompilingTheSource[_language] = "Собираю файл...."
 Locales.HelpEntryMd5[_language] = "(данные) - Хешировать данные при помощи MD5"
+Locales.ErrorNotImplemented[_language] = "Эта функция ещё не реализована!"
+Locales.ErrorFailedParsing[_language] = "Не удалось обработать комманду!"
