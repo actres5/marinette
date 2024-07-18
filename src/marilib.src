@@ -196,8 +196,71 @@ Console.prompt = function
     return lines.join(char(10))
 end function
 
+Console.parse = function(input)
+    while input.trim.len > 0 and input.trim[-1] == ";"
+        input = input.trim[:-1]
+    end while
+    if input.trim.len == 0 then return RuntimeHelpers.cmdFailHandlers
+
+    parsingExceptions = {
+        ":": "MARINETTE_SHELL_INPUT_COLON",
+    }
+
+    for kv in parsingExceptions
+        input = input.replace(kv.key, kv.value)
+    end for
+
+    shellLexer = SH.Lexer(input)
+    result = shellLexer.lex
+    if result.indexes.indexOf("bool") == null or not result.bool then
+        Console.error(Messages.ErrorFailedParsing)
+        return RuntimeHelpers.cmdFailHandlers
+    end if
+    tokens = result.out
+
+    shellParser = SH.Parser(tokens)
+    result = shellParser.parse
+    if result.indexes.indexOf("bool") == null or not result.bool then
+        Console.error(Messages.ErrorFailedParsing)
+        return RuntimeHelpers.cmdFailHandlers
+    end if
+
+    _parse = function(cmd)
+        if cmd.indexes.indexOf("cmd") == null then return false
+        for exception in parsingExceptions.values
+            if cmd.cmd == exception then return false
+        end for
+        i = 0; while i < cmd.args.len; i = i + 1
+            if cmd.args[i-1].indexes.indexOf("value") == null then continue
+            if not cmd.args[i-1].value isa string then continue
+            for kv in parsingExceptions
+                cmd.args[i-1].value = cmd.args[i-1].value.replace(kv.value, kv.key)
+            end for
+        end while
+        return true
+    end function
+
+    if result.indexes.indexOf("out") != null then
+        if result.out.indexes.indexOf("args") != null then
+            if not _parse(result.out) then
+                Console.error(Messages.ErrorFailedParsing)
+                return RuntimeHelpers.cmdFailHandlers
+            end if
+        else if result.out.indexes.indexOf("cmds") != null then
+            for cmd in result.out.cmds
+                if not _parse(cmd) then
+                    Console.error(Messages.ErrorFailedParsing)
+                    return RuntimeHelpers.cmdFailHandlers
+                end if
+            end for
+        end if
+    end if
+    return result.out
+end function
+
 Console.executeCommand = function(parsed)
     if parsed.indexes.indexOf("cmd") == null then return RuntimeHelpers.cmdFailHandlers
+    if parsed.indexes.indexOf("args") == null then return RuntimeHelpers.cmdFailHandlers
     
     command = parsed.cmd
     if Commands.indexes.indexOf(command) == null then
@@ -231,27 +294,9 @@ Console.executeCommand = function(parsed)
 end function
 
 Console.interpretLine = function(input)
-    while input.trim.len > 0 and input.trim[-1] == ";"
-        input = input.trim[:-1]
-    end while
-    if input.trim.len == 0 then return RuntimeHelpers.cmdFailHandlers
+    parsed = Console.parse(input)
+    if not parsed then return
 
-    shellLexer = SH.Lexer(input)
-    result = shellLexer.lex
-    if result.indexes.indexOf("bool") == null or not result.bool then
-        Console.error(Messages.ErrorFailedParsing)
-        return RuntimeHelpers.cmdFailHandlers
-    end if
-    tokens = result.out
-
-    shellParser = SH.Parser(tokens)
-    result = shellParser.parse
-    if result.indexes.indexOf("bool") == null or not result.bool then
-        Console.error(Messages.ErrorFailedParsing)
-        return RuntimeHelpers.cmdFailHandlers
-    end if
-
-    parsed = result.out
     if parsed.classID == "CMD" then
         Console.executeCommand(parsed)
     else if parsed.classID == "CMDS" then
