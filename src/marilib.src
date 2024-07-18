@@ -204,10 +204,12 @@ Console.parse = function(input)
 
     parsingExceptions = {
         ":": "MARINETTE_SHELL_INPUT_COLON",
+        "\+": "MARINETTE_SHELL_INPUT_PLUS_SIGN",
+        "-": "MARINETTE_SHELL_INPUT_MINUS_SIGN",
     }
 
     for kv in parsingExceptions
-        input = input.replace(kv.key, kv.value)
+        input = input.replace(kv.key, kv.value.remove("\"))
     end for
 
     shellLexer = SH.Lexer(input)
@@ -234,7 +236,7 @@ Console.parse = function(input)
             if cmd.args[i-1].indexes.indexOf("value") == null then continue
             if not cmd.args[i-1].value isa string then continue
             for kv in parsingExceptions
-                cmd.args[i-1].value = cmd.args[i-1].value.replace(kv.value, kv.key)
+                cmd.args[i-1].value = cmd.args[i-1].value.replace(kv.value, kv.key.remove("\"))
             end for
         end while
         return true
