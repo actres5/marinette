@@ -197,6 +197,8 @@ Console.prompt = function
 end function
 
 Console.executeCommand = function(parsed)
+    if parsed.indexes.indexOf("cmd") == null then return RuntimeHelpers.cmdFailHandlers
+    
     command = parsed.cmd
     if Commands.indexes.indexOf(command) == null then
         for kv in Aliases
@@ -229,6 +231,9 @@ Console.executeCommand = function(parsed)
 end function
 
 Console.interpretLine = function(input)
+    while input.trim.len > 0 and input.trim[-1] == ";"
+        input = input.trim[:-1]
+    end while
     if input.trim.len == 0 then return RuntimeHelpers.cmdFailHandlers
 
     shellLexer = SH.Lexer(input)
