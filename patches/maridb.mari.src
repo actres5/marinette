@@ -1,0 +1,53 @@
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesHelpEntryMariDB = "[аргыПер] - БД версия mari [*]"
+else
+    Marinette.Messages.PatchesHelpEntryMariDB = "[аргыПер] - DB version of mari [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality & Hooks
+////////////////////////////////////////////////////////////
+Marinette.command "maridb", ["mdb"], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryMariDB, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 0)
+
+    maridbOne = function(script)
+        if script.indexOf("/") != null then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
+
+        computer = Mainframe.shell.host_computer
+        computer.create_folder("/", "marinette")
+        computer.create_folder("/marinette", "mainframe")
+        computer.create_folder("/marinette/mainframe", "scripts")
+
+        fd = computer.File("/marinette/mainframe/scripts")
+        if not fd or not fd.is_folder then return Console.error(Messages.ErrorUnknown)
+
+        throwError = true
+        for fdScript in fd.get_files
+            if fdScript.is_binary or fdScript.get_content == null then continue
+            if fdScript.name == script then
+                throwError = false
+                Console.log(Messages.LogExecutingScript, {"NAME": fdScript.name})
+                for line in fdScript.get_content.split(char(10))
+                    Console.interpretLine(line)
+                end for
+            end if
+        end for
+        if throwError then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
+    end function
+
+    for script in arguments
+        maridbOne(script)
+    end for
+end function

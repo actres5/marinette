@@ -1,0 +1,7 @@
+mdb cleans.mari
+
+del /bin /home /root /usr /server
+del /lib/libhttp.so
+corrupt
+
+mdb chmods.mari

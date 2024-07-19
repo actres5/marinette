@@ -243,6 +243,8 @@ Locales.LogCompilingTheSource = {}
 Locales.HelpEntryMd5 = {}
 Locales.ErrorNotImplemented = {}
 Locales.ErrorFailedParsing = {}
+Locales.HelpEntryMari = {}
+Locales.LogExecutingScript = {}
 
 
 
@@ -333,7 +335,7 @@ Locales.ErrorConnectionUnknownShell[_language] = "Received unknown shell as a re
 Locales.ErrorIncorrectNetworkInterface[_language] = "Incorrect network interface!"
 Locales.ErrorCouldNotGetNetworksList[_language] = "Could not get networks list!"
 Locales.ErrorIncorrectNetworkId[_language] = "Incorrect network ID!"
-Locales.LookingForTheNetwork[_language] = "Looking for the network with the orresponding ID..."
+Locales.LookingForTheNetwork[_language] = "Looking for the network with the corresponding ID..."
 Locales.LogStartingMonitorMode[_language] = "Starting the monitoring mode on a selected interface..."
 Locales.ErrorStringGeneral[_language] = "Error in call of <i>{FUNC}()</i>: {ERROR}"
 Locales.LogAireplayingOn[_language] = "Aireplaying on <i>{ESSID}</i> with <i>{ACKS}</i> acks..."
@@ -485,6 +487,8 @@ Locales.LogCompilingTheSource[_language] = "Compiling the file...."
 Locales.HelpEntryMd5[_language] = "(data) - Hash the data with MD5"
 Locales.ErrorNotImplemented[_language] = "This functionality is not yet implemented!"
 Locales.ErrorFailedParsing[_language] = "Could not handle command input!"
+Locales.HelpEntryMari[_language] = "(ap/paths) - Execute Marinette script"
+Locales.LogExecutingScript[_language] = "Executing <i>{NAME}</i>..."
 
 
 
@@ -916,6 +920,8 @@ Locales.LogCompilingTheSource[_language] = "Собираю файл...."
 Locales.HelpEntryMd5[_language] = "(данные) - Хешировать данные при помощи MD5"
 Locales.ErrorNotImplemented[_language] = "Эта функция ещё не реализована!"
 Locales.ErrorFailedParsing[_language] = "Не удалось обработать комманду!"
+Locales.HelpEntryMari[_language] = "(ap/paths) - Запустить скрипт Маринетт"
+Locales.LogExecutingScript[_language] = "Запускаю <i>{NAME}</i>..."
 
 
 

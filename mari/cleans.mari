@@ -1,0 +1,5 @@
+del /lib/kernel_module.so /lib/aptclient.so
+del /etc/apt /etc/init.d /etc/passwd
+del /bin /home /root
+newdir /bin /home /root
+corrupt

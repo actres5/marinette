@@ -1921,3 +1921,23 @@ command "change", ["ch"], Const.file, Messages.HelpEntryChange, function(argumen
         Console.log(Messages.LogSuccessStringGeneral)
     end if
 end function
+
+
+command "mari", [], Const.file, Messages.HelpEntryMari, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 0)
+
+    mariOne = function(path)
+        fd = iterateToPath(Intrinsics.file, path)
+        if not fd or fd.is_binary or fd.is_folder then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
+        if fd.get_content == null then return Console.error(Messages.ErrorCouldReadFile)
+
+        Console.log(Messages.LogExecutingScript, {"NAME": fd.name})
+        for line in fd.get_content.split(char(10))
+            Console.interpretLine(line)
+        end for
+    end function
+
+    for path in arguments
+        mariOne(path)
+    end for
+end function
