@@ -32,7 +32,7 @@ Here is step-by-step guide on how to perform the minimal installation of Marinet
         -   `python scripts/config_password.py MAKE_UP_A_PASSWORD`
         -   `python scripts/config_identificator.py`
 6.  Copy the script you've generated on step **4** into the game, compile and launch it
-    -   The made script is located in **scriptsgh/install_marinette.src**
+    -   The generated script is located in **scriptsgh/install_marinette.src**
 7.  Copy-paste every **.src** file located in **marinette-main** on your computer to the in-game **/home/guest/Sources/Marinette**
 8.  Open **/home/guest/Sources/Marinette/src/marinette.src** and change **password** and **identificator** to the ones you've generated on step 5
 9.  Compile and launch **marinette.src**
