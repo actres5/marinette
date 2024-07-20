@@ -46,7 +46,7 @@ simpleTextEditor = function(fd)
         if lineNumber < 0 then return user_input("Invalid line number.", false ,true)
         input.pull
         subStr = input.join(" ")
-        if lineNumber >= lines.len then
+        if lineNumber >= lines.len and lineNumber != 1 then
             outer.lines.push(subStr)
             outer.text = lines.join(char(10))
             return outer.text

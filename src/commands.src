@@ -1397,7 +1397,7 @@ command "make", [], Const.shell, Messages.HelpEntryMake, function(arguments)
     while true
         desyncFix
         
-        newDestName = randomString(randomNumber(1, 8))
+        newDestName = randomString(randomNumber(2, 6))
         newSourceName = newDestName+".src"
 
         fdSource = renameFile(fdSource, newSourceName)
