@@ -296,6 +296,13 @@ getNetworkPorts = function(address)
             publicPort = null
             for port in router.used_ports
                 if port.get_lan_ip != localPort.get_lan_ip or router.port_info(port) != router.port_info(localPort) then continue
+                takeNext = false
+                for devicePort in devicePorts
+                    if not devicePort.public or devicePort.public.port_number != port.port_number then continue
+                    takeNext = true
+                    break
+                end for
+                if takeNext then continue
                 publicPort = port
                 break
             end for
@@ -307,7 +314,10 @@ getNetworkPorts = function(address)
     for devicePort in devicePorts
         isUnique = true
         for networkPort in networkPorts
-            if devicePort.local.get_lan_ip != networkPort.local.get_lan_ip or router.port_info(devicePort.local) != router.port_info(networkPort.local) then continue
+            addressesMatch = devicePort.local.get_lan_ip == networkPort.local.get_lan_ip
+            servicesMatch = router.port_info(devicePort.local) == router.port_info(networkPort.local)
+            portsMatch = devicePort.local.port_number == networkPort.local.port_number
+            if not addressesMatch or not servicesMatch or not portsMatch then continue
             isUnique = false
             break
         end for
