@@ -238,3 +238,5 @@ Locales.ErrorNotImplemented[_language] = "Эта функция ещё не ре
 Locales.ErrorFailedParsing[_language] = "Не удалось обработать комманду!"
 Locales.HelpEntryMari[_language] = "(ap/paths) - Запустить скрипт Маринетт"
 Locales.LogExecutingScript[_language] = "Запускаю <i>{NAME}</i>..."
+Locales.HelpEntryGroup[_language] = "add/delete/list (польз) [груп] - Управлять группами"
+Locales.LogExistingGroups[_language] = "Список групп <i>{USER}</i>"

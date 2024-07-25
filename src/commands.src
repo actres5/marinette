@@ -1652,6 +1652,51 @@ command "netrandom", [], Const.computer, Messages.HelpEntryNetrandom, function(a
 end function
 
 
+command "group", [], Const.computer, Messages.HelpEntryGroup, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 1)
+    Conditions.argumentsFewerThan(arguments, 4)
+    Conditions.computer
+
+    arguments = fmap(@str, arguments)
+    command = arguments[0]
+    if "add".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 3)
+        func = "create_group"
+        result = Intrinsics.computer.create_group(arguments[1], arguments[2])
+    else if "delete".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 3)
+        func = "delete_group"
+        result = Intrinsics.computer.delete_group(arguments[1], arguments[2])
+    else if "list".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 2)
+        result = Intrinsics.computer.groups(arguments[1])
+        if not result then
+            return Console.error(Messages.ErrorUnknown)
+        else if result.indexOf("Error") == 0 then
+            return Console.error(Messages.ErrorStringGeneral, {"FUNC": "groups", "ERROR": result})
+        else
+            Console.log(Messages.LogExistingGroups, {"USER": arguments[1]})
+            return print(secondary(result.trim))
+        end if
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+
+    if result isa string then
+        Console.error(Messages.ErrorStringGeneral, {"FUNC": func, "ERROR": result})
+    else if not result then
+        Console.error(Messages.ErrorUnknown)
+    else
+        Console.log(Messages.LogSuccessStringGeneral)
+    end if
+end function
+
+
+// command "user", Const.computer, Messages.HelpEntryUser, function(arguments)
+    
+// end function
+
+
 
 
 ////////////////////////////////////////////////////////////

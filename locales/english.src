@@ -238,3 +238,5 @@ Locales.ErrorNotImplemented[_language] = "This functionality is not yet implemen
 Locales.ErrorFailedParsing[_language] = "Could not handle command input!"
 Locales.HelpEntryMari[_language] = "(ap/paths) - Execute Marinette script"
 Locales.LogExecutingScript[_language] = "Executing <i>{NAME}</i>..."
+Locales.HelpEntryGroup[_language] = "add/delete/list (username) [group] - Manage groups"
+Locales.LogExistingGroups[_language] = "List of <i>{USER}</i> groups"

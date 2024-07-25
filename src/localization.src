@@ -245,6 +245,8 @@ Locales.ErrorNotImplemented = {}
 Locales.ErrorFailedParsing = {}
 Locales.HelpEntryMari = {}
 Locales.LogExecutingScript = {}
+Locales.HelpEntryGroup = {}
+Locales.LogExistingGroups = {}
 
 
 
@@ -489,6 +491,8 @@ Locales.ErrorNotImplemented[_language] = "This functionality is not yet implemen
 Locales.ErrorFailedParsing[_language] = "Could not handle command input!"
 Locales.HelpEntryMari[_language] = "(ap/paths) - Execute Marinette script"
 Locales.LogExecutingScript[_language] = "Executing <i>{NAME}</i>..."
+Locales.HelpEntryGroup[_language] = "add/delete/list (username) [group] - Manage groups"
+Locales.LogExistingGroups[_language] = "List of <i>{USER}</i> groups"
 
 
 
@@ -922,6 +926,8 @@ Locales.ErrorNotImplemented[_language] = "Эта функция ещё не ре
 Locales.ErrorFailedParsing[_language] = "Не удалось обработать комманду!"
 Locales.HelpEntryMari[_language] = "(ap/paths) - Запустить скрипт Маринетт"
 Locales.LogExecutingScript[_language] = "Запускаю <i>{NAME}</i>..."
+Locales.HelpEntryGroup[_language] = "add/delete/list (польз) [груп] - Управлять группами"
+Locales.LogExistingGroups[_language] = "Список групп <i>{USER}</i>"
 
 
 
