@@ -247,6 +247,10 @@ Locales.HelpEntryMari = {}
 Locales.LogExecutingScript = {}
 Locales.HelpEntryGroup = {}
 Locales.LogExistingGroups = {}
+Locales.HelpEntryUser = {}
+Locales.HelpEntryService = {}
+Locales.HelpEntryMarikey = {}
+Locales.LogSuccessfullBackdoor = {}
 
 
 
@@ -493,6 +497,10 @@ Locales.HelpEntryMari[_language] = "(ap/paths) - Execute Marinette script"
 Locales.LogExecutingScript[_language] = "Executing <i>{NAME}</i>..."
 Locales.HelpEntryGroup[_language] = "add/delete/list (username) [group] - Manage groups"
 Locales.LogExistingGroups[_language] = "List of <i>{USER}</i> groups"
+Locales.HelpEntryUser[_language] = "add/delete/password (username) [pass] - Manage users"
+Locales.HelpEntryService[_language] = "install/start/stop (svc) - Manage services"
+Locales.HelpEntryMarikey[_language] = "open (gateAddr) (locAddr) (port) [name] | listen - Manage backdoors"
+Locales.LogSuccessfullBackdoor[_language] = "Backdoor has been opened successfully"
 
 
 
@@ -928,6 +936,10 @@ Locales.HelpEntryMari[_language] = "(ap/paths) - Запустить скрипт
 Locales.LogExecutingScript[_language] = "Запускаю <i>{NAME}</i>..."
 Locales.HelpEntryGroup[_language] = "add/delete/list (польз) [груп] - Управлять группами"
 Locales.LogExistingGroups[_language] = "Список групп <i>{USER}</i>"
+Locales.HelpEntryUser[_language] = "add/delete/password (польз) [пароль] - Управлять пользователями"
+Locales.HelpEntryService[_language] = "install/start/stop (св) - Управлять сервисами"
+Locales.HelpEntryMarikey[_language] = "open (адрМарш) (локАдр) (порт) [имя] | listen - Управлять бэкдорами"
+Locales.LogSuccessfullBackdoor[_language] = "Бэкдор был успешно открыт"
 
 
 

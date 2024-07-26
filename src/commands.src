@@ -558,6 +558,7 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
                 "localAddr": port.local.get_lan_ip,
                 "ip": port.local.get_lan_ip,
                 "port": port.local.port_number,
+                "portObject": port,
             }
             targets.push(target)
         end for
@@ -574,6 +575,7 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
                     "localAddr": localAddr,
                     "ip": localAddr,
                     "port": 0,
+                    "portObject": null,
                 }
                 targets.push(target)
             end if
@@ -586,6 +588,7 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
                 "localAddr": port.public.get_lan_ip,
                 "ip": router.public_ip,
                 "port": port.public.port_number,
+                "portObject": port,
             }
             targets.push(target)
         end for
@@ -594,6 +597,7 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
             "localAddr": router.local_ip,
             "ip": router.public_ip,
             "port": 0,
+            "portObject": null,
         }
         targets.push(target)
     end if
@@ -606,10 +610,13 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
         netSession = metaxploit.net_use(target.ip, target.port)
         if not netSession then continue
         metalib = netSession.dump_lib
+
+        port = target.port
+        if target.portObject then port = target.portObject.local.port_number
         library = {
             "publicAddr": target.publicAddr,
             "localAddr": target.localAddr,
-            "port": target.port,
+            "port": port,
             "metalib": metalib,
         }
         libraries.push(library)
@@ -805,6 +812,65 @@ command "md5", [], Const.any, Messages.HelpEntryMd5, function(arguments)
 end function
 
 
+command "marikey", [], Const.any, Messages.HelpEntryMarikey, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 0)
+    Conditions.argumentsFewerThan(arguments, 6)
+    Conditions.metaxploit
+
+    command = str(arguments[0])
+    if "open".indexOf(command) == 0 then
+        Conditions.argumentsMoreThan(arguments, 3)
+
+        addr = str(arguments[1])
+        locAddr = str(arguments[2])
+        port = arguments[3]
+
+        router = getNetworkNode(addr)
+        if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
+        addr = router.public_ip
+
+        rshellPort = getExactPort(addr, locAddr, port)
+        if not rshellPort or not rshellPort.public then return Console.error(Messages.ErrorCouldNotAccessSuchPort)
+
+        port = rshellPort.public.port_number
+
+        process = "MARIKEY"
+        if arguments.len == 5 then process = str(arguments[4])
+        
+        result = Libs.metaxploit.rshell_client(addr, port, process)
+        if result isa string then
+            return Console.error(Messages.ErrorStringGeneral, {"FUNC": "rshell_client", "ERROR": result})
+        else if not result then
+            return Console.error(Messages.ErrorUnknown)
+        else
+            return Console.log(Messages.LogSuccessfullBackdoor)
+        end if
+    else if "listen".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 1)
+
+        result = Libs.metaxploit.rshell_server()
+        if result isa string then return Console.error(Messages.ErrorStringGeneral, {"FUNC": "rshell_server", "ERROR": result})
+        
+        Console.log(Messages.LogAddingNewSessions)
+        for shell in result
+            intrinsics = deepCopy(Intrinsics)
+            intrinsics.shell = shell
+            intrinsics.computer = intrinsics.shell.host_computer
+            intrinsics.file = intrinsics.computer.File("/")
+            intrinsics.publicAddress = intrinsics.computer.public_ip
+            intrinsics.localAddress = intrinsics.computer.local_ip
+            intrinsics.port = null
+            intrinsics.isConnectionRemote = true
+            
+            SessionsHelpers.add(intrinsics)
+        end for
+        return Console.log(Messages.LogSuccessfullSessionsUpdate)
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+end function
+
+
 
 
 ////////////////////////////////////////////////////////////
@@ -969,7 +1035,7 @@ command "netcat", ["ncat", "nc"], Const.host, Messages.HelpEntrySvcon, function(
     intrinsics.file = intrinsics.computer.File("/")
     intrinsics.publicAddress = intrinsics.computer.public_ip
     intrinsics.localAddress = intrinsics.computer.local_ip
-    intrinsics.port = port
+    intrinsics.port = svcPort.local.port_number
     intrinsics.isConnectionRemote = true
     
     SessionsHelpers.add(intrinsics)
@@ -1181,6 +1247,39 @@ command "mails", [], Const.host, Messages.HelpEntryMaildump, function(arguments)
     output = output.replace("email not found", "-")
     output = Messages.MaildumpHeader+char(10)+output
     print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
+end function
+
+
+command "service", ["svc"], Const.host, Messages.HelpEntryService, function(arguments)
+    Conditions.arguments(arguments, 2)
+
+    arguments = fmap(@str, arguments)
+    command = str(arguments[0])
+
+    service = iterateToPath(Intrinsics.file, arguments[1])
+    if service then service = include_lib(service.path)
+    if typeof(service) != "service" then return Console.error(Messages.ErrorIncorrectLibraryPath)
+
+    if "install".indexOf(command) == 0 then
+        func = "install_service"
+        result = service.install_service()
+    else if "start".indexOf(command) == 0 then
+        func = "start_service"
+        result = service.start_service()
+    else if "stop".indexOf(command) == 0 then
+        func = "stop_service"
+        result = service.stop_service()
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+
+    if result isa string then
+        Console.error(Messages.ErrorStringGeneral, {"FUNC": func, "ERROR": result})
+    else if not result then
+        Console.error(Messages.ErrorUnknown)
+    else
+        Console.log(Messages.LogSuccessStringGeneral)
+    end if
 end function
 
 
@@ -1653,9 +1752,37 @@ command "group", [], Const.computer, Messages.HelpEntryGroup, function(arguments
 end function
 
 
-// command "user", Const.computer, Messages.HelpEntryUser, function(arguments)
-    
-// end function
+command "user", [], Const.computer, Messages.HelpEntryUser, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 1)
+    Conditions.argumentsFewerThan(arguments, 4)
+    Conditions.computer
+
+    arguments = fmap(@str, arguments)
+    command = arguments[0]
+    if "add".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 3)
+        func = "create_user"
+        result = Intrinsics.computer.create_user(arguments[1], arguments[2])
+    else if "delete".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 2)
+        func = "delete_user"
+        result = Intrinsics.computer.delete_user(arguments[1], true)
+    else if "password".indexOf(command) == 0 then
+        Conditions.arguments(arguments, 3)
+        func = "change_password"
+        result = Intrinsics.computer.change_password(arguments[1], arguments[2])
+    else
+        return Console.error(Messages.ErrorUnknownArguments)
+    end if
+
+    if result isa string then
+        Console.error(Messages.ErrorStringGeneral, {"FUNC": func, "ERROR": result})
+    else if not result then
+        Console.error(Messages.ErrorUnknown)
+    else
+        Console.log(Messages.LogSuccessStringGeneral)
+    end if
+end function
 
 
 
