@@ -1,0 +1,52 @@
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesHelpEntryStartDB = "[аргыПер] - БД версия start [*]"
+else
+    Marinette.Messages.PatchesHelpEntryStartDB = "[аргыПер] - DB version of start [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality & Hooks
+////////////////////////////////////////////////////////////
+Marinette.command "startdb", ["sdb"], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryStartDB, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 0)
+
+    computer = Mainframe.shell.host_computer
+    computer.create_folder("/", "marinette")
+    computer.create_folder("/marinette", "mainframe")
+    computer.create_folder("/marinette/mainframe", "start")
+
+    fd = computer.File("/marinette/mainframe/start")
+    if not fd or not fd.is_folder then return Console.error(Messages.ErrorUnknown)
+
+    binaryPath = str(arguments.pull)
+    binaryArgs = null
+    if arguments.len > 0 then binaryArgs = fmap(@str, arguments).join(" ")
+
+    fd = iterateToPath(fd, binaryPath)
+    if not fd or not fd.is_binary then return Console.error(Messages.ErrorPathDoesntExistOrNotBinary)
+
+    Console.log(Messages.LogRunningBinary)
+    if not binaryArgs then
+        result = Mainframe.shell.launch(fd.path)
+    else
+        result = Mainframe.shell.launch(fd.path, binaryArgs)
+    end if
+
+    if result isa string then
+        Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "launch", "ERROR": result}))
+    else if not result then
+        Console.error(Messages.ErrorCouldNotLaunchBinary)
+    end if
+end function

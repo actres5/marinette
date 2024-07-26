@@ -1,8 +1,0 @@
-Commands names ideas and also a little "how to get sued by Microsoft" guide
-By Hacktoria
-Vol. 1
-
-users - because "net user" is complicated
-svc - Online service installer and manager
-nsakey - Backdooring suite
-wannacry - Ransomware

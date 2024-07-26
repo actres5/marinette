@@ -28,26 +28,21 @@ Marinette.command "maridb", ["mdb"], Marinette.Const.patch, Marinette.Messages.P
         computer = Mainframe.shell.host_computer
         computer.create_folder("/", "marinette")
         computer.create_folder("/marinette", "mainframe")
-        computer.create_folder("/marinette/mainframe", "scripts")
+        computer.create_folder("/marinette/mainframe", "mari")
 
-        fd = computer.File("/marinette/mainframe/scripts")
+        fd = computer.File("/marinette/mainframe/mari")
         if not fd or not fd.is_folder then return Console.error(Messages.ErrorUnknown)
 
-        throwError = true
-        for fdScript in fd.get_files
-            if fdScript.is_binary or fdScript.get_content == null then continue
-            if fdScript.name == script then
-                throwError = false
-                Console.log(Messages.LogExecutingScript, {"NAME": fdScript.name})
-                for line in fdScript.get_content.split(char(10))
-                    Console.interpretLine(line)
-                end for
-            end if
+        fdScript = iterateToPath(fd, script)
+        if not fdScript or fdScript.is_binary or fdScript.get_content == null then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
+
+        Console.log(Messages.LogExecutingScript, {"NAME": fdScript.name})
+        for line in fdScript.get_content.split(char(10))
+            Console.interpretLine(line)
         end for
-        if throwError then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
     end function
 
-    for script in arguments
+    for script in fmap(@str, arguments)
         maridbOne(script)
     end for
 end function
