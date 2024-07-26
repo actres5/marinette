@@ -524,23 +524,6 @@ command "ariadne", ["aria"], Const.any, Messages.HelpEntryAriadne, function(argu
     for kv in outputs
         Console.log(Messages.LogVulnerabilitesIn, {"LIBRARY": kv.key})
         output = Messages.ExploitsHeader+char(10)+kv.value
-
-        lines = output.split(char(10))
-        typePredicate = function(iItem, jItem)
-            priority = {
-                "shell": 0,
-                "computer": 1,
-                "file": 2, 
-                "string": 3,
-                "number": 4,
-            }
-            iType = iItem.split(" ")[2]
-            jType = jItem.split(" ")[2]
-            return priority[iType] > priority[jType]
-        end function
-        mergeSort(lines, @typePredicate, 1)
-        
-        output = lines.join(char(10))
         print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
 
         counter = counter + 1
@@ -561,14 +544,11 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
     addr = str(arguments.pull)
     argLocAddr = str(arguments.pull)
     argPort = arguments.pull
-    ofArgs = [null]
 
     router = getNetworkNode(addr)
     if not router then return Console.error(Messages.ErrorIncorrectNodeAddress)
     addr = router.public_ip
     if isNodeLocallyAccessible(router) then addr = router.local_ip
-
-    ofArgs = ofArgs + fmap(@str, arguments) + router.devices_lan_ip
 
     targets = []
     if isNodeLocallyAccessible(router) then
@@ -589,7 +569,6 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
                 if node then isRouter = true
             end if
             if isRouter then
-                ofArgs = ofArgs + node.devices_lan_ip
                 target = {
                     "publicAddr": node.public_ip,
                     "localAddr": localAddr,
@@ -619,7 +598,6 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
         targets.push(target)
     end if
     targets = removeDuplicates(targets)
-    ofArgs = removeDuplicates(ofArgs)
 
     libraries = []
     for target in targets
@@ -749,23 +727,6 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
     for kv in outputs
         Console.log(Messages.LogVulnerabilitesIn, {"LIBRARY": kv.key})
         output = Messages.ExploitsHeader+char(10)+kv.value
-
-        lines = output.split(char(10))
-        typePredicate = function(iItem, jItem)
-            priority = {
-                "shell": 0,
-                "computer": 1,
-                "file": 2, 
-                "string": 3,
-                "number": 4,
-            }
-            iType = iItem.split(" ")[2]
-            jType = jItem.split(" ")[2]
-            return priority[iType] > priority[jType]
-        end function
-        mergeSort(lines, @typePredicate, 1)
-        
-        output = lines.join(char(10))
         print(formatColumnsColored(output, Theme.miscPrimary, Theme.miscSecondary))
 
         counter = counter + 1
