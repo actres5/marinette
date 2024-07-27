@@ -702,7 +702,7 @@ command "nemesis", ["ns"], Const.any, Messages.HelpEntryNemesis, function(argume
             intrinsics.file = fd
         end if
 
-        if result.ofArg != null and is_valid_ip(result.ofArg) then intrinsics.localAddress = result.ofArg
+        if result.ofArg != null and is_valid_ip(result.ofArg) and type == "computer" and result.localAddr[-1] == "1" then intrinsics.localAddress = result.ofArg
 
         SessionsHelpers.add(intrinsics)
     end for
