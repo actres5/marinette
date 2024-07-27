@@ -34,7 +34,7 @@ Marinette.command "maridb", ["mdb"], Marinette.Const.patch, Marinette.Messages.P
         if not fd or not fd.is_folder then return Console.error(Messages.ErrorUnknown)
 
         fdScript = iterateToPath(fd, script)
-        if not fdScript or fdScript.is_binary or fdScript.get_content == null then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
+        if not fdScript or fdScript.is_binary or fdScript.is_folder or fdScript.get_content == null then return Console.error(Messages.ErrorPathDoesntExistOrNotTextFile)
 
         Console.log(Messages.LogExecutingScript, {"NAME": fdScript.name})
         for line in fdScript.get_content.split(char(10))
