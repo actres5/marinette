@@ -7,11 +7,10 @@ Marinette = get_custom_object.Marinette
 // Localization
 ////////////////////////////////////////////////////////////
 if Marinette.Config.language == "Russian" then
-    Marinette.Messages.PatchesHelpEntryWallet = "(ап/путь) Крипто кошелёк [*]"
+    Marinette.Messages.PatchesHelpEntryWallet = "Крипто кошелёк [*]"
 else
-    Marinette.Messages.PatchesHelpEntryWallet = "(ap/path) Crypto wallet [*]"
+    Marinette.Messages.PatchesHelpEntryWallet = "Crypto wallet [*]"
 end if
-
 
 
 

@@ -52,11 +52,11 @@ writePasswordDatabase = function(db)
     while dbWritables.len < neededAmount
         computer.create_folder("/", "marinette")
         computer.create_folder("/marinette", "mainframe")
-        computer.create_folder("/marinette/mainframe", "database")
+        computer.create_folder("/marinette/mainframe", "passwords")
         filename = Marinette.randomString(16)+".mpdb"
-        result = computer.touch("/marinette/mainframe/database", filename)
+        result = computer.touch("/marinette/mainframe/passwords", filename)
         if result != true then return print("PasswordDB: COULD NOT WRITE DB ON MAINFRAME!!!")
-        fdNew = computer.File("/marinette/mainframe/database/"+filename)
+        fdNew = computer.File("/marinette/mainframe/passwords/"+filename)
         if not fdNew then return print("PasswordDB: COULD NOT WRITE DB ON MAINFRAME!!!")
         dbWritables.push(fdNew)
     end while
@@ -75,7 +75,9 @@ decipherPasswordDatabase = function(crypto, password)
     if db.indexes.indexOf(password) != null then return db[password]
 
     desyncFix
-    db[password] = crypto.decipher(password)
+    deciphered = crypto.decipher(password)
+    if deciphered == null then return null
+    db[password] = deciphered
     writePasswordDatabase(db)
     return db[password]
 end function

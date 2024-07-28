@@ -1,0 +1,50 @@
+if get_custom_object.indexes.indexOf("Marinette") == null then exit
+Marinette = get_custom_object.Marinette
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Localization
+////////////////////////////////////////////////////////////
+if Marinette.Config.language == "Russian" then
+    Marinette.Messages.PatchesHelpEntryUploadDB = "(ап/пути) - Загрузить файлы с мейнфрейма [*]"
+else
+    Marinette.Messages.PatchesHelpEntryUploadDB = "(ap/path) - Upload files from mainframe [*]"
+end if
+
+
+
+
+//////////////////////////////////////////////////////////// 
+// Patch functionality & Hooks
+////////////////////////////////////////////////////////////
+Marinette.command "uploaddb", ["udb"], Marinette.Const.patch, Marinette.Messages.PatchesHelpEntryUploadDB, function(arguments)
+    Conditions.argumentsMoreThan(arguments, 0)
+
+    computer = Mainframe.shell.host_computer
+    computer.create_folder("/", "marinette")
+    computer.create_folder("/marinette", "mainframe")
+    computer.create_folder("/marinette/mainframe", "upload")
+
+    for upload in fmap(@str, arguments)
+        if upload.trim == "" then return Console.error(Messages.ErrorSourcePathDoesNotExist)
+        source = iterateToPath(Mainframe.shell.host_computer.File("/"), pathJoin(["/marinette/mainframe/upload", upload]))
+        dest = Intrinsics.file
+
+        shellSource = Mainframe.shell
+        computerSource = computer
+        fdSource = computer.File("/")
+
+        shellDest = Intrinsics.shell
+        computerDest = Intrinsics.computer
+        fdDest = Intrinsics.file
+
+        if not source then return Console.error(Messages.ErrorSourcePathDoesNotExist)
+        if not dest then return Console.error(Messages.ErrorDesinationPathDoesNotExist)
+        
+        result = sendFile(shellSource, computerSource, fdSource, source.path, dest.path, shellDest, computerDest, fdDest)
+        if not result then return Console.error(Messages.ErrorFailedFileTransfer)
+        Console.log(Messages.LogSuccessfullySentFile)
+    end for
+end function

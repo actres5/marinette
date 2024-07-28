@@ -8,9 +8,9 @@ Marinette = get_custom_object.Marinette
 // Localization
 ////////////////////////////////////////////////////////////
 if Marinette.Config.language == "Russian" then
-    Marinette.Messages.PatchesHelpEntryMariDB = "[аргыПер] - БД версия mari [*]"
+    Marinette.Messages.PatchesHelpEntryMariDB = "(ап/пути) - БД версия mari [*]"
 else
-    Marinette.Messages.PatchesHelpEntryMariDB = "[аргыПер] - DB version of mari [*]"
+    Marinette.Messages.PatchesHelpEntryMariDB = "(ap/paths) - DB version of mari [*]"
 end if
 
 

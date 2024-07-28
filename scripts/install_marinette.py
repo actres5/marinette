@@ -74,6 +74,7 @@ def write_text_files(project_fd, installer_fd, game_path):
 
 import src_make_localization
 import src_make_themeing
+import mari_make_make
 
 
 blacklist_folders = [

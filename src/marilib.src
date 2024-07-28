@@ -203,9 +203,10 @@ Console.parse = function(input)
     if input.trim.len == 0 then return RuntimeHelpers.cmdFailHandlers
 
     parsingExceptions = {
-        ":": "MARINETTE_SHELL_INPUT_COLON",
-        "\+": "MARINETTE_SHELL_INPUT_PLUS_SIGN",
-        "-": "MARINETTE_SHELL_INPUT_MINUS_SIGN",
+        ":": "MARINETTE_PARSING_EXCEPTION_COLON",
+        "\+": "MARINETTE_PARSING_EXCEPTION_PLUS_SIGN",
+        "-": "MARINETTE_PARSING_EXCEPTION_MINUS_SIGN",
+        "!": "MARINETTE_PARSING_EXCEPTION_EXCLAMATION_POINT",
     }
 
     for kv in parsingExceptions
