@@ -7,14 +7,14 @@ newdir /home/guest/Build/Marinette/marinette
 newdir /home/guest/Build/Marinette/marinette/mainframe
 newdir /home/guest/Build/Marinette/marinette/mainframe/patches
 make /home/guest/Sources/Marinette/src/marinette.src /home/guest/Build/Marinette/bin 150000
+make /home/guest/Sources/Marinette/patches/wallet.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
 make /home/guest/Sources/Marinette/patches/antilog.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/exploitdb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
+make /home/guest/Sources/Marinette/patches/startdb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
 make /home/guest/Sources/Marinette/patches/maridb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
+make /home/guest/Sources/Marinette/patches/populate.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
+make /home/guest/Sources/Marinette/patches/uploaddb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
+make /home/guest/Sources/Marinette/patches/tree.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
+make /home/guest/Sources/Marinette/patches/ste.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
 make /home/guest/Sources/Marinette/patches/passdb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
 make /home/guest/Sources/Marinette/patches/perms.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/populate.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/startdb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/ste.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/tree.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/uploaddb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
-make /home/guest/Sources/Marinette/patches/wallet.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000
+make /home/guest/Sources/Marinette/patches/exploitdb.mari.src /home/guest/Build/Marinette/marinette/mainframe/patches 150000

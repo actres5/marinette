@@ -64,6 +64,9 @@ end function
 // 
 // Removes duplicates in list
 removeDuplicates = function(arr)
+    // 
+    // This is a workaround for map null id - you can't set it, so
+    // we substituting it with this miraculous nullIdentificator instead
     nullIdentificator = "@NULL_IDENTIFICATOR"
     set = {}
     for i in arr
@@ -269,7 +272,8 @@ getNetworkNode = function(address)
 
     for addr in [address, "www."+address]
         if not is_valid_ip(addr) then addr = nslookup(addr)
-        if addr != "Not found" then address = addr
+        // if addr != "Not found" then address = addr
+        if is_valid_ip(addr) then address = addr
     end for
     if not is_valid_ip(address) then return
     
@@ -1486,7 +1490,7 @@ checkPermissions = function(computer=null, fd)
         if result == permissionDeniedError then
             possiblyRoot = false
         else if result == true then
-            computer.delete_user(something, "love")
+            computer.delete_user(something, true)
             return "root"
         end if
     end if

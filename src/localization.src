@@ -251,6 +251,8 @@ Locales.HelpEntryUser = {}
 Locales.HelpEntryService = {}
 Locales.HelpEntryMarikey = {}
 Locales.LogSuccessfullBackdoor = {}
+Locales.WarningFailedIntrinsicsTests = {}
+Locales.LogIntrinsicsTests = {}
 
 
 
@@ -501,6 +503,8 @@ Locales.HelpEntryUser[_language] = "add/delete/password (username) [pass] - Mana
 Locales.HelpEntryService[_language] = "install/start/stop (svc) - Manage services"
 Locales.HelpEntryMarikey[_language] = "open (gateAddr) (locAddr) (port) [name] | listen - Manage backdoors"
 Locales.LogSuccessfullBackdoor[_language] = "Backdoor has been opened successfully"
+Locales.WarningFailedIntrinsicsTests[_language] = "Runtime test failed: {TEST}"
+Locales.LogIntrinsicsTests[_language] = "Successfully run {SUCCESSFULL}/{TOTAL} runtime tests"
 
 
 
@@ -826,7 +830,7 @@ Locales.NetintHeader[_language] = "Ифейс Чип Мон"
 Locales.LogGettingNetworkInterfaces[_language] = "Доступные сетевые интерфейсы"
 Locales.LogSurroundingNetworks[_language] = "Доступные вокруг вас сети"
 Locales.NetlookHeader[_language] = "Айди МакАдрес Сиг Имя Ack-и"
-Locales.LogConnectedToEssidSuccessfully[_language] = "Успешно присоединилась к <i>{ESSID}</i> "
+Locales.LogConnectedToEssidSuccessfully[_language] = "Присоединилась к <i>{ESSID}</i> успешно"
 Locales.LogAllRunningTasks[_language] = "Все запущенные задачи"
 Locales.TasklistHeader[_language] = "Польз Pid ЦП ОЗУ Задача"
 Locales.LogSuccessfullyKilledTask[_language] = "Задача успешно завершена"
@@ -940,6 +944,8 @@ Locales.HelpEntryUser[_language] = "add/delete/password (польз) [парол
 Locales.HelpEntryService[_language] = "install/start/stop (св) - Управлять сервисами"
 Locales.HelpEntryMarikey[_language] = "open (адрМарш) (локАдр) (порт) [имя] | listen - Управлять бэкдорами"
 Locales.LogSuccessfullBackdoor[_language] = "Бэкдор был успешно открыт"
+Locales.WarningFailedIntrinsicsTests[_language] = "Runtime-тест провален: {TEST}"
+Locales.LogIntrinsicsTests[_language] = "Выполнено {SUCCESSFULL}/{TOTAL} runtime-тестов"
 
 
 

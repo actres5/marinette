@@ -1,0 +1,82 @@
+// 
+// This is a file for Grey Hack intrinsics runtime tests
+
+
+
+
+RuntimeHelpers.runIntrinsicsTests = function
+    Tests = {
+        "total": 0,
+        "successfull": 0,
+    }
+
+    assert = function(test, message)
+        if not test then
+            Console.warning(Messages.WarningFailedIntrinsicsTests, {"TEST": message})
+        else
+            Tests.successfull = Tests.successfull + 1
+        end if
+        Tests.total = Tests.total + 1
+    end function
+
+    // 
+    // Whois output test
+    // Used in portable.src/_getWhoisInfoParsedFromLine()
+    if get_shell.host_computer.is_network_active then
+        result = whois(get_shell.host_computer.public_ip)
+        assert result.indexOf("Domain name: ") != null, "Whois domain name"
+        assert result.indexOf("Administrative contact: ") != null, "Whois admin name"
+        assert result.indexOf("Email address: ") != null, "Whois admin email"
+        assert result.indexOf("Phone: ") != null, "Whois admin phone"
+    end if
+
+    // 
+    // User/group management error message presence test
+    // Used in portable.src/checkPermissions()
+    if active_user != "root" then
+        // In other words, this is a check wether an error string has changed with game update
+        permissionDeniedError = "Denied. Only root user can execute this command."
+        something = randomString(15)
+
+        result = get_shell.host_computer.create_group("root", something)
+        assert result == permissionDeniedError, "create_group() error message"
+        if result == true then get_shell.host_computer.delete_group("root", something)
+
+        result = get_shell.host_computer.create_user(something, "love")
+        assert result == permissionDeniedError, "create_user() error message"
+        if result == true then get_shell.host_computer.delete_user(something, true)
+    end if
+
+    // 
+    // Whois Neurobox Network test
+    // Used in commands.src/whois
+    // TODO
+
+    // 
+    // Apt error message presence test
+    // Used in commands.src/meow
+    if Libs.indexes.indexOf("apt") != null and get_shell.host_computer.is_network_active then
+        result = Libs.apt.show("love")
+        if result isa string and result.lower.indexOf("update") == null then
+            assert result.indexOf(" repository not found") != null, "apt.show() error message"
+        end if
+    end if
+
+    // 
+    // Smtp user list output test
+    // Used in commands.src/mails
+    // TODO
+
+    // 
+    // Failed test
+    // Used for testing
+    // assert false, "False test"
+
+    percent = Tests.successfull / Tests.total * 100
+    if percent < 50 or Tests.successfull == 0 then
+        Tests.successfull = error(Tests.successfull)
+    else if percent < 100 then
+        Tests.successfull = warning(Tests.successfull)
+    end if
+    Console.log(Messages.LogIntrinsicsTests, {"SUCCESSFULL": Tests.successfull, "TOTAL": Tests.total})
+end function

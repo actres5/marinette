@@ -244,3 +244,5 @@ Locales.HelpEntryUser[_language] = "add/delete/password (username) [pass] - Mana
 Locales.HelpEntryService[_language] = "install/start/stop (svc) - Manage services"
 Locales.HelpEntryMarikey[_language] = "open (gateAddr) (locAddr) (port) [name] | listen - Manage backdoors"
 Locales.LogSuccessfullBackdoor[_language] = "Backdoor has been opened successfully"
+Locales.WarningFailedIntrinsicsTests[_language] = "Runtime test failed: {TEST}"
+Locales.LogIntrinsicsTests[_language] = "Successfully run {SUCCESSFULL}/{TOTAL} runtime tests"

@@ -78,7 +78,7 @@ import mari_make_make
 
 
 blacklist_folders = [
-    ".venv", "catalog", "etc", "locales", "scripts", "standalone", "themes", "vols",
+    ".git", ".venv", "catalog", "etc", "locales", "scripts", "standalone", "themes", "vols",
 ]
 blacklist_files = [
     ".gitattributes", ".gitignore",

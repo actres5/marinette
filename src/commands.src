@@ -332,7 +332,7 @@ command "meow", ["mpm"], Const.any, Messages.HelpEntryMeow, function(arguments)
             address = router.public_ip
 
             result = apt.show(address)
-            if result.indexOf(" repository not found") then 
+            if result.indexOf(" repository not found") != null then 
                 Console.error(replaceF(Messages.ErrorStringGeneral, {"FUNC": "show", "ERROR": result}))
             else
                 Console.log(replaceF(Messages.LogContentsOfRepository, {"ADDRESS": address}))
@@ -349,6 +349,8 @@ command "meow", ["mpm"], Const.any, Messages.HelpEntryMeow, function(arguments)
 end function
 
 
+//
+// WARNING: Untestable hardcoded string comparision
 command "pktmon", [], Const.any, Messages.HelpEntryPktmon, function(arguments)
     Conditions.argumentsFewerThan(arguments, 2)
     Conditions.network
@@ -973,6 +975,7 @@ command "reload", ["rl"], Const.host, Messages.HelpEntryReload, function(argumen
     Conditions.arguments(arguments, 0)
     Conditions.host
 
+    RuntimeHelpers.runIntrinsicsTests
     RuntimeHelpers.makeNeccessaryRuntimeAssigns
     RuntimeHelpers.checkIfEverythingIsAssigned
 end function

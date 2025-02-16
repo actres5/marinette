@@ -44,6 +44,7 @@ import_code("/home/guest/Sources/Marinette/src/themeing.src")
 import_code("/home/guest/Sources/Marinette/src/portable.src")
 import_code("/home/guest/Sources/Marinette/src/marilib.src")
 import_code("/home/guest/Sources/Marinette/src/runtime.src")
+import_code("/home/guest/Sources/Marinette/src/intrinsics.src")
 import_code("/home/guest/Sources/Marinette/src/commands.src")
 
 
@@ -58,5 +59,6 @@ main = function
     if Var.parameters.indexes.indexOf("--no-runtime-loading") == null then RuntimeHelpers.makeNeccessaryRuntimeAssigns
     if Var.parameters.indexes.indexOf("--no-system-checks") == null then RuntimeHelpers.checkIfEverythingIsAssigned
 
+    RuntimeHelpers.runIntrinsicsTests
     Console.cmdloop
 end function; main
