@@ -1,0 +1,544 @@
+namespace Wrappers {
+  class ObjectWrap(Object) {
+    Private.o = null
+
+    Public.ksError = "No requested method is available"
+
+    function Public.Init(o, sClassId) {
+      Private.o = o
+      Public.classId = sClassId
+    }
+
+    function Public.GetObject() {
+      return Private.o
+    }
+    Public.o = @Public.GetObject
+
+    function Public.HasMethod(sMethodName) {
+      o = Private.o
+      return o isa map and (o.hasIndex(sMethodName) or (o.hasIndex("__isa") and o.__isa.hasIndex(sMethodName)))
+    }
+  }
+
+  class FileWrap(Wrappers.ObjectWrap) {
+    function Public.Init(fl) {
+      if (IsInstanceOf(fl, Wrappers.FileWrap)) {
+        super.Init(fl.o, "file")
+      } else {
+        super.Init(fl, "file")
+      }
+    }
+
+    function Public.allow_import() {
+      if (Public.HasMethod("allow_import")) {
+        return Public.o.allow_import
+      }
+      return false
+    }
+
+    function Public.chmod(sPerms, bIsRecursive=false) {
+      if (Public.HasMethod("chmod")) {
+        return Public.o.chmod(sPerms, bIsRecursive)
+      }
+      return Public.ksError
+    }
+
+    function Public.copy(sPath, sName) {
+      if (Public.HasMethod("copy")) {
+        return Public.o.copy(sPath, sName)
+      }
+      return Public.ksError
+    }
+
+    function Public.delete() {
+      if (Public.HasMethod("delete")) {
+        return Public.o.delete
+      }
+      return Public.ksError
+    }
+
+    function Public.get_content() {
+      if (Public.HasMethod("get_content")) {
+        return Public.o.get_content
+      }
+    }
+
+    function Public.get_files() {
+      if (Public.HasMethod("get_files")) {
+        ltfl = Public.o.get_files
+        if (ltfl == null) {
+          return
+        }
+        for (i = 0; i < ltfl.len; ++i) {
+          ltfl[i] = Wrappers.FileWrap.Init(ltfl[i])
+        }
+        return ltfl
+      }
+    }
+
+    function Public.get_folders() {
+      if (Public.HasMethod("get_folders")) {
+        ltfl = Public.o.get_folders
+        if (ltfl == null) {
+          return
+        }
+        for (i = 0; i < ltfl.len; ++i) {
+          ltfl[i] = Wrappers.FileWrap.Init(ltfl[i])
+        }
+        return ltfl
+      }
+    }
+
+    function Public.group() {
+      if (Public.HasMethod("group")) {
+        return Public.o.group
+      }
+    }
+
+    function Public.has_permission(sPerms) {
+      if (Public.HasMethod("has_permission")) {
+        return Public.o.has_permission(sPerms)
+      }
+    }
+
+    function Public.is_binary() {
+      if (Public.HasMethod("is_binary")) {
+        return Public.o.is_binary
+      }
+    }
+
+    function Public.is_folder() {
+      if (Public.HasMethod("is_folder")) {
+        return Public.o.is_folder
+      }
+    }
+
+    function Public.is_symlink() {
+      if (Public.HasMethod("is_symlink")) {
+        return Public.o.is_symlink
+      }
+    }
+
+    function Public.move(sPath, sFileName) {
+      if (Public.HasMethod("move")) {
+        return Public.o.move(sPath, sFileName)
+      }
+      return Public.ksError
+    }
+
+    function Public.name() {
+      if (Public.HasMethod("name")) {
+        return Public.o.name
+      }
+    }
+
+    function Public.owner() {
+      if (Public.HasMethod("owner")) {
+        return Public.o.owner
+      }
+    }
+
+    function Public.parent() {
+      if (Public.HasMethod("parent")) {
+        fl = Public.o.parent
+        if (fl) {
+          return Wrappers.FileWrap.Init(fl)
+        }
+      }
+    }
+
+    function Public.path(bIsSymlinkOrigPath=false) {
+      if (Public.HasMethod("path")) {
+        return Public.o.path(bIsSymlinkOrigPath)
+      }
+    }
+
+    function Public.permissions() {
+      if (Public.HasMethod("permissions")) {
+        return Public.o.permissions
+      }
+    }
+
+    function Public.rename(sName) {
+      if (Public.HasMethod("rename")) {
+        return Public.o.rename(sName)
+      }
+      return Public.ksError
+    }
+
+    function Public.set_content(sContent) {
+      if (Public.HasMethod("set_content")) {
+        return Public.o.set_content(sContent)
+      }
+      return Public.ksError
+    }
+
+    function Public.set_group(sGroup, bIsRecursive=false) {
+      if (Public.HasMethod("set_group")) {
+        return Public.o.set_group(sGroup, bIsRecursive)
+      }
+      return Public.ksError
+    }
+
+    function Public.set_owner(sOwner, bIsRecursive=false) {
+      if (Public.HasMethod("set_owner")) {
+        return Public.o.set_owner(sOwner, bIsRecursive)
+      }
+      return Public.ksError
+    }
+
+    function Public.size() {
+      if (Public.HasMethod("size")) {
+        return Public.o.size
+      }
+    }
+
+    function Public.symlink(sPath, sNewName) {
+      if (Public.HasMethod("symlink")) {
+        return Public.o.symlink(sPath, sNewName)
+      }
+      return Public.ksError
+    }
+  }
+
+  class ComputerWrap(Wrappers.ObjectWrap) {
+    function Public.Init(cp) {
+      if (IsInstanceOf(cp, Wrappers.ComputerWrap)) {
+        super.Init(cp.o, "computer")
+      } else {
+        super.Init(cp, "computer")
+      }
+    }
+
+    function Public.File(sPath) {
+      if (Public.HasMethod("File")) {
+        fl = Public.o.File(sPath)
+        if (fl) {
+          return Wrappers.FileWrap.Init(fl)
+        }
+      }
+    }
+
+    function Public.active_net_card() {
+      if (Public.HasMethod("active_net_card")) {
+        return Public.o.active_net_card
+      }
+      return "N/A"
+    }
+
+    function Public.change_password(sUsername, sPassword) {
+      if (Public.HasMethod("change_password")) {
+        return Public.o.change_password(sUsername, sPassword)
+      }
+      return Public.ksError
+    }
+
+    function Public.close_program(nPid) {
+      if (Public.HasMethod("close_program")) {
+        return Public.o.close_program(nPid)
+      }
+      return Public.ksError
+    }
+
+    function Public.connect_ethernet(sNetDevice, sAddress, sGateway) {
+      if (Public.HasMethod("connect_ethernet")) {
+        return Public.o.connect_ethernet(sNetDevice, sAddress, sGateway)
+      }
+      return Public.ksError
+    }
+
+    function Public.connect_wifi(sNetDevice, sBssid, sEssid, sPassword) {
+      if (Public.HasMethod("connect_wifi")) {
+        return Public.o.connect_wifi(sNetDevice, sBssid, sEssid, sPassword)
+      }
+      return Public.ksError
+    }
+
+    function Public.create_folder(sPath, sFolder) {
+      if (Public.HasMethod("create_folder")) {
+        return Public.o.create_folder(sPath, sFolder)
+      }
+      return Public.ksError
+    }
+
+    function Public.create_group(sUsername, sGroup) {
+      if (Public.HasMethod("create_group")) {
+        return Public.o.create_group(sUsername, sGroup)
+      }
+      return Public.ksError
+    }
+
+    function Public.create_user(sUsername, sPassword) {
+      if (Public.HasMethod("create_user")) {
+        return Public.o.create_user(sUsername, sPassword)
+      }
+      return Public.ksError
+    }
+
+    function Public.delete_group(sUsername, sGroup) {
+      if (Public.HasMethod("delete_group")) {
+        return Public.o.delete_group(sUsername, sGroup)
+      }
+      return Public.ksError
+    }
+
+    function Public.delete_user(sUsername, bRemoveHome=false) {
+      if (Public.HasMethod("delete_user")) {
+        return Public.o.delete_user(sUsername, bRemoveHome)
+      }
+      return Public.ksError
+    }
+
+    function Public.get_name() {
+      if (Public.HasMethod("get_name")) {
+        return Public.o.get_name
+      }
+      return "N/A"
+    }
+
+    function Public.get_ports() {
+      if (Public.HasMethod("get_ports")) {
+        return Public.o.get_ports
+      }
+      return []
+    }
+
+    function Public.groups(sUsername) {
+      if (Public.HasMethod("groups")) {
+        return Public.o.groups(sUsername)
+      }
+      return "N/A"+char(10)
+    }
+
+    function Public.is_network_active() {
+      if (Public.HasMethod("is_network_active")) {
+        return Public.o.is_network_active
+      }
+      return false
+    }
+
+    function Public.local_ip() {
+      if (Public.HasMethod("local_ip")) {
+        return Public.o.local_ip
+      }
+      return "0.0.0.0"
+    }
+
+    function Public.network_devices() {
+      if (Public.HasMethod("network_devices")) {
+        return Public.o.network_devices
+      }
+      return "N/A N/A False"+char(10)
+    }
+
+    function Public.network_gateway() {
+      if (Public.HasMethod("network_gateway")) {
+        return Public.o.network_gateway
+      }
+      return "0.0.0.0"
+    }
+
+    function Public.public_ip() {
+      if (Public.HasMethod("public_ip")) {
+        return Public.o.public_ip
+      }
+      return "0.0.0.0"
+    }
+
+    function Public.show_procs() {
+      if (Public.HasMethod("show_procs")) {
+        return Public.o.show_procs
+      }
+      return "USER PID CPU MEM COMMAND"+char(10)+"N/A 1337 0.0% 0.0% N/A"
+    }
+
+    function Public.touch(sPath, sFileName) {
+      if (Public.HasMethod("touch")) {
+        return Public.o.touch(sPath, sFileName)
+      }
+      return Public.ksError
+    }
+
+    function Public.wifi_networks(sNetDevice) {
+      if (Public.HasMethod("wifi_networks")) {
+        return Public.o.wifi_networks(sNetDevice)
+      }
+      return []
+    }
+  }
+
+  class ShellWrap(Wrappers.ObjectWrap) {
+    function Public.Init(sh) {
+      if (IsInstanceOf(sh, Wrappers.ShellWrap)) {
+        super.Init(sh.o, "shell")
+      } else {
+        super.Init(sh, "shell")
+      }
+    }
+
+    function Public.build(sPathSource, sPathBinary, bAllowImport=false) {
+      if (Public.HasMethod("build")) {
+        return Public.o.build(sPathSource, sPathBinary, bAllowImport)
+      }
+      return Public.ksError
+    }
+
+    function Public.connect_service(sIp, nPort, sUser, sPassword, sService="ssh") {
+      if (Public.HasMethod("connect_service")) {
+        o = Public.o.connect_service(sIp, nPort, sUser, sPassword, sService)
+        if (IsInstanceOf(o, "shell")) {
+          return Wrappers.ShellWrap.Init(o)
+        } else if (IsInstanceOf(o, "ftpshell")) {
+          return Wrappers.FtpShellWrap.Init(o)
+        }
+        return o
+      }
+      return Public.ksError
+    }
+
+    function Public.host_computer() {
+      if (Public.HasMethod("host_computer")) {
+        return Wrappers.ComputerWrap.Init(Public.o.host_computer)
+      }
+      return Wrappers.ComputerWrap.Init(null)
+    }
+
+    function Public.launch(sProgram, sParams="") {
+      if (Public.HasMethod("launch")) {
+        return Public.o.launch(sProgram, sParams)
+      }
+      return Public.ksError
+    }
+
+    function Public.ping(sIp) {
+      if (Public.HasMethod("ping")) {
+        return Public.o.ping(sIp)
+      }
+      return Public.ksError
+    }
+
+    function Public.scp(sFile, sFolder, shRemoteShell) {
+      if (Public.HasMethod("scp")) {
+        if (IsInstanceOf(shRemoteShell, Wrappers.ShellWrap) or IsInstanceOf(shRemoteShell, Wrappers.FtpShellWrap)) {
+          shRemoteShell = shRemoteShell.o
+        }
+        return Public.o.scp(sFile, sFolder, shRemoteShell)
+      }
+      return Public.ksError
+    }
+
+    function Public.start_terminal() {
+      if (Public.HasMethod("start_terminal")) {
+        return Public.o.start_terminal
+      }
+    }
+  }
+
+  class FtpShellWrap(Wrappers.ObjectWrap) {
+    function Public.Init(ftp) {
+      if (IsInstanceOf(ftp, Wrappers.FtpShellWrap)) {
+        super.Init(ftp.o, "ftpshell")
+      } else {
+        super.Init(ftp, "ftpshell")
+      }
+    }
+
+    function Public.host_computer() {
+      if (Public.HasMethod("host_computer")) {
+        return Wrappers.ComputerWrap(Public.o.host_computer)
+      }
+      return Wrappers.ComputerWrap.Init(null)
+    }
+
+    function Public.put(sSourceFile, sDestinationFolder, shRemoteShell) {
+      if (Public.HasMethod("put")) {
+        if (IsInstanceOf(shRemoteShell, Wrappers.ShellWrap) or IsInstanceOf(shRemoteShell, Wrappers.FtpShellWrap)) {
+          shRemoteShell = shRemoteShell.o
+        }
+        return Public.o.put(sSourceFile, sDestinationFolder, shRemoteShell)
+      }
+      return Public.ksError
+    }
+
+    function Public.start_terminal() {
+      if (Public.HasMethod("start_terminal")) {
+        return Public.o.start_terminal
+      }
+    }
+  }
+}
+
+
+
+
+// // -- Tests (Uncomment and insert these into GreyBel)
+// function Main() {
+//   // -- FtpShellWrap comes with no tests for now
+  
+//   sw = Wrappers.ShellWrap.Init(null)
+//   print(sw)
+//   print(sw.build("/etc/passwd", "/"))
+//   print(sw.connect_service("1.1.1.1", 22, "test", "test"))
+//   print(sw.host_computer)
+//   print(sw.launch("/"))
+//   print(sw.ping("1.1.1.1"))
+//   print(sw.scp("/", "/", sw))
+//   print(sw.start_terminal)
+
+//   print(" ")
+//   cw = sw.host_computer
+//   print(cw)
+//   print(cw.File("/"))
+//   print(cw.active_net_card)
+//   print(cw.change_password("root", "test"))
+//   print(cw.close_program(0))
+//   print(cw.connect_ethernet("eth0", "192.168.0.4", "192.168.0.1"))
+//   print(cw.connect_wifi("wlan0", "bssid", "essid", "test"))
+//   print(cw.create_folder("/", "test"))
+//   print(cw.create_group("root", "test"))
+//   print(cw.create_user("test", "test"))
+//   print(cw.delete_group("root", "test"))
+//   print(cw.delete_user("test"))
+//   print(cw.get_name)
+//   print(cw.get_ports)
+//   print(cw.groups("root"))
+//   print(cw.is_network_active)
+//   print(cw.local_ip)
+//   print(cw.network_devices)
+//   print(cw.network_gateway)
+//   print(cw.public_ip)
+//   print(cw.show_procs)
+//   print(cw.touch("/", "test.txt"))
+//   print(cw.wifi_networks("wlan0"))
+
+//   print(" ")
+//   fw = cw.File("/root")
+//   print(fw)
+//   print(fw.allow_import)
+//   print(fw.chmod("u+rwx"))
+//   print(fw.copy("/", "test"))
+//   // -- Is working; Commented out to avoid file corruption
+//   // print(fw.delete)
+//   print(fw.get_content)
+//   print(fw.get_files)
+//   print(fw.get_folders)
+//   print(fw.group)
+//   print(fw.has_permission("r"))
+//   print(fw.is_binary)
+//   print(fw.is_folder)
+//   // -- Is absent in GreyBel last time I've checked
+//   print(fw.is_symlink)
+//   print(fw.move("/", "/"))
+//   print(fw.name)
+//   print(fw.owner)
+//   print(fw.parent)
+//   // -- Is working; Not up to date in GreyBel
+//   // print(fw.path)
+//   print(fw.permissions)
+//   print(fw.rename("newroot"))
+//   print(fw.set_content("test"))
+//   print(fw.set_group("test"))
+//   print(fw.set_owner("test"))
+//   print(fw.size)
+//   print(fw.symlink("/test", "test"))
+// }

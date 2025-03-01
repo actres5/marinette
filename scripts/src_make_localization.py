@@ -34,5 +34,5 @@ for line in footer.split("\n"):
     content = content + entryName + " = {}\n"
 
 content = content + footer
-with open("src/localization.src", "w") as fd:
+with open("src/_o_localization.src", "w") as fd:
     fd.write(content)

@@ -1,0 +1,641 @@
+//-- MSE TRANSPILE PAYLOAD --
+______MSE_EXIT = @exit
+Object = function()
+    Private = {}
+    Private.ltsInheritancePath = ["Object"]
+    Private.IsObject = function(aObject="______MSE_UNSET")
+        if @aObject == "______MSE_UNSET" then ______MSE_EXIT("MSE: Private.IsObject() missing required positional argument 'aObject'. (line 7)")
+        return @aObject isa map and aObject.hasIndex("classID")
+    end function
+    Private.IsInstanceOf = function(aObject="______MSE_UNSET")
+        if @aObject == "______MSE_UNSET" then ______MSE_EXIT("MSE: Private.IsInstanceOf() missing required positional argument 'aObject'. (line 11)")
+        return Private.IsObject(@aObject) and Private.ltsInheritancePath.indexOf(aObject.classID) != null
+    end function
+    Public = {}
+    Public.GetInheritancePath = function()
+        return Private.ltsInheritancePath[0:]
+    end function
+    Public.AddObjectRelation = function(aObject="______MSE_UNSET")
+        if @aObject == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.AddObjectRelation() missing required positional argument 'aObject'. (line 19)")
+        if (Private.IsObject(@aObject) and not Private.IsInstanceOf(aObject)) then
+            Private.ltsInheritancePath.push(aObject.classID)
+        end if
+    end function
+    Public.classID = "Object"
+    Public.IsInstanceOf = @Private["IsInstanceOf"]
+    return Public
+end function
+IsInstanceOf = function(mpInstance="______MSE_UNSET", aBase="______MSE_UNSET")
+    if @mpInstance == "______MSE_UNSET" then ______MSE_EXIT("MSE: IsInstanceOf() missing required positional argument 'mpInstance'. (line 29)")
+    if @aBase == "______MSE_UNSET" then ______MSE_EXIT("MSE: IsInstanceOf() missing required positional argument 'aBase'. (line 30)")
+    if (aBase isa string) then
+        return typeof(@aInstance) == aBase
+    else if (@mpInstance isa map and mpInstance.hasIndex("IsInstanceOf")) then
+        return mpInstance.IsInstanceOf(aBase)
+    else if (@mpInstance isa map and mpInstance.hasIndex("__isa")) then
+        return IsInstanceOf(@mpInstance.__isa, aBase)
+    end if
+    return false
+end function
+Success = function(aValue="______MSE_UNSET")
+    if @aValue == "______MSE_UNSET" then ______MSE_EXIT("MSE: Success() missing required positional argument 'aValue'. (line 41)")
+    return [aValue, null]
+end function
+Error = function(aErrorValue="______MSE_UNSET")
+    if @aErrorValue == "______MSE_UNSET" then ______MSE_EXIT("MSE: Error() missing required positional argument 'aErrorValue'. (line 45)")
+    return [null, aErrorValue]
+end function
+//-- END TRANSPILE PAYLOAD --
+Wrappers = function()
+    ObjectWrap = function()
+        //-- MSE CLASS PRE PAYLOAD --
+        Private = {}
+        Public = new Object
+        Public.classID = "ObjectWrap"
+        //-- END CLASS PRE PAYLOAD --
+        Private.o = null
+        Public.ksError = "No requested method is available"
+        Public.Init = function(o="______MSE_UNSET", sClassId="______MSE_UNSET")
+            if @o == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'o'. (line 59)")
+            if @sClassId == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'sClassId'. (line 60)")
+            Private.o = o
+            Public.classId = sClassId
+        end function
+        Public.GetObject = function()
+            return Private.o
+        end function
+        Public.o = @Public.GetObject
+        Public.HasMethod = function(sMethodName="______MSE_UNSET")
+            if @sMethodName == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.HasMethod() missing required positional argument 'sMethodName'. (line 69)")
+            o = Private.o
+            return o isa map and (o.hasIndex(sMethodName) or (o.hasIndex("__isa") and o.__isa.hasIndex(sMethodName)))
+        end function
+        //-- MSE CLASS POST PAYLOAD --
+        Public.______MSE_INIT = function(o="______MSE_UNSET", sClassId="______MSE_UNSET")
+            if @o == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.______MSE_INIT() missing required positional argument 'o'. (line 75)")
+            if @sClassId == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.______MSE_INIT() missing required positional argument 'sClassId'. (line 76)")
+        end function
+        if (Public.hasIndex("Init")) then
+            Public.______MSE_INIT = @Public["Init"]
+        end if
+        Public.Init = function(o="______MSE_UNSET", sClassId="______MSE_UNSET")
+            if @o == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'o'. (line 82)")
+            if @sClassId == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'sClassId'. (line 83)")
+            Public.remove("Init")
+            Public.______MSE_INIT(o, sClassId)
+            Public.remove("______MSE_INIT")
+            return Public
+        end function
+        Public.AddObjectRelation(Public)
+        return Public
+        //-- END CLASS POST PAYLOAD --
+    end function
+    FileWrap = function()
+        //-- MSE CLASS PRE PAYLOAD --
+        Private = {}
+        Public = new Wrappers.ObjectWrap
+        Public.classID = "FileWrap"
+        //-- END CLASS PRE PAYLOAD --
+        Public.Init = function(fl="______MSE_UNSET")
+            if @fl == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'fl'. (line 100)")
+            if (IsInstanceOf(fl, Wrappers.FileWrap)) then
+                super.Init(fl.o, "file")
+            else
+                super.Init(fl, "file")
+            end if
+        end function
+        Public.allow_import = function()
+            if (Public.HasMethod("allow_import")) then
+                return Public.o.allow_import
+            end if
+            return false
+        end function
+        Public.chmod = function(sPerms="______MSE_UNSET", bIsRecursive=false)
+            if @sPerms == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.chmod() missing required positional argument 'sPerms'. (line 114)")
+            if (Public.HasMethod("chmod")) then
+                return Public.o.chmod(sPerms, bIsRecursive)
+            end if
+            return Public.ksError
+        end function
+        Public.copy = function(sPath="______MSE_UNSET", sName="______MSE_UNSET")
+            if @sPath == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.copy() missing required positional argument 'sPath'. (line 121)")
+            if @sName == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.copy() missing required positional argument 'sName'. (line 122)")
+            if (Public.HasMethod("copy")) then
+                return Public.o.copy(sPath, sName)
+            end if
+            return Public.ksError
+        end function
+        Public.delete = function()
+            if (Public.HasMethod("delete")) then
+                return Public.o.delete
+            end if
+            return Public.ksError
+        end function
+        Public.get_content = function()
+            if (Public.HasMethod("get_content")) then
+                return Public.o.get_content
+            end if
+        end function
+        Public.get_files = function()
+            if (Public.HasMethod("get_files")) then
+                ltfl = Public.o.get_files
+                if (ltfl == null) then
+                    return
+                end if
+                i = 0
+                while i < ltfl.len
+                    ltfl[i] = Wrappers.FileWrap.Init(ltfl[i])
+                    ______MSE_RKLHENYWNWUYPFEU = function
+                        outer.i = outer.i + 1
+                        return outer.i
+                    end function
+                    ______MSE_RKLHENYWNWUYPFEU
+                end while
+                return ltfl
+            end if
+        end function
+        Public.get_folders = function()
+            if (Public.HasMethod("get_folders")) then
+                ltfl = Public.o.get_folders
+                if (ltfl == null) then
+                    return
+                end if
+                i = 0
+                while i < ltfl.len
+                    ltfl[i] = Wrappers.FileWrap.Init(ltfl[i])
+                    ______MSE_QVDBFFZSTNWGDQHL = function
+                        outer.i = outer.i + 1
+                        return outer.i
+                    end function
+                    ______MSE_QVDBFFZSTNWGDQHL
+                end while
+                return ltfl
+            end if
+        end function
+        Public.group = function()
+            if (Public.HasMethod("group")) then
+                return Public.o.group
+            end if
+        end function
+        Public.has_permission = function(sPerms="______MSE_UNSET")
+            if @sPerms == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.has_permission() missing required positional argument 'sPerms'. (line 169)")
+            if (Public.HasMethod("has_permission")) then
+                return Public.o.has_permission(sPerms)
+            end if
+        end function
+        Public.is_binary = function()
+            if (Public.HasMethod("is_binary")) then
+                return Public.o.is_binary
+            end if
+        end function
+        Public.is_folder = function()
+            if (Public.HasMethod("is_folder")) then
+                return Public.o.is_folder
+            end if
+        end function
+        Public.is_symlink = function()
+            if (Public.HasMethod("is_symlink")) then
+                return Public.o.is_symlink
+            end if
+        end function
+        Public.move = function(sPath="______MSE_UNSET", sFileName="______MSE_UNSET")
+            if @sPath == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.move() missing required positional argument 'sPath'. (line 190)")
+            if @sFileName == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.move() missing required positional argument 'sFileName'. (line 191)")
+            if (Public.HasMethod("move")) then
+                return Public.o.move(sPath, sFileName)
+            end if
+            return Public.ksError
+        end function
+        Public.name = function()
+            if (Public.HasMethod("name")) then
+                return Public.o.name
+            end if
+        end function
+        Public.owner = function()
+            if (Public.HasMethod("owner")) then
+                return Public.o.owner
+            end if
+        end function
+        Public.parent = function()
+            if (Public.HasMethod("parent")) then
+                fl = Public.o.parent
+                if (fl) then
+                    return Wrappers.FileWrap.Init(fl)
+                end if
+            end if
+        end function
+        Public.path = function(bIsSymlinkOrigPath=false)
+            if (Public.HasMethod("path")) then
+                return Public.o.path(bIsSymlinkOrigPath)
+            end if
+        end function
+        Public.permissions = function()
+            if (Public.HasMethod("permissions")) then
+                return Public.o.permissions
+            end if
+        end function
+        Public.rename = function(sName="______MSE_UNSET")
+            if @sName == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.rename() missing required positional argument 'sName'. (line 226)")
+            if (Public.HasMethod("rename")) then
+                return Public.o.rename(sName)
+            end if
+            return Public.ksError
+        end function
+        Public.set_content = function(sContent="______MSE_UNSET")
+            if @sContent == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.set_content() missing required positional argument 'sContent'. (line 233)")
+            if (Public.HasMethod("set_content")) then
+                return Public.o.set_content(sContent)
+            end if
+            return Public.ksError
+        end function
+        Public.set_group = function(sGroup="______MSE_UNSET", bIsRecursive=false)
+            if @sGroup == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.set_group() missing required positional argument 'sGroup'. (line 240)")
+            if (Public.HasMethod("set_group")) then
+                return Public.o.set_group(sGroup, bIsRecursive)
+            end if
+            return Public.ksError
+        end function
+        Public.set_owner = function(sOwner="______MSE_UNSET", bIsRecursive=false)
+            if @sOwner == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.set_owner() missing required positional argument 'sOwner'. (line 247)")
+            if (Public.HasMethod("set_owner")) then
+                return Public.o.set_owner(sOwner, bIsRecursive)
+            end if
+            return Public.ksError
+        end function
+        Public.size = function()
+            if (Public.HasMethod("size")) then
+                return Public.o.size
+            end if
+        end function
+        Public.symlink = function(sPath="______MSE_UNSET", sNewName="______MSE_UNSET")
+            if @sPath == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.symlink() missing required positional argument 'sPath'. (line 259)")
+            if @sNewName == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.symlink() missing required positional argument 'sNewName'. (line 260)")
+            if (Public.HasMethod("symlink")) then
+                return Public.o.symlink(sPath, sNewName)
+            end if
+            return Public.ksError
+        end function
+        //-- MSE CLASS POST PAYLOAD --
+        Public.______MSE_INIT = function(fl="______MSE_UNSET")
+            if @fl == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.______MSE_INIT() missing required positional argument 'fl'. (line 268)")
+        end function
+        if (Public.hasIndex("Init")) then
+            Public.______MSE_INIT = @Public["Init"]
+        end if
+        Public.Init = function(fl="______MSE_UNSET")
+            if @fl == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'fl'. (line 274)")
+            Public.remove("Init")
+            Public.______MSE_INIT(fl)
+            Public.remove("______MSE_INIT")
+            return Public
+        end function
+        Public.AddObjectRelation(Public)
+        return Public
+        //-- END CLASS POST PAYLOAD --
+    end function
+    ComputerWrap = function()
+        //-- MSE CLASS PRE PAYLOAD --
+        Private = {}
+        Public = new Wrappers.ObjectWrap
+        Public.classID = "ComputerWrap"
+        //-- END CLASS PRE PAYLOAD --
+        Public.Init = function(cp="______MSE_UNSET")
+            if @cp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'cp'. (line 291)")
+            if (IsInstanceOf(cp, Wrappers.ComputerWrap)) then
+                super.Init(cp.o, "computer")
+            else
+                super.Init(cp, "computer")
+            end if
+        end function
+        Public.File = function(sPath="______MSE_UNSET")
+            if @sPath == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.File() missing required positional argument 'sPath'. (line 299)")
+            if (Public.HasMethod("File")) then
+                fl = Public.o.File(sPath)
+                if (fl) then
+                    return Wrappers.FileWrap.Init(fl)
+                end if
+            end if
+        end function
+        Public.active_net_card = function()
+            if (Public.HasMethod("active_net_card")) then
+                return Public.o.active_net_card
+            end if
+            return "N/A"
+        end function
+        Public.change_password = function(sUsername="______MSE_UNSET", sPassword="______MSE_UNSET")
+            if @sUsername == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.change_password() missing required positional argument 'sUsername'. (line 314)")
+            if @sPassword == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.change_password() missing required positional argument 'sPassword'. (line 315)")
+            if (Public.HasMethod("change_password")) then
+                return Public.o.change_password(sUsername, sPassword)
+            end if
+            return Public.ksError
+        end function
+        Public.close_program = function(nPid="______MSE_UNSET")
+            if @nPid == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.close_program() missing required positional argument 'nPid'. (line 322)")
+            if (Public.HasMethod("close_program")) then
+                return Public.o.close_program(nPid)
+            end if
+            return Public.ksError
+        end function
+        Public.connect_ethernet = function(sNetDevice="______MSE_UNSET", sAddress="______MSE_UNSET", sGateway="______MSE_UNSET")
+            if @sNetDevice == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_ethernet() missing required positional argument 'sNetDevice'. (line 329)")
+            if @sAddress == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_ethernet() missing required positional argument 'sAddress'. (line 330)")
+            if @sGateway == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_ethernet() missing required positional argument 'sGateway'. (line 331)")
+            if (Public.HasMethod("connect_ethernet")) then
+                return Public.o.connect_ethernet(sNetDevice, sAddress, sGateway)
+            end if
+            return Public.ksError
+        end function
+        Public.connect_wifi = function(sNetDevice="______MSE_UNSET", sBssid="______MSE_UNSET", sEssid="______MSE_UNSET", sPassword="______MSE_UNSET")
+            if @sNetDevice == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_wifi() missing required positional argument 'sNetDevice'. (line 338)")
+            if @sBssid == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_wifi() missing required positional argument 'sBssid'. (line 339)")
+            if @sEssid == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_wifi() missing required positional argument 'sEssid'. (line 340)")
+            if @sPassword == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_wifi() missing required positional argument 'sPassword'. (line 341)")
+            if (Public.HasMethod("connect_wifi")) then
+                return Public.o.connect_wifi(sNetDevice, sBssid, sEssid, sPassword)
+            end if
+            return Public.ksError
+        end function
+        Public.create_folder = function(sPath="______MSE_UNSET", sFolder="______MSE_UNSET")
+            if @sPath == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.create_folder() missing required positional argument 'sPath'. (line 348)")
+            if @sFolder == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.create_folder() missing required positional argument 'sFolder'. (line 349)")
+            if (Public.HasMethod("create_folder")) then
+                return Public.o.create_folder(sPath, sFolder)
+            end if
+            return Public.ksError
+        end function
+        Public.create_group = function(sUsername="______MSE_UNSET", sGroup="______MSE_UNSET")
+            if @sUsername == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.create_group() missing required positional argument 'sUsername'. (line 356)")
+            if @sGroup == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.create_group() missing required positional argument 'sGroup'. (line 357)")
+            if (Public.HasMethod("create_group")) then
+                return Public.o.create_group(sUsername, sGroup)
+            end if
+            return Public.ksError
+        end function
+        Public.create_user = function(sUsername="______MSE_UNSET", sPassword="______MSE_UNSET")
+            if @sUsername == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.create_user() missing required positional argument 'sUsername'. (line 364)")
+            if @sPassword == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.create_user() missing required positional argument 'sPassword'. (line 365)")
+            if (Public.HasMethod("create_user")) then
+                return Public.o.create_user(sUsername, sPassword)
+            end if
+            return Public.ksError
+        end function
+        Public.delete_group = function(sUsername="______MSE_UNSET", sGroup="______MSE_UNSET")
+            if @sUsername == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.delete_group() missing required positional argument 'sUsername'. (line 372)")
+            if @sGroup == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.delete_group() missing required positional argument 'sGroup'. (line 373)")
+            if (Public.HasMethod("delete_group")) then
+                return Public.o.delete_group(sUsername, sGroup)
+            end if
+            return Public.ksError
+        end function
+        Public.delete_user = function(sUsername="______MSE_UNSET", bRemoveHome=false)
+            if @sUsername == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.delete_user() missing required positional argument 'sUsername'. (line 380)")
+            if (Public.HasMethod("delete_user")) then
+                return Public.o.delete_user(sUsername, bRemoveHome)
+            end if
+            return Public.ksError
+        end function
+        Public.get_name = function()
+            if (Public.HasMethod("get_name")) then
+                return Public.o.get_name
+            end if
+            return "N/A"
+        end function
+        Public.get_ports = function()
+            if (Public.HasMethod("get_ports")) then
+                return Public.o.get_ports
+            end if
+            return []
+        end function
+        Public.groups = function(sUsername="______MSE_UNSET")
+            if @sUsername == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.groups() missing required positional argument 'sUsername'. (line 399)")
+            if (Public.HasMethod("groups")) then
+                return Public.o.groups(sUsername)
+            end if
+            return "N/A"+char(10)
+        end function
+        Public.is_network_active = function()
+            if (Public.HasMethod("is_network_active")) then
+                return Public.o.is_network_active
+            end if
+            return false
+        end function
+        Public.local_ip = function()
+            if (Public.HasMethod("local_ip")) then
+                return Public.o.local_ip
+            end if
+            return "0.0.0.0"
+        end function
+        Public.network_devices = function()
+            if (Public.HasMethod("network_devices")) then
+                return Public.o.network_devices
+            end if
+            return "N/A N/A False"+char(10)
+        end function
+        Public.network_gateway = function()
+            if (Public.HasMethod("network_gateway")) then
+                return Public.o.network_gateway
+            end if
+            return "0.0.0.0"
+        end function
+        Public.public_ip = function()
+            if (Public.HasMethod("public_ip")) then
+                return Public.o.public_ip
+            end if
+            return "0.0.0.0"
+        end function
+        Public.show_procs = function()
+            if (Public.HasMethod("show_procs")) then
+                return Public.o.show_procs
+            end if
+            return "USER PID CPU MEM COMMAND"+char(10)+"N/A 1337 0.0% 0.0% N/A"
+        end function
+        Public.touch = function(sPath="______MSE_UNSET", sFileName="______MSE_UNSET")
+            if @sPath == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.touch() missing required positional argument 'sPath'. (line 442)")
+            if @sFileName == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.touch() missing required positional argument 'sFileName'. (line 443)")
+            if (Public.HasMethod("touch")) then
+                return Public.o.touch(sPath, sFileName)
+            end if
+            return Public.ksError
+        end function
+        Public.wifi_networks = function(sNetDevice="______MSE_UNSET")
+            if @sNetDevice == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.wifi_networks() missing required positional argument 'sNetDevice'. (line 450)")
+            if (Public.HasMethod("wifi_networks")) then
+                return Public.o.wifi_networks(sNetDevice)
+            end if
+            return []
+        end function
+        //-- MSE CLASS POST PAYLOAD --
+        Public.______MSE_INIT = function(cp="______MSE_UNSET")
+            if @cp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.______MSE_INIT() missing required positional argument 'cp'. (line 458)")
+        end function
+        if (Public.hasIndex("Init")) then
+            Public.______MSE_INIT = @Public["Init"]
+        end if
+        Public.Init = function(cp="______MSE_UNSET")
+            if @cp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'cp'. (line 464)")
+            Public.remove("Init")
+            Public.______MSE_INIT(cp)
+            Public.remove("______MSE_INIT")
+            return Public
+        end function
+        Public.AddObjectRelation(Public)
+        return Public
+        //-- END CLASS POST PAYLOAD --
+    end function
+    ShellWrap = function()
+        //-- MSE CLASS PRE PAYLOAD --
+        Private = {}
+        Public = new Wrappers.ObjectWrap
+        Public.classID = "ShellWrap"
+        //-- END CLASS PRE PAYLOAD --
+        Public.Init = function(sh="______MSE_UNSET")
+            if @sh == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'sh'. (line 481)")
+            if (IsInstanceOf(sh, Wrappers.ShellWrap)) then
+                super.Init(sh.o, "shell")
+            else
+                super.Init(sh, "shell")
+            end if
+        end function
+        Public.build = function(sPathSource="______MSE_UNSET", sPathBinary="______MSE_UNSET", bAllowImport=false)
+            if @sPathSource == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.build() missing required positional argument 'sPathSource'. (line 489)")
+            if @sPathBinary == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.build() missing required positional argument 'sPathBinary'. (line 490)")
+            if (Public.HasMethod("build")) then
+                return Public.o.build(sPathSource, sPathBinary, bAllowImport)
+            end if
+            return Public.ksError
+        end function
+        Public.connect_service = function(sIp="______MSE_UNSET", nPort="______MSE_UNSET", sUser="______MSE_UNSET", sPassword="______MSE_UNSET", sService="ssh")
+            if @sIp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_service() missing required positional argument 'sIp'. (line 497)")
+            if @nPort == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_service() missing required positional argument 'nPort'. (line 498)")
+            if @sUser == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_service() missing required positional argument 'sUser'. (line 499)")
+            if @sPassword == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.connect_service() missing required positional argument 'sPassword'. (line 500)")
+            if (Public.HasMethod("connect_service")) then
+                o = Public.o.connect_service(sIp, nPort, sUser, sPassword, sService)
+                if (IsInstanceOf(o, "shell")) then
+                    return Wrappers.ShellWrap.Init(o)
+                else if (IsInstanceOf(o, "ftpshell")) then
+                    return Wrappers.FtpShellWrap.Init(o)
+                end if
+                return o
+            end if
+            return Public.ksError
+        end function
+        Public.host_computer = function()
+            if (Public.HasMethod("host_computer")) then
+                return Wrappers.ComputerWrap.Init(Public.o.host_computer)
+            end if
+            return Wrappers.ComputerWrap.Init(null)
+        end function
+        Public.launch = function(sProgram="______MSE_UNSET", sParams="")
+            if @sProgram == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.launch() missing required positional argument 'sProgram'. (line 519)")
+            if (Public.HasMethod("launch")) then
+                return Public.o.launch(sProgram, sParams)
+            end if
+            return Public.ksError
+        end function
+        Public.ping = function(sIp="______MSE_UNSET")
+            if @sIp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.ping() missing required positional argument 'sIp'. (line 526)")
+            if (Public.HasMethod("ping")) then
+                return Public.o.ping(sIp)
+            end if
+            return Public.ksError
+        end function
+        Public.scp = function(sFile="______MSE_UNSET", sFolder="______MSE_UNSET", shRemoteShell="______MSE_UNSET")
+            if @sFile == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.scp() missing required positional argument 'sFile'. (line 533)")
+            if @sFolder == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.scp() missing required positional argument 'sFolder'. (line 534)")
+            if @shRemoteShell == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.scp() missing required positional argument 'shRemoteShell'. (line 535)")
+            if (Public.HasMethod("scp")) then
+                if (IsInstanceOf(shRemoteShell, Wrappers.ShellWrap) or IsInstanceOf(shRemoteShell, Wrappers.FtpShellWrap)) then
+                    shRemoteShell = shRemoteShell.o
+                end if
+                return Public.o.scp(sFile, sFolder, shRemoteShell)
+            end if
+            return Public.ksError
+        end function
+        Public.start_terminal = function()
+            if (Public.HasMethod("start_terminal")) then
+                return Public.o.start_terminal
+            end if
+        end function
+        //-- MSE CLASS POST PAYLOAD --
+        Public.______MSE_INIT = function(sh="______MSE_UNSET")
+            if @sh == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.______MSE_INIT() missing required positional argument 'sh'. (line 551)")
+        end function
+        if (Public.hasIndex("Init")) then
+            Public.______MSE_INIT = @Public["Init"]
+        end if
+        Public.Init = function(sh="______MSE_UNSET")
+            if @sh == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'sh'. (line 557)")
+            Public.remove("Init")
+            Public.______MSE_INIT(sh)
+            Public.remove("______MSE_INIT")
+            return Public
+        end function
+        Public.AddObjectRelation(Public)
+        return Public
+        //-- END CLASS POST PAYLOAD --
+    end function
+    FtpShellWrap = function()
+        //-- MSE CLASS PRE PAYLOAD --
+        Private = {}
+        Public = new Wrappers.ObjectWrap
+        Public.classID = "FtpShellWrap"
+        //-- END CLASS PRE PAYLOAD --
+        Public.Init = function(ftp="______MSE_UNSET")
+            if @ftp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'ftp'. (line 574)")
+            if (IsInstanceOf(ftp, Wrappers.FtpShellWrap)) then
+                super.Init(ftp.o, "ftpshell")
+            else
+                super.Init(ftp, "ftpshell")
+            end if
+        end function
+        Public.host_computer = function()
+            if (Public.HasMethod("host_computer")) then
+                return Wrappers.ComputerWrap(Public.o.host_computer)
+            end if
+            return Wrappers.ComputerWrap.Init(null)
+        end function
+        Public.put = function(sSourceFile="______MSE_UNSET", sDestinationFolder="______MSE_UNSET", shRemoteShell="______MSE_UNSET")
+            if @sSourceFile == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.put() missing required positional argument 'sSourceFile'. (line 588)")
+            if @sDestinationFolder == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.put() missing required positional argument 'sDestinationFolder'. (line 589)")
+            if @shRemoteShell == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.put() missing required positional argument 'shRemoteShell'. (line 590)")
+            if (Public.HasMethod("put")) then
+                if (IsInstanceOf(shRemoteShell, Wrappers.ShellWrap) or IsInstanceOf(shRemoteShell, Wrappers.FtpShellWrap)) then
+                    shRemoteShell = shRemoteShell.o
+                end if
+                return Public.o.put(sSourceFile, sDestinationFolder, shRemoteShell)
+            end if
+            return Public.ksError
+        end function
+        Public.start_terminal = function()
+            if (Public.HasMethod("start_terminal")) then
+                return Public.o.start_terminal
+            end if
+        end function
+        //-- MSE CLASS POST PAYLOAD --
+        Public.______MSE_INIT = function(ftp="______MSE_UNSET")
+            if @ftp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.______MSE_INIT() missing required positional argument 'ftp'. (line 606)")
+        end function
+        if (Public.hasIndex("Init")) then
+            Public.______MSE_INIT = @Public["Init"]
+        end if
+        Public.Init = function(ftp="______MSE_UNSET")
+            if @ftp == "______MSE_UNSET" then ______MSE_EXIT("MSE: Public.Init() missing required positional argument 'ftp'. (line 612)")
+            Public.remove("Init")
+            Public.______MSE_INIT(ftp)
+            Public.remove("______MSE_INIT")
+            return Public
+        end function
+        Public.AddObjectRelation(Public)
+        return Public
+        //-- END CLASS POST PAYLOAD --
+    end function
+    classID = "______MSE_NAMESPACE"
+    return locals
+end function
+______MSE_NAMESPACE_INDEX = locals.indexes[len(locals) - 1]
+______MSE_NAMESPACE_FUNCTION = @locals[______MSE_NAMESPACE_INDEX]
+locals[______MSE_NAMESPACE_INDEX] = ______MSE_NAMESPACE_FUNCTION()
+locals.remove("______MSE_NAMESPACE_INDEX")
+locals.remove("______MSE_NAMESPACE_FUNCTION")

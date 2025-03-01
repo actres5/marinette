@@ -18,5 +18,5 @@ srcs.sort()
 for src in srcs:
     with open(src, "r") as fd:
         content = content + ("\n"*2) + fd.read()
-with open("src/themeing.src", "w") as fd:
+with open("src/_o_themeing.src", "w") as fd:
     fd.write(content)
